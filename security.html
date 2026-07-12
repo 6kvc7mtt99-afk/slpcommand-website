@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Policy — SLP Command</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/" class="brand">
+    <div class="logo-mark">SLP</div>
+    <span class="brand-name">SLP <span>Command</span></span>
+  </a>
+  <nav>
+    <a href="trust-center">Trust Center</a>
+    <a href="support">Support</a>
+    <a href="contact">Contact</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="page-header">
+    <a href="/" class="brand-link">
+      <div class="app-name">SLP Command</div>
+      <div class="app-tag">Independent educational preparation for STANAG&nbsp;6001 / SLP-style English exams</div>
+    </a>
+  </div>
+
+  <h1>Security Policy</h1>
+  <p class="updated">Last updated: 12 July 2026</p>
+
+  <p>This Policy describes the technical and organisational measures SLP Command applies to protect the confidentiality, integrity, and availability of user data, in accordance with Article 32 GDPR.</p>
+
+  <h2>1. Authentication and access control</h2>
+  <ul>
+    <li>User authentication is managed by a dedicated, industry-standard authentication provider. Passwords are never stored or transmitted in plain text; they are managed exclusively by our authentication provider using industry-standard hashing.</li>
+    <li>All requests to protected endpoints require a verified authentication token. Requests without a valid token are rejected.</li>
+    <li>Administrative access to operational dashboards requires both a verified user identity and an explicit administrator role, independently checked on every request. Administrative privileges are not self-assignable through any user-facing interface.</li>
+  </ul>
+
+  <h2>2. Data isolation</h2>
+  <ul>
+    <li>Row-Level Security (RLS) is enforced at the database layer across all tables containing user data, ensuring that a user can only access their own records, independent of application-layer logic.</li>
+    <li>Security-sensitive tables (including the security audit trail) grant zero direct read or write access to client applications; they are accessible exclusively through server-side, privilege-checked processes.</li>
+  </ul>
+
+  <h2>3. Encryption</h2>
+  <ul>
+    <li>All data in transit between the application, our backend, and our sub-processors is encrypted using TLS/HTTPS.</li>
+    <li>Data at rest is encrypted by our infrastructure and database providers in accordance with their respective security certifications.</li>
+  </ul>
+
+  <h2>4. Abuse and rate limiting</h2>
+  <ul>
+    <li>API rate limiting is applied to reduce the risk of automated abuse, scraping, and credential-stuffing attacks.</li>
+    <li>Failed authentication attempts and other security-relevant events are recorded in a dedicated, access-restricted security audit trail (see the <a href="data-retention">Data Retention Policy</a>).</li>
+  </ul>
+
+  <h2>5. Vulnerability and error monitoring</h2>
+  <ul>
+    <li>Application errors and crashes are monitored through a dedicated diagnostics provider. Request bodies and authorization headers are stripped before transmission to this provider; no personal content, audio, or written responses are ever included in diagnostic data.</li>
+    <li>We conduct periodic internal security reviews of new features before release, including authentication, authorisation, and data-exposure checks.</li>
+  </ul>
+
+  <h2>6. Responsible disclosure</h2>
+  <p>If you believe you have discovered a security vulnerability in the Service, please report it responsibly to <a href="mailto:security@slpcommand.com">security@slpcommand.com</a>. We commit to:</p>
+  <ul>
+    <li>acknowledging your report within 5 business days;</li>
+    <li>investigating in good faith and keeping you informed of material progress;</li>
+    <li>not pursuing legal action against good-faith security researchers who report vulnerabilities through this channel without exploiting them beyond what is necessary to demonstrate the issue.</li>
+  </ul>
+
+  <h2>7. Incident response</h2>
+  <p>In the event of a personal data breach likely to result in a risk to your rights and freedoms, we will notify the competent supervisory authority within 72 hours of becoming aware of the breach, in accordance with Article 33 GDPR, and will notify affected users without undue delay where the breach is likely to result in a high risk to their rights and freedoms, in accordance with Article 34 GDPR.</p>
+
+  <h2>8. Sub-processor security</h2>
+  <p>We select sub-processors that maintain industry-recognised security practices and are bound by data processing agreements requiring appropriate technical and organisational measures. See the <a href="subprocessors">Subprocessors</a> page for the complete list.</p>
+
+  <div class="note">SLP Command will never ask for your password by email, support chat, or any channel other than the official in-app login screen.</div>
+
+  <h2>9. Contact</h2>
+  <p><a href="mailto:security@slpcommand.com">security@slpcommand.com</a></p>
+
+  <footer class="page-footer">
+    <a href="/">← SLP Command</a> &nbsp;·&nbsp; Not affiliated with NATO or any official body.
+  </footer>
+</div>
+
+</body>
+</html>

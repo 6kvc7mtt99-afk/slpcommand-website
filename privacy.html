@@ -14,6 +14,7 @@
     <span class="brand-name">SLP <span>Command</span></span>
   </a>
   <nav>
+    <a href="trust-center">Trust Center</a>
     <a href="support">Support</a>
     <a href="contact">Contact</a>
   </nav>
@@ -28,58 +29,78 @@
   </div>
 
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: 29 June 2026 · Controller: Rafael Janer, Spain · <a href="mailto:privacy@slpcommand.com">privacy@slpcommand.com</a></p>
+  <p class="updated">Last updated: 12 July 2026 · Controller: SLP Command · <a href="mailto:privacy@slpcommand.com">privacy@slpcommand.com</a></p>
 
-  <p>SLP Command ("the App") is an independent educational app that helps you prepare for STANAG&nbsp;6001 / SLP-style English exams. This policy explains what personal data we process, why, and your rights.</p>
+  <p>This Privacy Policy explains what personal data SLP Command processes, why, on what legal basis, with whom it is shared, how long it is retained, and what rights you have under the General Data Protection Regulation (EU) 2016/679 ("GDPR") and Spanish Organic Law 3/2018 (LOPDGDD).</p>
 
-  <h2>1. Data we process</h2>
+  <h2>1. Data controller</h2>
+  <p>SLP Command is the data controller responsible for the personal data described in this Policy. Contact: <a href="mailto:privacy@slpcommand.com">privacy@slpcommand.com</a>. Full controller identification data is available in the <a href="legal-notice">Legal Notice</a>.</p>
+
+  <h2>2. Categories of personal data we process</h2>
   <ul>
     <li><strong>Account data:</strong> your email address and a password hash (passwords are managed by our authentication provider — we never store them in plain text).</li>
-    <li><strong>Learning content you create:</strong> written responses (Writing skill), audio recordings (Speaking skill — optional), and transcripts generated from that audio.</li>
-    <li><strong>Performance data:</strong> scores, estimated SLP levels, exercise history, and the derived Adaptive Coach / Intelligence insights.</li>
-    <li><strong>Technical &amp; diagnostic data:</strong> a pseudonymous user identifier, IP address (used transiently for rate-limiting and security), and crash/error diagnostics stripped of personal content.</li>
+    <li><strong>Learning content:</strong> written responses (Writing), audio recordings (Speaking — optional, consent-based), and AI-generated transcripts of that audio.</li>
+    <li><strong>Performance data:</strong> scores, estimated SLP levels, exercise history, and the derived Adaptive Coach / Intelligence Dashboard insights.</li>
+    <li><strong>Support data:</strong> if you submit a report via "Report a Problem", we process the category and free-text description you provide, together with your app version, iOS version, and the screen name.</li>
+    <li><strong>Product usage data:</strong> pseudonymous, event-level analytics describing which features and screens you use (e.g. module opened, quiz completed, exam started), your app version, and a pseudonymous user identifier. This data <strong>never</strong> includes your written answers, audio, transcripts, or any content you submit.</li>
+    <li><strong>Technical &amp; security data:</strong> a pseudonymous user identifier, IP address (processed transiently for rate-limiting and abuse prevention, and stored in hashed, non-reversible form in our security audit trail — see §6.5), device/app version, and crash or error diagnostics stripped of personal content.</li>
+    <li><strong>Security audit trail:</strong> a limited, append-only log of security-relevant account events (e.g. login, account creation, account deletion) associated with a pseudonymous user identifier and a hashed IP address, retained according to the schedule in §6.5.</li>
   </ul>
-  <p>We do <strong>not</strong> collect your name, contacts, or location. We do <strong>not</strong> use advertising identifiers. We do <strong>not</strong> track you across other apps or websites.</p>
+  <p>We do <strong>not</strong> collect your name, postal address, phone number, government identifiers, location data, advertising identifiers, military rank, unit, service branch, or employer. We do <strong>not</strong> track you across other apps or websites.</p>
 
-  <h2>2. Legal bases — GDPR Art. 6</h2>
+  <h2>3. Legal bases for processing (Article 6 GDPR)</h2>
   <ul>
-    <li><strong>Performance of a contract (Art. 6.1.b):</strong> providing your account, syncing progress, delivering exercises and feedback.</li>
-    <li><strong>Consent (Art. 6.1.a):</strong> transcribing and evaluating your audio with AI. This is optional — you can use the App without using Speaking.</li>
-    <li><strong>Legitimate interest (Art. 6.1.f):</strong> keeping the service secure, stable and improving it.</li>
+    <li><strong>Performance of a contract (Art. 6.1.b):</strong> account provisioning, progress synchronisation, delivery of exercises, Writing feedback, score history, and the Adaptive Coach / Intelligence Dashboard.</li>
+    <li><strong>Explicit consent (Art. 6.1.a):</strong> processing your Speaking audio for transcription and AI evaluation. This consent is requested separately, in context, before your first use of the Speaking feature, and is entirely optional — you can use every other feature of the Service without ever granting it. You may withdraw it at any time.</li>
+    <li><strong>Legitimate interest (Art. 6.1.f):</strong> maintaining the security, stability, integrity and abuse-resistance of the Service, and understanding aggregate, pseudonymous product usage to improve it.</li>
   </ul>
 
-  <h2>3. AI processing and sub-processors</h2>
-  <p>To deliver AI-powered feedback, your content is shared with the following providers acting as processors:</p>
+  <h2>4. Sub-processors</h2>
+  <p>To deliver the Service, we share personal data with the following processors, each bound by a data processing agreement. See the full <a href="subprocessors">Subprocessors</a> page for details.</p>
   <ul>
+    <li><strong>Supabase</strong> — database, authentication, audio file storage.</li>
     <li><strong>OpenAI</strong> — Whisper (speech-to-text transcription) and GPT models (evaluation of Speaking and Writing responses across fluency, grammar, vocabulary, coherence and task achievement).</li>
-    <li><strong>ElevenLabs</strong> — text-to-speech audio generation for listening exercises and pronunciation models.</li>
-    <li><strong>Supabase</strong> — relational database (scores, history, profiles), authentication, and audio file storage.</li>
+    <li><strong>ElevenLabs</strong> — text-to-speech audio generation for listening exercises and pronunciation models. No personal data is sent — only exercise text.</li>
     <li><strong>Render</strong> — backend API hosting.</li>
     <li><strong>Sentry</strong> — crash and error diagnostics. Request bodies and authorization headers are stripped before transmission; no personal content or audio is sent to Sentry.</li>
+    <li><strong>PostHog</strong> — pseudonymous product usage analytics (feature/screen usage, app version). Never your written answers, audio, transcripts, or account email.</li>
   </ul>
+  <p>We do not sell your personal data to any third party. We do not permit AI providers to use your Content to train their general-purpose models, except where you have given separate, explicit consent.</p>
 
-  <h2>4. International transfers</h2>
-  <p>Some providers (including OpenAI, ElevenLabs, Render, and Sentry) may process data in the United States or other countries outside the EEA. Where this occurs, transfers rely on appropriate safeguards such as Standard Contractual Clauses (GDPR Art. 46).</p>
+  <h2>5. International transfers</h2>
+  <p>Some of the providers listed above process data outside the European Economic Area, principally in the United States. Where this occurs, transfers rely on appropriate safeguards under Article 46 GDPR, including the European Commission's Standard Contractual Clauses and, where applicable, provider participation in the EU-US Data Privacy Framework.</p>
 
-  <h2>5. Retention</h2>
+  <h2>6. Retention</h2>
+  <p>See the full <a href="data-retention">Data Retention Policy</a> for the itemised schedule. Summary:</p>
   <ul>
-    <li><strong>Audio recordings:</strong> retained only while you keep them. You can delete individual recordings from the App at any time. All audio is permanently removed when you delete your account.</li>
-    <li><strong>Account, history, scores, transcripts:</strong> retained for the life of your account, then permanently deleted within 30 days of account deletion.</li>
-    <li><strong>Diagnostic / error logs:</strong> retained short-term only (typically 30–90 days).</li>
+    <li><strong>Account, progress, scores, transcripts, written responses:</strong> retained for the life of your account, then permanently deleted within 30 days of account deletion.</li>
+    <li><strong>Speaking audio recordings:</strong> retained only while you keep them. You can delete individual recordings from the App at any time. All audio is permanently removed when you delete your account.</li>
+    <li><strong>Support requests:</strong> retained for 12 months from submission, or until account deletion, whichever comes first.</li>
+    <li><strong>Diagnostic / crash logs:</strong> retained short-term only (typically 30–90 days).</li>
+    <li><strong>Security audit trail (§6.5):</strong> by exception, security-relevant events (login, account creation, account deletion, administrative actions) are retained for <strong>12 months from the date of the event, irrespective of account deletion</strong>, on the basis of our legitimate interest (Art. 6.1.f) in investigating fraud, abuse and security incidents. This entry never contains your email, written content, audio or transcripts — only event type, a pseudonymous identifier, a hashed IP address, and a timestamp. Once your account is deleted, this identifier no longer resolves to any identifiable individual within our systems. Every entry is automatically and permanently purged 12 months after creation.</li>
   </ul>
 
-  <h2>6. Your rights (EEA / UK — GDPR / LOPDGDD)</h2>
-  <p>You have the right to <strong>access</strong>, <strong>rectify</strong>, <strong>erase</strong>, <strong>restrict</strong>, <strong>object to</strong>, and <strong>port</strong> your data. To exercise any of these rights, contact <a href="mailto:privacy@slpcommand.com">privacy@slpcommand.com</a>. You may also lodge a complaint with your supervisory authority — in Spain, the <a href="https://www.aepd.es" target="_blank" rel="noopener">AEPD</a>.</p>
+  <h2>7. Your rights (EEA / UK — GDPR / LOPDGDD)</h2>
+  <p>You have the right to <strong>access</strong>, <strong>rectify</strong>, <strong>erase</strong>, <strong>restrict</strong>, <strong>object to</strong>, and <strong>port</strong> your data. To exercise any of these rights, contact <a href="mailto:privacy@slpcommand.com">privacy@slpcommand.com</a>. We will respond within one month, extendable by two further months for complex requests. You may also lodge a complaint with your supervisory authority — in Spain, the <a href="https://www.aepd.es" target="_blank" rel="noopener">AEPD</a>.</p>
   <p>In-app account deletion is available from <strong>Settings → Delete Account</strong>. See <a href="delete-account">Delete Account</a> for full details.</p>
 
-  <h2>7. Audio data and biometrics</h2>
+  <h2>8. Automated decision-making</h2>
+  <p>The Intelligence Dashboard and Adaptive Coach are computed exclusively from your own historical results within the Service. They do not produce any decision with legal or similarly significant effect on you within the meaning of Article 22 GDPR: they are non-binding, educational recommendations. See the <a href="ai-usage">Responsible AI Policy</a>.</p>
+
+  <h2>9. Audio data and biometrics</h2>
   <p>Audio recordings are processed solely for speech-to-text transcription and language evaluation. We do not use audio to identify you biometrically. Audio is classified as personal data under GDPR but not as a biometric identifier (Art. 9) because it is not processed for the purpose of unique identification.</p>
 
-  <h2>8. Children</h2>
-  <p>The App is not directed at children under 16. We do not knowingly collect personal data from anyone under 16. If you become aware that a child has provided us with personal data, please contact <a href="mailto:privacy@slpcommand.com">privacy@slpcommand.com</a>.</p>
+  <h2>10. Children</h2>
+  <p>The Service is not directed at individuals under 16 years of age. If we become aware that we have collected personal data from a person under 16 without a valid legal basis, we will delete that data. Contact <a href="mailto:privacy@slpcommand.com">privacy@slpcommand.com</a> if you believe this has occurred.</p>
 
-  <h2>9. Changes to this policy</h2>
-  <p>We will update this page and the "Last updated" date when this policy changes materially. Continued use of the App after a change constitutes acceptance.</p>
+  <h2>11. Security</h2>
+  <p>See the <a href="security">Security Policy</a> for the full statement of technical and organisational measures.</p>
+
+  <h2>12. Changes to this policy</h2>
+  <p>We may update this Policy from time to time. Material changes affecting the sub-processors in §4 or the retention schedule in §6 will be notified via the Service or by email at least 15 days before taking effect.</p>
+
+  <h2>13. Contact</h2>
+  <p><a href="mailto:privacy@slpcommand.com">privacy@slpcommand.com</a></p>
 
   <footer class="page-footer">
     <a href="/">← SLP Command</a> &nbsp;·&nbsp; Not affiliated with NATO or any official body.

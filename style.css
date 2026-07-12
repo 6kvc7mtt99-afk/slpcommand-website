@@ -172,6 +172,30 @@ footer.page-footer {
 }
 footer.page-footer a { color: var(--muted); }
 
+/* ─── LEGAL TABLES (Subprocessors, Data Retention) ─── */
+.legal-table-wrap { overflow-x: auto; margin: 16px 0 24px; border: 1px solid var(--line); border-radius: 10px; }
+table.legal-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.legal-table th, table.legal-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.legal-table th { background: var(--bg2); font-weight: 700; color: var(--ink2); white-space: nowrap; }
+table.legal-table tr:last-child td { border-bottom: none; }
+
+/* ─── TRUST CENTER GRID ─── */
+.trust-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 24px 0; }
+.trust-card {
+  background: var(--bg2); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px; text-decoration: none; color: inherit; display: block; transition: border-color .15s;
+}
+.trust-card:hover { border-color: var(--accent); }
+.trust-card h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; color: var(--ink); }
+.trust-card p { margin: 0; font-size: 13px; color: var(--muted); }
+.trust-card .links { margin-top: 10px; font-size: 13px; }
+.trust-card .links a { margin-right: 12px; }
+
+.principles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin: 20px 0 32px; }
+.principle { padding: 16px 0; border-top: 1px solid var(--line); }
+.principle h3 { margin: 0 0 6px; font-size: 15px; }
+.principle p { margin: 0; font-size: 14px; color: var(--muted); }
+
 /* ─── DARK MODE ─── */
 @media (prefers-color-scheme: dark) {
   :root {
