@@ -45,6 +45,23 @@
     .hidden { display: none; }
     .warn { background: rgba(255,159,10,.1); border: 1px solid rgba(255,159,10,.3);
       border-radius: 10px; padding: 10px 12px; font-size: 13px; color: var(--orange); margin-bottom: 18px; }
+    .dep { display: flex; align-items: center; gap: 8px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .dot.ok { background: var(--green); }
+    .dot.degraded { background: var(--orange); }
+    .dot.down { background: var(--red); }
+    .mode-banner { display: inline-block; padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+    .mode-healthy { background: rgba(52,199,89,.15); color: var(--green); }
+    .mode-degraded { background: rgba(255,159,10,.15); color: var(--orange); }
+    .mode-outage { background: rgba(255,77,79,.15); color: var(--red); }
+    .toggle { position: relative; width: 42px; height: 24px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: var(--line); border-radius: 999px; cursor: pointer; transition: .15s; }
+    .slider:before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
+      background: #fff; border-radius: 50%; transition: .15s; }
+    input:checked + .slider { background: var(--green); }
+    input:checked + .slider:before { transform: translateX(18px); }
+    code { background: #0c1120; padding: 2px 6px; border-radius: 6px; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -72,13 +89,19 @@
         own dashboards. This panel shows platform data owned by the backend.</div>
 
       <div class="section"><h3>Users</h3><div id="usersGrid" class="grid"></div></div>
+      <div class="section"><h3>Retention &amp; Segments</h3><div id="retentionGrid" class="grid"></div></div>
       <div class="section"><h3>Learning</h3><div id="learningGrid" class="grid"></div></div>
       <div class="section"><h3>Usage (last 30 days)</h3><div id="usageGrid" class="grid"></div></div>
-      <div class="section"><h3>System Health (since last deploy)</h3><div id="healthGrid" class="grid"></div>
+      <div class="section"><h3>System Health — Backend (since last deploy)</h3><div id="healthGrid" class="grid"></div>
         <div id="recentErrors" style="margin-top:14px"></div></div>
+      <div class="section"><h3>System Health — Dependencies</h3>
+        <div id="depsMode" style="margin-bottom:10px"></div>
+        <div id="depsGrid" class="grid"></div></div>
       <div class="section"><h3>User Reports</h3>
         <div id="reportsGrid" class="grid" style="margin-bottom:14px"></div>
         <div id="reportsTable"></div></div>
+      <div class="section"><h3>Feature Flags</h3><div id="flagsTable"></div></div>
+      <div class="section"><h3>Audit Log</h3><div id="auditTable"></div></div>
     </main>
   </div>
 
@@ -130,12 +153,16 @@
     }
 
     async function loadAll() {
-      const [users, learning, usage, health, reports] = await Promise.all([
+      const [users, learning, usage, health, reports, retention, deps, flags, audit] = await Promise.all([
         api("/api/admin/metrics/users"),
         api("/api/admin/metrics/learning"),
         api("/api/admin/metrics/usage"),
         api("/api/admin/metrics/health"),
-        api("/api/admin/metrics/reports")
+        api("/api/admin/metrics/reports"),
+        api("/api/admin/metrics/retention"),
+        api("/api/admin/metrics/system-health"),
+        api("/api/admin/feature-flags"),
+        api("/api/admin/audit-logs?limit=30")
       ]);
 
       $("usersGrid").innerHTML =
@@ -166,6 +193,61 @@
 
       $("reportsGrid").innerHTML = tile(reports.open, "Open reports") + tile(reports.resolved, "Resolved reports");
       renderReports(reports.latest || []);
+
+      $("retentionGrid").innerHTML =
+        tile(retention.d1?.pct != null ? retention.d1.pct + "%" : "—", "D1 retention") +
+        tile(retention.d7?.pct != null ? retention.d7.pct + "%" : "—", "D7 retention") +
+        tile(retention.d30?.pct != null ? retention.d30.pct + "%" : "—", "D30 retention") +
+        tile(retention.segments?.power, "Power users (≤3d)") +
+        tile(retention.segments?.engaged, "Engaged (4–14d)") +
+        tile(retention.segments?.churnRisk, "Churn risk (15–30d)") +
+        tile(retention.segments?.inactive, "Inactive (30d+)");
+
+      const modeClass = "mode-" + deps.mode;
+      $("depsMode").innerHTML = `Overall: <span class="mode-banner ${modeClass}">${deps.mode.toUpperCase()}</span>
+        <span class="muted" style="margin-left:10px">Backend uptime: ${deps.backend?.uptimeSeconds ?? "—"}s ·
+        error rate: ${deps.backend?.errorRatePct ?? "—"}%</span>`;
+      $("depsGrid").innerHTML = Object.entries(deps.dependencies || {}).map(([name, d]) => {
+        const state = d.ok ? "ok" : (d.degraded ? "degraded" : "down");
+        return `<div class="tile dep"><span class="dot ${state}"></span>
+          <div><div style="font-weight:600">${name}</div><div class="l">${state}</div></div></div>`;
+      }).join("");
+
+      renderFlags(flags.flags || []);
+      renderAudit(audit.logs || []);
+    }
+
+    function renderFlags(list) {
+      if (!list.length) { $("flagsTable").innerHTML = `<p class="muted" style="font-size:13px">No flags found.</p>`; return; }
+      $("flagsTable").innerHTML = `<table>
+        <tr><th>Flag</th><th>Description</th><th>Updated</th><th>Enabled</th></tr>
+        ${list.map(f => `<tr>
+          <td><code>${esc(f.key)}</code></td>
+          <td class="muted">${esc(f.description || "—")}</td>
+          <td class="muted">${f.updated_at ? new Date(f.updated_at).toLocaleString() : "—"}</td>
+          <td><label class="toggle"><input type="checkbox" ${f.enabled ? "checked" : ""}
+              onchange="toggleFlag('${f.key}', this.checked)"><span class="slider"></span></label></td>
+        </tr>`).join("")}
+      </table>`;
+    }
+
+    async function toggleFlag(key, enabled) {
+      try { await api("/api/admin/feature-flags/" + key, { method: "PATCH", body: JSON.stringify({ enabled }) }); await loadAll(); }
+      catch (e) { alert("Could not update flag: " + e.message); await loadAll(); }
+    }
+    window.toggleFlag = toggleFlag;
+
+    function renderAudit(list) {
+      if (!list.length) { $("auditTable").innerHTML = `<p class="muted" style="font-size:13px">No audit events yet.</p>`; return; }
+      $("auditTable").innerHTML = `<table>
+        <tr><th>When</th><th>Event</th><th>Actor</th><th>Target</th></tr>
+        ${list.map(a => `<tr>
+          <td class="muted">${new Date(a.created_at).toLocaleString()}</td>
+          <td>${esc(a.event_type)}</td>
+          <td class="muted">${a.actor_id ? esc(a.actor_id).slice(0, 8) + "…" : "—"}</td>
+          <td class="muted">${esc(a.target_id || "—")}</td>
+        </tr>`).join("")}
+      </table>`;
     }
 
     function renderReports(list) {
