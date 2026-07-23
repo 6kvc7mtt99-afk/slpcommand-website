@@ -133,6 +133,8 @@
            is unavoidable (top divergences / top outliers). -->
       <div class="section">
         <h3>Proficiency Engine <span id="peSkillNote" class="muted" style="text-transform:none; font-weight:400; letter-spacing:0"></span></h3>
+        <div class="pe-sub">Control &amp; Validation</div>
+        <div id="peModeStatus" class="grid"></div>
         <div id="peUnavailable"></div>
         <div id="peBody" class="hidden">
           <div id="peSummaryGrid" class="grid"></div>
@@ -227,7 +229,7 @@
       // NEVER take down the rest of this page via Promise.all rejecting.
       // Every other call below still throws normally, so the existing
       // "a 403 here means not-admin" check in login() is unaffected.
-      const [users, learning, usage, health, reports, retention, deps, flags, audit, pe] = await Promise.all([
+      const [users, learning, usage, health, reports, retention, deps, flags, audit, pe, ms] = await Promise.all([
         api("/api/admin/metrics/users"),
         api("/api/admin/metrics/learning"),
         api("/api/admin/metrics/usage"),
@@ -237,7 +239,10 @@
         api("/api/admin/metrics/system-health"),
         api("/api/admin/feature-flags"),
         api("/api/admin/audit-logs?limit=30"),
-        api("/api/admin/proficiency/dashboard?skill=reading").catch((e) => ({ __peError: e.message }))
+        api("/api/admin/proficiency/dashboard?skill=reading").catch((e) => ({ __peError: e.message })),
+        // FASE IPS-007 Incremento 3 — mode + validation status, isolated so a
+        // failure (endpoint not yet deployed) never breaks the rest of /admin.
+        api("/api/admin/proficiency/mode-status?skill=reading").catch((e) => ({ __msError: e.message }))
       ]);
 
       $("usersGrid").innerHTML =
@@ -290,7 +295,34 @@
 
       renderFlags(flags.flags || []);
       renderAudit(audit.logs || []);
+      renderModeStatus(ms);
       renderProficiencyEngine(pe);
+    }
+
+    // ── FASE IPS-007 Incremento 3 — read-only mode + validation status ────────
+    // Reuses GET /api/admin/proficiency/mode-status. Degrades gracefully: if the
+    // endpoint isn't deployed yet, shows an honest note instead of breaking.
+    // No PII (no email/name/UUID). With one user, INSUFFICIENT_DATA-style states
+    // (NOT_TESTED/PARTIAL) are shown as-is, never dressed up as PASS/FAIL.
+    function renderModeStatus(ms) {
+      const el = $("peModeStatus");
+      if (!ms || ms.__msError) {
+        el.innerHTML = `<p class="muted" style="font-size:13px">Mode/validation status not available${
+          ms && ms.__msError ? " (" + esc(ms.__msError) + ")" : ""
+        }. Expected until this backend build is deployed.</p>`;
+        return;
+      }
+      const v = ms.validation || {};
+      const vStatus = v.status || "UNKNOWN";
+      const flagTxt = ms.shadowFlagEnabled ? `ON · ${ms.rolloutPercent ?? 0}%` : "OFF";
+      el.innerHTML =
+        tile(esc(ms.mode || "—"), "Current mode") +
+        tile(ms.proficiencyV2Active ? "ACTIVE" : "inactive", "PROFICIENCY_V2") +
+        tile(flagTxt, "Shadow flag · rollout") +
+        tile(esc(vStatus), "Validation status") +
+        tile(esc(ms.algorithmVersion || "—"), "Algorithm version") +
+        tile(esc(ms.mappingVersion || "—"), "Mapping version") +
+        tile(ms.legacyFallbackAvailable ? "yes" : "no", "Legacy fallback");
     }
 
     // ── FASE IPS-003B.4 — Proficiency Engine rendering ──────────────────────
