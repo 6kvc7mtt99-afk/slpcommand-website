@@ -62,6 +62,30 @@
     input:checked + .slider { background: var(--green); }
     input:checked + .slider:before { transform: translateX(18px); }
     code { background: #0c1120; padding: 2px 6px; border-radius: 6px; font-size: 12px; }
+
+    /* FASE IPS-003B.4 — Proficiency Engine section. Reuses every existing
+       token/class above (--bg/--card/--line/--accent/--green/--orange/--red,
+       .tile/.grid/.section/table/.pill/.warn) — these are the only NEW rules,
+       for the sub-headers and the small dependency-free bar histograms. */
+    .pe-sub { font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--muted); margin: 22px 0 8px; font-weight: 700; }
+    .pe-sub:first-child { margin-top: 4px; }
+    .hbar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 3px 0; }
+    .hbar-label { width: 52px; flex-shrink: 0; color: var(--muted); text-align: right; }
+    .hbar-track { flex: 1; background: #0c1120; border-radius: 6px; height: 10px; overflow: hidden; }
+    .hbar-fill { height: 100%; background: var(--accent); }
+    .hbar-n { width: 34px; flex-shrink: 0; text-align: right; }
+    .readiness-score { font-size: 40px; font-weight: 800; line-height: 1; }
+    .readiness-band { display: inline-block; padding: 4px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 700; margin-left: 12px; vertical-align: middle; }
+    .band-ready { background: rgba(52,199,89,.15); color: var(--green); }
+    .band-promising { background: rgba(79,140,255,.15); color: var(--accent); }
+    .band-early { background: rgba(255,159,10,.15); color: var(--orange); }
+    .band-not_ready { background: rgba(255,77,79,.15); color: var(--red); }
+    .rec-item { border-left: 3px solid var(--line); padding: 6px 10px; margin: 6px 0; font-size: 13px; }
+    .rec-critical { border-left-color: var(--red); }
+    .rec-warning { border-left-color: var(--orange); }
+    .rec-info { border-left-color: var(--muted); }
   </style>
 </head>
 <body>
@@ -101,6 +125,49 @@
         <div id="reportsGrid" class="grid" style="margin-bottom:14px"></div>
         <div id="reportsTable"></div></div>
       <div class="section"><h3>Feature Flags</h3><div id="flagsTable"></div></div>
+
+      <!-- FASE IPS-003B.4 — Proficiency Engine (shadow_v2). READ ONLY: every
+           number here comes from GET /api/admin/proficiency/dashboard, gated
+           by the SAME requireAdminUser guard as every other section on this
+           page. No PII, no raw user_id — only userHash where a per-user row
+           is unavoidable (top divergences / top outliers). -->
+      <div class="section">
+        <h3>Proficiency Engine <span id="peSkillNote" class="muted" style="text-transform:none; font-weight:400; letter-spacing:0"></span></h3>
+        <div id="peUnavailable"></div>
+        <div id="peBody" class="hidden">
+          <div id="peSummaryGrid" class="grid"></div>
+
+          <div class="pe-sub">Readiness Score</div>
+          <div id="peReadiness"></div>
+
+          <div class="pe-sub">Convergence</div>
+          <div id="peConvergenceGrid" class="grid"></div>
+          <div id="peConvergenceHist"></div>
+
+          <div class="pe-sub">Drift — Shadow vs Current</div>
+          <div id="peDriftGrid" class="grid"></div>
+          <div id="peDriftHist"></div>
+          <div id="peDriftTop"></div>
+
+          <div class="pe-sub">Regime Shift</div>
+          <div id="peRegimeGrid" class="grid"></div>
+
+          <div class="pe-sub">Outliers</div>
+          <div id="peOutliersGrid" class="grid"></div>
+          <div id="peOutliersTop"></div>
+
+          <div class="pe-sub">Integrity</div>
+          <div id="peIntegrity"></div>
+
+          <div class="pe-sub">Telemetry</div>
+          <div id="peTelemetryNote" class="warn" style="margin-bottom:10px"></div>
+          <div id="peTelemetryGrid" class="grid"></div>
+
+          <div class="pe-sub">Recommendations</div>
+          <div id="peRecommendations"></div>
+        </div>
+      </div>
+
       <div class="section"><h3>Audit Log</h3><div id="auditTable"></div></div>
     </main>
   </div>
@@ -153,7 +220,14 @@
     }
 
     async function loadAll() {
-      const [users, learning, usage, health, reports, retention, deps, flags, audit] = await Promise.all([
+      // FASE IPS-003B.4 — the Proficiency Engine fetch is deliberately
+      // isolated with its own .catch(): if proficiency_dashboard_report()
+      // isn't deployed/migrated yet in a given environment (true today —
+      // no IPS-003B migration has been applied to production), it must
+      // NEVER take down the rest of this page via Promise.all rejecting.
+      // Every other call below still throws normally, so the existing
+      // "a 403 here means not-admin" check in login() is unaffected.
+      const [users, learning, usage, health, reports, retention, deps, flags, audit, pe] = await Promise.all([
         api("/api/admin/metrics/users"),
         api("/api/admin/metrics/learning"),
         api("/api/admin/metrics/usage"),
@@ -162,7 +236,8 @@
         api("/api/admin/metrics/retention"),
         api("/api/admin/metrics/system-health"),
         api("/api/admin/feature-flags"),
-        api("/api/admin/audit-logs?limit=30")
+        api("/api/admin/audit-logs?limit=30"),
+        api("/api/admin/proficiency/dashboard?skill=reading").catch((e) => ({ __peError: e.message }))
       ]);
 
       $("usersGrid").innerHTML =
@@ -215,6 +290,176 @@
 
       renderFlags(flags.flags || []);
       renderAudit(audit.logs || []);
+      renderProficiencyEngine(pe);
+    }
+
+    // ── FASE IPS-003B.4 — Proficiency Engine rendering ──────────────────────
+    // Every function below only FORMATS what GET /api/admin/proficiency/
+    // dashboard already returned — no extra fetches, no client-side
+    // aggregation, no PII (only userHash where a per-user row is shown).
+    function renderProficiencyEngine(pe) {
+      if (!pe || pe.__peError) {
+        $("peUnavailable").innerHTML = `<p class="muted" style="font-size:13px">Proficiency Engine data not available${
+          pe && pe.__peError ? " (" + esc(pe.__peError) + ")" : ""
+        }. This is expected until the IPS-003B migration is applied in this environment.</p>`;
+        $("peBody").classList.add("hidden");
+        return;
+      }
+      $("peUnavailable").innerHTML = "";
+      $("peBody").classList.remove("hidden");
+      $("peSkillNote").textContent = "· reading · shadow_v2";
+
+      peSummary(pe);
+      peReadiness(pe.readiness);
+      peConvergence(pe);
+      peDrift(pe);
+      peRegime(pe);
+      peOutliers(pe);
+      peIntegrity(pe.integrity || []);
+      peTelemetry(pe.summary?.operational);
+      peRecommendations(pe.recommendations || []);
+    }
+
+    function peSummary(pe) {
+      const s = pe.summary || {};
+      const engineState = s.featureFlagState ? `ON · ${s.rolloutPercent ?? 0}%` : "OFF";
+      const convergedPct = s.usuariosAnalizados
+        ? Math.round((100 * (s.usuariosConvergidos || 0)) / s.usuariosAnalizados) + "%" : "—";
+      const integrityPassing = (pe.integrity || []).filter((c) => c.status === "PASS").length;
+      const driftMean = pe.drift?.stats?.mean_abs;
+      $("peSummaryGrid").innerHTML =
+        tile(engineState, "Engine state (flag · rollout)") +
+        tile(pe.readiness?.score ?? "—", "Readiness score") +
+        tile((pe.verdict || "—").replace(/_/g, " "), "Verdict") +
+        tile(s.eventosTotales, "Events total") +
+        tile(s.usuariosAnalizados, "Users analyzed") +
+        tile(convergedPct, "Converged") +
+        tile(driftMean != null ? driftMean : "—", "Drift mean |Δ|") +
+        tile(`${integrityPassing}/${(pe.integrity || []).length}`, "Integrity checks passing") +
+        tile(s.operational ? "ephemeral" : "—", "Operational data") +
+        tile(s.generatedAt ? new Date(s.generatedAt).toLocaleString() : "—", "Last updated");
+    }
+
+    function peReadiness(r) {
+      if (!r) { $("peReadiness").innerHTML = `<p class="muted" style="font-size:13px">No readiness data.</p>`; return; }
+      $("peReadiness").innerHTML = `
+        <div class="row" style="align-items:baseline">
+          <span class="readiness-score">${r.score}</span>
+          <span class="readiness-band band-${r.band}">${r.band.replace(/_/g, " ").toUpperCase()}</span>
+        </div>
+        <table style="margin-top:12px">
+          <tr><th>Points</th><th>Reason</th></tr>
+          ${(r.breakdown || []).map((b) => {
+            const color = b.points > 0 ? "var(--green)" : (b.points < 0 ? "var(--red)" : "var(--muted)");
+            return `<tr><td style="color:${color};font-weight:700">${b.points > 0 ? "+" : ""}${b.points}</td><td>${esc(b.reason)}</td></tr>`;
+          }).join("")}
+        </table>`;
+    }
+
+    function hbar(buckets, labelFn) {
+      if (!buckets || !buckets.length) return `<p class="muted" style="font-size:13px">No data yet.</p>`;
+      const max = Math.max(1, ...buckets.map((b) => b.n || 0));
+      return buckets.map((b) => `<div class="hbar-row">
+          <span class="hbar-label">${esc(labelFn(b))}</span>
+          <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round((100 * (b.n || 0)) / max)}%"></div></div>
+          <span class="hbar-n">${b.n || 0}</span>
+        </div>`).join("");
+    }
+
+    function peConvergence(pe) {
+      const c = pe.convergence || {};
+      $("peConvergenceGrid").innerHTML =
+        tile(c.stability?.users_stable, "Stable users") +
+        tile(c.stability?.users_unstable, "Unstable users") +
+        tile(c.time?.avg_events_to_converge ?? "—", "Avg. events to converge") +
+        tile(c.time?.users_fast_converge, "Fast convergence") +
+        tile(c.time?.users_slow_converge, "Slow convergence") +
+        tile(c.time?.users_without_convergence, "Without convergence");
+      $("peConvergenceHist").innerHTML =
+        `<div class="muted" style="font-size:12px;margin:12px 0 4px">Theta distribution</div>` +
+        hbar(c.thetaHistogram, (b) => Number(b.bucket_lo).toFixed(2)) +
+        `<div class="muted" style="font-size:12px;margin:12px 0 4px">Sigma distribution</div>` +
+        hbar(c.sigmaHistogram, (b) => Number(b.bucket_lo).toFixed(2));
+    }
+
+    function peDrift(pe) {
+      const d = pe.drift?.stats || {};
+      $("peDriftGrid").innerHTML =
+        tile(d.mean_signed ?? "—", "Mean drift (signed)") + tile(d.mean_abs ?? "—", "Mean drift (abs)") +
+        tile(d.abs_p50 ?? "—", "p50 |Δ|") + tile(d.abs_p90 ?? "—", "p90 |Δ|") +
+        tile(d.abs_p95 ?? "—", "p95 |Δ|") + tile(d.abs_p99 ?? "—", "p99 |Δ|");
+      $("peDriftHist").innerHTML =
+        `<div class="muted" style="font-size:12px;margin:12px 0 4px">Drift histogram (signed)</div>` +
+        hbar(pe.drift?.histogram, (b) => Number(b.bucket_lo).toFixed(2));
+      const top = pe.drift?.top || [];
+      $("peDriftTop").innerHTML = top.length
+        ? `<div class="muted" style="font-size:12px;margin:12px 0 4px">Top divergences</div><table>
+            <tr><th>User</th><th>Drift (signed)</th><th>Drift (abs)</th></tr>
+            ${top.map((t) => `<tr><td class="muted"><code>${esc((t.userHash || "—").slice(0, 12))}…</code></td><td>${t.drift_signed}</td><td>${t.drift_abs}</td></tr>`).join("")}
+          </table>`
+        : `<p class="muted" style="font-size:13px">No divergences recorded.</p>`;
+    }
+
+    function peRegime(pe) {
+      const r = pe.regimeShift?.summary || {};
+      $("peRegimeGrid").innerHTML =
+        tile(r.detections_total ?? 0, "Detections") +
+        tile(r.users_with_regime_shift ?? 0, "Users affected") +
+        tile(pe.regimeShift?.apparentFalsePositives ?? 0, "Apparent false positives");
+    }
+
+    function peOutliers(pe) {
+      const o = pe.outliers?.summary || {};
+      $("peOutliersGrid").innerHTML =
+        tile(o.dampened_total ?? 0, "Outliers dampened") +
+        tile(o.users_with_outliers ?? 0, "Users affected") +
+        tile(o.mean_abs_impact ?? "—", "Mean abs impact");
+      const top = pe.outliers?.top || [];
+      $("peOutliersTop").innerHTML = top.length
+        ? `<table><tr><th>User</th><th>Outlier count</th></tr>
+            ${top.map((t) => `<tr><td class="muted"><code>${esc((t.userHash || "—").slice(0, 12))}…</code></td><td>${t.outlier_count}</td></tr>`).join("")}
+          </table>`
+        : `<p class="muted" style="font-size:13px">No outliers recorded.</p>`;
+    }
+
+    function peIntegrity(list) {
+      if (!list.length) { $("peIntegrity").innerHTML = `<p class="muted" style="font-size:13px">No integrity data.</p>`; return; }
+      const glyph = { PASS: "✓", WARNING: "!", FAIL: "✕" };
+      const color = { PASS: "var(--green)", WARNING: "var(--orange)", FAIL: "var(--red)" };
+      $("peIntegrity").innerHTML = `<table>
+        <tr><th>Check</th><th>Status</th><th>Findings</th></tr>
+        ${list.map((c) => `<tr>
+          <td>${esc(c.label)}</td>
+          <td style="color:${color[c.status] || "var(--muted)"};font-weight:700">${glyph[c.status] || "?"} ${c.status}</td>
+          <td>${c.findingCount}</td>
+        </tr>`).join("")}
+      </table>`;
+    }
+
+    function peTelemetry(op) {
+      if (!op) {
+        $("peTelemetryNote").innerHTML = "";
+        $("peTelemetryGrid").innerHTML = `<p class="muted" style="font-size:13px">No operational telemetry yet.</p>`;
+        return;
+      }
+      $("peTelemetryNote").innerHTML = esc(op.note || "");
+      const pct = (v) => (v != null ? (100 * v).toFixed(1) + "%" : "—");
+      const ms = (v) => (v != null ? v.toFixed(1) + "ms" : "—");
+      $("peTelemetryGrid").innerHTML =
+        tile(pct(op.rpcSuccessRate), "RPC success (ephemeral)") +
+        tile(pct(op.rpcErrorRate), "RPC error (ephemeral)") +
+        tile(pct(op.shadowAppliedRate), "Applied (ephemeral)") +
+        tile(pct(op.shadowSkippedRate), "Skipped (ephemeral)") +
+        tile(ms(op.latencyP50), "Latency p50 (ephemeral)") +
+        tile(ms(op.latencyP95), "Latency p95 (ephemeral)") +
+        tile(ms(op.latencyP99), "Latency p99 (ephemeral)");
+    }
+
+    function peRecommendations(list) {
+      if (!list.length) { $("peRecommendations").innerHTML = `<p class="muted" style="font-size:13px">No recommendations.</p>`; return; }
+      $("peRecommendations").innerHTML = list.map((r) =>
+        `<div class="rec-item rec-${r.severity}">${esc(r.message)}</div>`
+      ).join("");
     }
 
     function renderFlags(list) {
