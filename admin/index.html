@@ -143,6 +143,12 @@
         <!-- FASE IPS-009 (Writing pass) — same isolated pattern as Listening. -->
         <div class="pe-sub">Control &amp; Validation · Writing</div>
         <div id="peModeStatusWriting" class="grid"></div>
+        <!-- FASE SPEAKING-PEV2-INTEGRATION-001 — Speaking is PEV2's 4th skill.
+             Same isolated pattern again. Speaking ships intentionally OFF: its
+             shadow flag row does not exist, so this block is expected to read
+             flag=off / no validation until it is deliberately enabled. -->
+        <div class="pe-sub">Control &amp; Validation · Speaking</div>
+        <div id="peModeStatusSpeaking" class="grid"></div>
         <div id="peUnavailable"></div>
         <div id="peBody" class="hidden">
           <div id="peSummaryGrid" class="grid"></div>
@@ -237,7 +243,7 @@
       // NEVER take down the rest of this page via Promise.all rejecting.
       // Every other call below still throws normally, so the existing
       // "a 403 here means not-admin" check in login() is unaffected.
-      const [users, learning, usage, health, reports, retention, deps, flags, audit, pe, ms, msListening, msWriting] = await Promise.all([
+      const [users, learning, usage, health, reports, retention, deps, flags, audit, pe, ms, msListening, msWriting, msSpeaking] = await Promise.all([
         api("/api/admin/metrics/users"),
         api("/api/admin/metrics/learning"),
         api("/api/admin/metrics/usage"),
@@ -253,7 +259,13 @@
         api("/api/admin/proficiency/mode-status?skill=reading").catch((e) => ({ __msError: e.message })),
         // FASE IPS-009 — Listening's mode-status, isolated the same way.
         api("/api/admin/proficiency/mode-status?skill=listening").catch((e) => ({ __msError: e.message })),
-        api("/api/admin/proficiency/mode-status?skill=writing").catch((e) => ({ __msError: e.message }))
+        api("/api/admin/proficiency/mode-status?skill=writing").catch((e) => ({ __msError: e.message })),
+        // FASE SPEAKING-PEV2-INTEGRATION-001 — Speaking's mode-status, isolated
+        // the same way. Note: a backend that predates Speaking's addition to
+        // PROFICIENCY_SKILL_CONFIG silently falls back to Reading's config, so
+        // this tile reading "shadow_v2" instead of "speaking_v1" means the
+        // backend deploy has not landed yet — not that Speaking is misconfigured.
+        api("/api/admin/proficiency/mode-status?skill=speaking").catch((e) => ({ __msError: e.message }))
       ]);
 
       $("usersGrid").innerHTML =
@@ -309,6 +321,7 @@
       renderModeStatus(ms, "peModeStatus");
       renderModeStatus(msListening, "peModeStatusListening");
       renderModeStatus(msWriting, "peModeStatusWriting");
+      renderModeStatus(msSpeaking, "peModeStatusSpeaking");
       renderProficiencyEngine(pe);
     }
 
