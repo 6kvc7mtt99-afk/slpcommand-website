@@ -104,11 +104,36 @@
     <header>
       <h1>SLP Command · Operations</h1>
       <div class="row">
+        <!-- FASE HOME-PRODUCT-REDESIGN-001 (FASE 11-14) — Simple/Advanced toggle.
+             Both modes use the SAME session token and the SAME already-fetched
+             data from loadAll()'s Promise.all — Simple is a friendlier rendering
+             layer, not a separate (or lower-security) data path. Advanced is
+             completely unchanged below. -->
+        <button id="simpleModeBtn" class="ghost">Simple</button>
+        <button id="advancedModeBtn" class="ghost">Advanced</button>
         <button id="refreshBtn" class="ghost">Refresh</button>
         <button id="logoutBtn" class="ghost">Sign out</button>
       </div>
     </header>
     <main>
+      <!-- ── Simple Mode ─────────────────────────────────────────────────── -->
+      <div id="simpleView" class="hidden">
+        <div class="warn">Simple view — plain-language summary. Every figure below comes from the
+          same data as Advanced; nothing here is estimated or invented. Figures not yet available
+          from the backend are shown as "Not available yet", never guessed.</div>
+        <div class="section"><h3>System status</h3><div id="simpleStatus" class="grid"></div></div>
+        <div class="section"><h3>Users</h3><div id="simpleUsers" class="grid"></div></div>
+        <div class="section"><h3>Usage per skill (last 30 days)</h3><div id="simpleUsage" class="grid"></div></div>
+        <div class="section"><h3>Subscriptions</h3><div id="simpleSubs" class="grid"></div></div>
+        <div class="section"><h3>AI cost</h3><div id="simpleCost" class="grid"></div></div>
+        <div class="section"><h3>Proficiency engine (per skill)</h3><div id="simplePE" class="grid"></div></div>
+        <div class="section"><h3>Data integrity &amp; alerts</h3><div id="simpleAlerts"></div></div>
+        <p class="muted" style="font-size:12px">Need the raw numbers, flags or logs? Switch to
+          <a href="#" onclick="setMode('advanced');return false;" style="color:var(--accent)">Advanced</a>.</p>
+      </div>
+
+      <!-- ── Advanced Mode (unchanged) ───────────────────────────────────── -->
+      <div id="advancedView">
       <div class="warn">Crash &amp; error trends (Sentry) and product funnels (PostHog) live in their
         own dashboards. This panel shows platform data owned by the backend.</div>
 
@@ -185,6 +210,7 @@
       </div>
 
       <div class="section"><h3>Audit Log</h3><div id="auditTable"></div></div>
+      </div>
     </main>
   </div>
 
@@ -323,6 +349,120 @@
       renderModeStatus(msWriting, "peModeStatusWriting");
       renderModeStatus(msSpeaking, "peModeStatusSpeaking");
       renderProficiencyEngine(pe);
+
+      // FASE HOME-PRODUCT-REDESIGN-001 (FASE 11-14) — Simple view is rendered
+      // from the SAME already-fetched objects above. No new fetches.
+      renderSimpleView({ users, learning, usage, health, reports, retention, deps, pe,
+        ms, msListening, msWriting, msSpeaking });
+    }
+
+    // ── FASE 11-14 — Admin Simple Mode ────────────────────────────────────
+    // Plain-language translation layer over data ALREADY fetched by loadAll's
+    // Promise.all. Never fabricates a figure: anything the backend doesn't
+    // expose (MRR, churn, per-plan user counts, AI cost) renders as "Not
+    // available yet" rather than an invented number. Same admin JWT / same
+    // requireAdminUser-gated endpoints as Advanced — this is a rendering
+    // layer, not a separate or lower-security data path.
+    const NA = '<span class="muted">Not available yet</span>';
+
+    function simpleTile(value, label, info) {
+      const infoHtml = info
+        ? ` <span class="muted" title="${esc(info)}" style="cursor:help">ⓘ</span>` : "";
+      return `<div class="tile"><div class="n">${value}</div><div class="l">${label}${infoHtml}</div></div>`;
+    }
+
+    function modeStatusToSimple(ms, skillLabel) {
+      if (!ms || ms.__msError) {
+        return simpleTile(NA, `${skillLabel} — proficiency engine`,
+          "Mode/validation status not deployed in this environment yet.");
+      }
+      const rollout = ms.shadowFlagEnabled ? `Enabled for ${ms.rolloutPercent ?? 0}% of users` : "Disabled";
+      const integrityText = (ms.validation && ms.validation.status)
+        ? (ms.validation.status === "PASS" ? "Healthy" : `${esc(ms.validation.status.replace(/_/g, " "))}`)
+        : "Not available yet";
+      return `<div class="tile">
+        <div class="l" style="font-weight:600;margin-bottom:6px">${esc(skillLabel)}</div>
+        <div class="l">Rollout: <b>${rollout}</b>
+          <span class="muted" title="Percentage of users receiving the new proficiency engine for this skill." style="cursor:help">ⓘ</span></div>
+        <div class="l">Data integrity: <b>${integrityText}</b>
+          <span class="muted" title="Whether the engine's own consistency checks are passing." style="cursor:help">ⓘ</span></div>
+      </div>`;
+    }
+
+    function renderSimpleView(d) {
+      const { users, learning, usage, health, reports, retention, deps, pe, ms, msListening, msWriting, msSpeaking } = d;
+
+      // System status
+      const modeClass = "mode-" + (deps.mode || "unknown");
+      const statusLabel = deps.mode === "healthy" ? "All systems normal"
+        : deps.mode === "degraded" ? "Degraded — some features may be slow"
+        : deps.mode === "outage" ? "Outage — investigate now" : "Unknown";
+      $("simpleStatus").innerHTML =
+        `<div class="tile"><div class="n"><span class="mode-banner ${modeClass}">${statusLabel}</span></div>
+          <div class="l">Backend system status</div></div>` +
+        simpleTile(health.status5xx ?? 0, "Server errors (since last deploy)",
+          "Count of 5xx server errors — should be near zero.") +
+        simpleTile(reports.open ?? 0, "Open user reports");
+
+      // Users — real totals are available; a Free/Pro split is NOT exposed by
+      // /api/admin/metrics/users today, so it is explicitly marked unavailable
+      // rather than guessed from entitlements data this page doesn't fetch.
+      $("simpleUsers").innerHTML =
+        simpleTile(users.total ?? NA, "Total users") +
+        simpleTile(users.activeToday ?? NA, "Active today") +
+        simpleTile(users.active30d ?? NA, "Active in last 30 days") +
+        simpleTile(NA, "Free vs Pro split",
+          "The users metrics endpoint does not currently break users down by plan.");
+
+      // Usage per skill
+      const u = usage.last30dAttemptsByModule || {};
+      $("simpleUsage").innerHTML =
+        simpleTile(u.reading ?? NA, "Reading sessions") +
+        simpleTile(u.listening ?? NA, "Listening sessions") +
+        simpleTile(u.writing ?? NA, "Writing sessions") +
+        simpleTile(u.speaking ?? NA, "Speaking sessions");
+
+      // Subscriptions — no MRR/subscription-count endpoint exists yet.
+      $("simpleSubs").innerHTML = simpleTile(NA, "Active Pro subscriptions",
+        "No subscription/revenue endpoint is exposed to /api/admin yet. This is intentionally left blank rather than estimated.");
+
+      // AI cost — never fabricated.
+      $("simpleCost").innerHTML = simpleTile(NA, "AI cost (last 30 days)",
+        "No AI-cost metric is exposed to /api/admin yet.");
+
+      // Proficiency engine, per skill, in plain language.
+      $("simplePE").innerHTML =
+        modeStatusToSimple(ms, "Reading") +
+        modeStatusToSimple(msListening, "Listening") +
+        modeStatusToSimple(msWriting, "Writing") +
+        modeStatusToSimple(msSpeaking, "Speaking");
+
+      // Alerts — integrity findings translated, plus open reports.
+      const findings = (pe && !pe.__peError && pe.integrity) ? pe.integrity : null;
+      let alertsHtml = "";
+      if (!findings) {
+        alertsHtml += `<p class="muted" style="font-size:13px">Proficiency engine integrity data not available yet in this environment.</p>`;
+      } else {
+        const failing = findings.filter((c) => c.status !== "PASS");
+        alertsHtml += failing.length
+          ? `<div class="warn">Data integrity: ${failing.length} issue${failing.length === 1 ? "" : "s"} detected</div>
+             <table><tr><th>Check</th><th>Status</th></tr>${failing.map(f =>
+               `<tr><td>${esc(f.name || f.check || "—")}</td><td>${esc(f.status)}</td></tr>`).join("")}</table>`
+          : `<p style="font-size:13px;color:var(--green)">Data integrity: Healthy — all checks passing.</p>`;
+      }
+      if ((reports.open ?? 0) > 0) {
+        alertsHtml += `<p style="font-size:13px;margin-top:10px">${reports.open} open user report${reports.open === 1 ? "" : "s"} awaiting review.</p>`;
+      }
+      $("simpleAlerts").innerHTML = alertsHtml;
+    }
+
+    function setMode(mode) {
+      const isSimple = mode === "simple";
+      $("simpleView").classList.toggle("hidden", !isSimple);
+      $("advancedView").classList.toggle("hidden", isSimple);
+      $("simpleModeBtn").style.opacity = isSimple ? "1" : ".6";
+      $("advancedModeBtn").style.opacity = isSimple ? ".6" : "1";
+      try { localStorage.setItem("adminViewMode", mode); } catch (e) {}
     }
 
     // ── FASE IPS-007 Incremento 3 — read-only mode + validation status ────────
@@ -585,6 +725,13 @@
     $("logoutBtn").onclick = logout;
     $("refreshBtn").onclick = () => loadAll().catch(e => alert(e.message));
     $("password").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+    $("simpleModeBtn").onclick = () => setMode("simple");
+    $("advancedModeBtn").onclick = () => setMode("advanced");
+    // Default to Advanced (today's existing behavior, unchanged) unless the
+    // admin previously chose Simple on this device.
+    let savedMode = "advanced";
+    try { savedMode = localStorage.getItem("adminViewMode") || "advanced"; } catch (e) {}
+    setMode(savedMode);
   </script>
 </body>
 </html>
