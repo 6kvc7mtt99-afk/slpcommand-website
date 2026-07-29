@@ -87,6 +87,28 @@ body {
 .store-badge { margin-top: 40px; color: var(--muted); font-size: 13px; }
 .store-badge p { margin-bottom: 6px; }
 
+/* ─── SCREENSHOT GALLERY ─── */
+.screenshot-gallery {
+  margin-top: 56px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding-bottom: 8px;
+}
+.screenshot-gallery::-webkit-scrollbar { display: none; }
+.screenshot-track {
+  display: flex; gap: 20px; padding: 4px 24px;
+  justify-content: flex-start; width: max-content; margin: 0 auto;
+}
+.screenshot-frame {
+  flex: 0 0 auto; width: 220px; text-align: center;
+}
+.screenshot-frame img {
+  width: 100%; border-radius: 20px; border: 6px solid var(--ink);
+  box-shadow: 0 16px 40px rgba(0,0,0,.18); display: block;
+  background: var(--ink);
+}
+.screenshot-frame figcaption {
+  margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--ink2);
+}
+
 /* ─── FEATURES ─── */
 .features { padding: 72px 24px; background: var(--bg); }
 .features-inner { max-width: var(--hero-max); margin: 0 auto; }
@@ -121,6 +143,63 @@ body {
 }
 .feature-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
 .feature-card p { font-size: 14px; color: var(--muted); line-height: 1.55; }
+
+/* ─── PRICING ─── */
+.pricing { padding: 72px 24px; background: var(--bg2); border-top: 1px solid var(--line); }
+.pricing-inner { max-width: var(--hero-max); margin: 0 auto; }
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px; max-width: 720px; margin: 0 auto;
+}
+.price-card {
+  background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 32px 28px; position: relative;
+}
+.price-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.price-value {
+  font-size: 38px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; color: var(--ink);
+}
+.price-value span { font-size: 15px; font-weight: 500; color: var(--muted); }
+.price-desc { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+.price-features { list-style: none; padding: 0; margin-bottom: 24px; }
+.price-features li {
+  font-size: 14px; color: var(--ink2); padding: 9px 0 9px 26px; position: relative;
+  border-top: 1px solid var(--line);
+}
+.price-features li:first-child { border-top: none; }
+.price-features li::before {
+  content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700;
+}
+.price-card-featured {
+  border-color: var(--accent); border-width: 2px;
+  box-shadow: 0 12px 32px rgba(45,91,227,.14);
+}
+.price-badge {
+  position: absolute; top: -12px; left: 28px;
+  background: var(--accent); color: #fff; font-size: 11px; font-weight: 700;
+  padding: 4px 12px; border-radius: 100px; letter-spacing: .03em;
+}
+.price-cta { width: 100%; justify-content: center; margin-bottom: 10px; }
+.price-fine { font-size: 12px; color: var(--muted); text-align: center; }
+
+/* ─── FAQ ─── */
+.faq { padding: 72px 24px; background: var(--bg); }
+.faq-inner { max-width: 680px; margin: 0 auto; }
+.faq-list { margin-top: 32px; display: flex; flex-direction: column; gap: 12px; }
+.faq-item {
+  border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px;
+  background: var(--bg2);
+}
+.faq-item summary {
+  cursor: pointer; font-weight: 600; font-size: 15.5px; color: var(--ink);
+  list-style: none; display: flex; align-items: center; justify-content: space-between;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: "+"; font-size: 20px; color: var(--accent); font-weight: 400; margin-left: 12px;
+}
+.faq-item[open] summary::after { content: "–"; }
+.faq-item p { margin: 14px 0 0; font-size: 14.5px; color: var(--muted); line-height: 1.6; }
 
 /* ─── HOW IT WORKS ─── */
 .how { padding: 72px 24px; background: var(--bg2); border-top: 1px solid var(--line); }
@@ -233,10 +312,13 @@ table.legal-table tr:last-child td { border-bottom: none; }
   .site-footer { background: #000; }
   .disclaimer-strip { background: #1e1a08; border-color: #52430d; color: #c8a83a; }
   .site-header { background: var(--bg); }
+  .screenshot-frame img { border-color: #000; box-shadow: 0 16px 40px rgba(0,0,0,.5); }
 }
 
 @media (max-width: 600px) {
   .hero { padding: 56px 20px 48px; }
   .site-header nav { display: none; }
   .step { flex-direction: column; gap: 10px; }
+  .screenshot-frame { width: 170px; }
+  .price-card { padding: 26px 22px; }
 }
