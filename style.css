@@ -181,6 +181,7 @@ body {
 }
 .price-cta { width: 100%; justify-content: center; margin-bottom: 10px; }
 .price-fine { font-size: 12px; color: var(--muted); text-align: center; }
+.price-footnote { max-width: 620px; margin: 24px auto 0; text-align: center; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
 
 /* ─── FAQ ─── */
 .faq { padding: 72px 24px; background: var(--bg); }
