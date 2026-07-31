@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Subprocessors — SLP Command</title>
+<title>Subprocessors and Third Parties — SLP Command</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -28,20 +28,56 @@
     </a>
   </div>
 
-  <h1>Subprocessors</h1>
-  <p class="updated">Last updated: 12 July 2026</p>
+  <h1>Subprocessors and Third Parties</h1>
+  <p class="updated">Last updated: 31 July 2026</p>
 
-  <p>SLP Command uses the following sub-processors to deliver the Service. Each is bound by a data processing agreement requiring appropriate technical and organisational safeguards. This page is kept current — any material change (addition, removal, or change of purpose) is reflected here and, for changes affecting existing users, notified per the <a href="privacy">Privacy Policy</a>.</p>
+  <p>This page distinguishes between two different kinds of third party involved in the Service: (1) processors that handle personal data strictly on SLP Command's behalf, under a data processing agreement and SLP Command's instructions, and (2) independent platforms that process certain data for their own purposes, under their own terms, principally Apple in its role as operator of the App Store. This page is kept current — any material change is reflected here and, for changes affecting existing users, notified per the <a href="privacy">Privacy Policy</a>.</p>
 
+  <h2>1. Processors — data handled on SLP Command's instructions</h2>
+  <p>The following providers process personal data on SLP Command's behalf, under a data processing agreement requiring appropriate technical and organisational safeguards, for the purposes and data categories described below.</p>
+
+  <h3>Infrastructure and application data</h3>
   <div class="legal-table-wrap">
   <table class="legal-table">
-    <tr><th>Sub-processor</th><th>Purpose</th><th>Data processed</th><th>Location</th><th>Role</th><th>Transfer safeguard</th></tr>
-    <tr><td>Supabase</td><td>Application database, user authentication, audio file storage</td><td>Email, password hash, learning progress, scores, Speaking audio</td><td>EU/US depending on project region</td><td>Processor</td><td>SCC (Art. 46 GDPR) where applicable</td></tr>
-    <tr><td>OpenAI</td><td>Speech-to-text transcription (Whisper) and AI evaluation (GPT)</td><td>Speaking audio, Speaking/Writing text, exercise prompts</td><td>United States</td><td>Processor / Sub-processor</td><td>Standard Contractual Clauses</td></tr>
-    <tr><td>ElevenLabs</td><td>Text-to-speech generation for Listening exercises</td><td>Exercise text only — no personal data</td><td>United States</td><td>Processor</td><td>Standard Contractual Clauses</td></tr>
-    <tr><td>Render</td><td>Backend application hosting</td><td>Technical logs, hashed IP addresses, API traffic</td><td>United States</td><td>Processor</td><td>Standard Contractual Clauses</td></tr>
-    <tr><td>Sentry</td><td>Application error and crash diagnostics</td><td>Technical error data, stripped of request bodies and authorization headers — never personal content or audio</td><td>United States/EU depending on project configuration</td><td>Processor</td><td>Standard Contractual Clauses</td></tr>
-    <tr><td>PostHog</td><td>Pseudonymous product usage analytics (feature/screen usage, app version)</td><td>Pseudonymous user identifier and usage events only — never written answers, audio, transcripts, or account email</td><td>United States</td><td>Processor</td><td>Standard Contractual Clauses</td></tr>
+    <tr><th>Provider</th><th>Purpose</th><th>Data processed</th><th>Location</th><th>Transfer safeguard</th></tr>
+    <tr><td>Supabase</td><td>Application database, user authentication, audio file storage</td><td>Email, password hash, learning progress, scores, Speaking audio</td><td>EU/US depending on project region</td><td>SCC (Art. 46 GDPR) where applicable</td></tr>
+    <tr><td>Render</td><td>Backend application hosting</td><td>Technical logs, hashed IP addresses, API traffic</td><td>United States</td><td>Standard Contractual Clauses</td></tr>
+  </table>
+  </div>
+
+  <h3>AI providers</h3>
+  <div class="legal-table-wrap">
+  <table class="legal-table">
+    <tr><th>Provider</th><th>Purpose</th><th>Data processed</th><th>Location</th><th>Transfer safeguard</th></tr>
+    <tr><td>OpenAI</td><td>Speech-to-text transcription (Whisper) and AI evaluation (GPT)</td><td>Speaking audio, Speaking/Writing text, exercise prompts</td><td>United States</td><td>Standard Contractual Clauses</td></tr>
+    <tr><td>ElevenLabs</td><td>Text-to-speech generation for Listening exercises</td><td>Exercise text only — no personal data</td><td>United States</td><td>Standard Contractual Clauses</td></tr>
+  </table>
+  </div>
+
+  <h3>Diagnostics and analytics</h3>
+  <div class="legal-table-wrap">
+  <table class="legal-table">
+    <tr><th>Provider</th><th>Purpose</th><th>Data processed</th><th>Location</th><th>Transfer safeguard</th></tr>
+    <tr><td>Sentry</td><td>Application error and crash diagnostics</td><td>Technical error data, stripped of request bodies and authorization headers — never personal content or audio</td><td>United States/EU depending on project configuration</td><td>Standard Contractual Clauses</td></tr>
+    <tr><td>PostHog</td><td>Pseudonymous product usage analytics (feature/screen usage, app version)</td><td>Pseudonymous user identifier and usage events only — never written answers, audio, transcripts, or account email</td><td>United States</td><td>Standard Contractual Clauses</td></tr>
+  </table>
+  </div>
+
+  <h3>Subscription-management technology</h3>
+  <div class="legal-table-wrap">
+  <table class="legal-table">
+    <tr><th>Provider</th><th>Purpose</th><th>Data processed</th><th>Location</th><th>Transfer safeguard</th></tr>
+    <tr><td>RevenueCat</td><td>Validates App Store purchases with Apple, keeps track of subscription status (active, renewed, expired, cancelled) and synchronises it with your account, so the app can grant or withdraw Professional-plan access accordingly</td><td>A technical subscriber identifier linked to your account, App Store product identifier, App Store transaction identifiers, subscription status, and purchase/renewal/expiration dates. RevenueCat does not receive your card number or other full payment credentials — those are held by Apple.</td><td>United States</td><td>Standard Contractual Clauses, per RevenueCat's Data Processing Addendum</td></tr>
+  </table>
+  </div>
+  <p class="note">SLP Command engages RevenueCat as a processor of subscriber data for this specific purpose, on the basis of RevenueCat's published Data Processing Addendum. This does not exclude that RevenueCat, like most technology providers, may also process certain data for its own operational purposes (e.g. service security, aggregated product metrics) under its own privacy policy, to the extent disclosed there.</p>
+
+  <h2>2. Independent platforms — not processors of SLP Command</h2>
+  <p>Apple Inc. operates the App Store, through which the app is distributed and through which any purchase of SLP Command Professional is made. Apple is <strong>not</strong> a processor acting on SLP Command's instructions for this purpose: Apple determines its own purposes and means for operating the App Store, collecting payment, and administering your Apple ID and subscription, under Apple's own terms and privacy policy.</p>
+  <div class="legal-table-wrap">
+  <table class="legal-table">
+    <tr><th>Provider</th><th>Role</th><th>What SLP Command receives</th><th>What Apple handles independently</th></tr>
+    <tr><td>Apple Inc. (App Store)</td><td>Independent party for app distribution and payment — not SLP Command's processor</td><td>Only the technical information necessary to recognise a valid purchase, grant Professional-plan access, process a restore, and provide support — received via RevenueCat, not directly from Apple, and never including your card number.</td><td>Your Apple ID account, payment instrument and full payment details, purchase history across all your apps, subscription billing and renewal, and refunds — all governed by <a href="https://www.apple.com/legal/privacy/">Apple's own Privacy Policy</a> and App Store terms.</td></tr>
   </table>
   </div>
 

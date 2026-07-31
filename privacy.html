@@ -29,7 +29,7 @@
   </div>
 
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: 12 July 2026 · Controller: SLP Command · <a href="mailto:privacy@slpcommand.com">privacy@slpcommand.com</a></p>
+  <p class="updated">Last updated: 31 July 2026 · Controller: SLP Command · <a href="mailto:privacy@slpcommand.com">privacy@slpcommand.com</a></p>
 
   <p>This Privacy Policy explains what personal data SLP Command processes, why, on what legal basis, with whom it is shared, how long it is retained, and what rights you have under the General Data Protection Regulation (EU) 2016/679 ("GDPR") and Spanish Organic Law 3/2018 (LOPDGDD).</p>
 
@@ -42,6 +42,7 @@
     <li><strong>Learning content:</strong> written responses (Writing), audio recordings (Speaking — optional, consent-based), and AI-generated transcripts of that audio.</li>
     <li><strong>Performance data:</strong> scores, estimated SLP levels, exercise history, and the derived Adaptive Coach / Intelligence Dashboard insights.</li>
     <li><strong>Support data:</strong> if you submit a report via "Report a Problem", we process the category and free-text description you provide, together with your app version, iOS version, and the screen name.</li>
+    <li><strong>Subscription and purchase data:</strong> if you subscribe to SLP Command Professional, we process a technical subscriber identifier linked to your account, the App Store product identifier, App Store transaction identifiers, subscription status, and purchase/renewal/expiration dates. This information reaches us through RevenueCat, our subscription-management technology provider — see §4. We do not receive or store your payment card number or other full payment credentials; your payment itself is handled directly by Apple as an independent party, not by us — see §4a.</li>
     <li><strong>Product usage data:</strong> pseudonymous, event-level analytics describing which features and screens you use (e.g. module opened, quiz completed, exam started), your app version, and a pseudonymous user identifier. This data <strong>never</strong> includes your written answers, audio, transcripts, or any content you submit.</li>
     <li><strong>Technical &amp; security data:</strong> a pseudonymous user identifier, IP address (processed transiently for rate-limiting and abuse prevention, and stored in hashed, non-reversible form in our security audit trail — see §6.5), device/app version, and crash or error diagnostics stripped of personal content.</li>
     <li><strong>Security audit trail:</strong> a limited, append-only log of security-relevant account events (e.g. login, account creation, account deletion) associated with a pseudonymous user identifier and a hashed IP address, retained according to the schedule in §6.5.</li>
@@ -56,7 +57,7 @@
   </ul>
 
   <h2>4. Sub-processors</h2>
-  <p>To deliver the Service, we share personal data with the following processors, each bound by a data processing agreement. See the full <a href="subprocessors">Subprocessors</a> page for details.</p>
+  <p>To deliver the Service, we share personal data with the following processors, each bound by a data processing agreement requiring it to act only on our instructions. See the full <a href="subprocessors">Subprocessors and Third Parties</a> page for details.</p>
   <ul>
     <li><strong>Supabase</strong> — database, authentication, audio file storage.</li>
     <li><strong>OpenAI</strong> — Whisper (speech-to-text transcription) and GPT models (evaluation of Speaking and Writing responses across fluency, grammar, vocabulary, coherence and task achievement).</li>
@@ -64,8 +65,12 @@
     <li><strong>Render</strong> — backend API hosting.</li>
     <li><strong>Sentry</strong> — crash and error diagnostics. Request bodies and authorization headers are stripped before transmission; no personal content or audio is sent to Sentry.</li>
     <li><strong>PostHog</strong> — pseudonymous product usage analytics (feature/screen usage, app version). Never your written answers, audio, transcripts, or account email.</li>
+    <li><strong>RevenueCat</strong> — subscription-management technology provider; validates your App Store purchase and tracks subscription status so the app can grant Professional-plan access.</li>
   </ul>
   <p>We do not sell your personal data to any third party. We do not permit AI providers to use your Content to train their general-purpose models, except where you have given separate, explicit consent.</p>
+
+  <h2>4a. Apple — an independent party, not our processor</h2>
+  <p>Apple Inc. operates the App Store, through which the app is distributed and through which any subscription purchase is made. For that purchase, Apple is <strong>not</strong> a processor acting on our instructions: Apple determines the purposes and means of processing your payment, your Apple ID, and your purchase history itself, under Apple's own <a href="https://www.apple.com/legal/privacy/">Privacy Policy</a>. We only receive, via RevenueCat, the limited technical information described in §2 above — never your full payment details.</p>
 
   <h2>5. International transfers</h2>
   <p>Some of the providers listed above process data outside the European Economic Area, principally in the United States. Where this occurs, transfers rely on appropriate safeguards under Article 46 GDPR, including the European Commission's Standard Contractual Clauses and, where applicable, provider participation in the EU-US Data Privacy Framework.</p>
@@ -77,6 +82,7 @@
     <li><strong>Speaking audio recordings:</strong> retained only while you keep them. You can delete individual recordings from the App at any time. All audio is permanently removed when you delete your account.</li>
     <li><strong>Support requests:</strong> retained for 12 months from submission, or until account deletion, whichever comes first.</li>
     <li><strong>Diagnostic / crash logs:</strong> retained short-term only (typically 30–90 days).</li>
+    <li><strong>Subscription and billing records:</strong> while your account is active, we keep the subscription data described in §2. If you delete your account, the identifiers linking those records to you are removed and the remaining technical/financial fields are kept, dissociated from your account, only for as long as necessary for the purposes described in §3 of the <a href="data-retention">Data Retention Policy</a>.</li>
     <li><strong>Security audit trail (§6.5):</strong> by exception, security-relevant events (login, account creation, account deletion, administrative actions) are retained for <strong>12 months from the date of the event, irrespective of account deletion</strong>, on the basis of our legitimate interest (Art. 6.1.f) in investigating fraud, abuse and security incidents. This entry never contains your email, written content, audio or transcripts — only event type, a pseudonymous identifier, a hashed IP address, and a timestamp. Once your account is deleted, this identifier no longer resolves to any identifiable individual within our systems. Every entry is automatically and permanently purged 12 months after creation.</li>
   </ul>
 
