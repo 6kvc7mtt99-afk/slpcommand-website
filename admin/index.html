@@ -165,6 +165,53 @@
         <div id="v2Calibration" class="hidden"></div>
       </section>
 
+      <!-- PHASE ADMIN-V2-FINALIZE-001 — every remaining endpoint gets a view.
+           No orphan endpoints, no empty panels. -->
+      <section class="card">
+        <h3>Diagnose system</h3>
+        <p class="muted" id="dxVerdict" style="margin-top:-4px">Not run yet.</p>
+        <button id="dxRun" style="margin-bottom:10px">Diagnose System</button>
+        <div id="dxBody"></div>
+      </section>
+
+      <section class="card">
+        <h3>Recovery &amp; replay</h3>
+        <div id="recBody"></div>
+        <button id="replayRun" style="margin:10px 8px 0 0">Validate recovery (replay, read-only)</button>
+        <input id="replayUser" placeholder="user id (optional)" style="padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px">
+        <div id="replayBody" style="margin-top:10px"></div>
+      </section>
+
+      <section class="card">
+        <h3>Compare — Legacy vs V2</h3>
+        <div id="cmpBody"></div>
+      </section>
+
+      <section class="card">
+        <h3>Transition</h3>
+        <div id="trBody"></div>
+      </section>
+
+      <section class="card">
+        <h3>Corpus</h3>
+        <div id="corpusBody"></div>
+      </section>
+
+      <section class="card">
+        <h3>Simulator</h3>
+        <p class="muted" style="margin-top:-4px">Runs the certified engine on synthetic input. Writes nothing.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:10px">
+          <label style="font-size:12px">correct<br><input id="simC" type="number" value="15" style="width:70px;padding:5px"></label>
+          <label style="font-size:12px">incorrect<br><input id="simW" type="number" value="5" style="width:70px;padding:5px"></label>
+          <label style="font-size:12px">item level<br><input id="simL" type="number" value="3" step="1" style="width:70px;padding:5px"></label>
+          <label style="font-size:12px">days idle<br><input id="simD" type="number" value="0" style="width:70px;padding:5px"></label>
+          <label style="font-size:12px">constructs<br><input id="simK" type="number" value="4" style="width:70px;padding:5px"></label>
+          <label style="font-size:12px">exam items<br><input id="simE" type="number" value="1" style="width:70px;padding:5px"></label>
+          <button id="simRun">Simulate</button>
+        </div>
+        <div id="simBody"></div>
+      </section>
+
       <!-- FASE IPS-003B.4 — Proficiency Engine (shadow_v2). READ ONLY: every
            number here comes from GET /api/admin/proficiency/dashboard, gated
            by the SAME requireAdminUser guard as every other section on this
@@ -261,6 +308,12 @@
         // PHASE ADMIN-V2-001 — awaited separately so a missing endpoint on an
         // older deployment degrades this one section instead of the whole page.
         await loadV2();
+        // Every remaining panel. Each degrades on its own if its endpoint is
+        // missing, so one absent route never blanks the console.
+        await Promise.allSettled([loadRecovery(), loadCompare(), loadTransition(), loadCorpus()]);
+        $("dxRun").onclick = runDiagnose;
+        $("replayRun").onclick = runReplay;
+        $("simRun").onclick = runSimulate;
         $("loginView").classList.add("hidden");
         $("dashView").classList.remove("hidden");
       } catch (e) {
@@ -563,6 +616,126 @@
             `<details style="padding:3px 0"><summary><strong>${esc(x.key)}</strong> <span class="muted">${esc(x.status)} · ${esc(String(x.value))}</span></summary>
              <p style="margin:4px 0 0 16px">${esc(x.whatItDoes)}<br><span class="muted">If it changed: ${esc(x.ifItChanged)}</span></p></details>`).join("")}</div>`;
       }
+    }
+
+    // ── PHASE ADMIN-V2-FINALIZE-001 — renderers for every remaining endpoint ──
+    //
+    // Each one renders exactly what its endpoint returns and computes nothing.
+    // Where the backend states a limitation (a pool with no use_count, a metric
+    // that is not measured), the panel SHOWS that statement rather than hiding
+    // an absence behind a blank cell.
+
+    const dot = (st) => { const c = st === "green" ? "#16a34a" : st === "amber" ? "#d97706" : "#dc2626";
+      return `<span style="display:inline-block;width:8px;height:8px;border-radius:99px;background:${c};margin-right:6px"></span>`; };
+
+    async function runDiagnose() {
+      $("dxVerdict").textContent = "Running…";
+      let d; try { d = await api("/api/admin/v2/diagnose"); }
+      catch (e) { $("dxVerdict").textContent = "Diagnosis endpoint unavailable on this deployment."; return; }
+      $("dxVerdict").innerHTML = dot(d.healthy ? "green" : d.alerts.worst) + esc(d.verdict);
+      $("dxBody").innerHTML =
+        `<div style="font-size:12px;margin-bottom:10px">${d.subsystems.map(x =>
+          `<div style="display:flex;gap:8px;padding:2px 0">${dot(x.ok ? "green" : "amber")}
+           <span style="width:110px">${esc(x.id)}</span><strong style="width:150px">${esc(String(x.measured))}</strong>
+           <span class="muted">${esc(x.detail)}</span></div>`).join("")}</div>` +
+        (d.alerts.alerts.length
+          ? `<h4 style="margin:12px 0 4px">Alerts</h4><div style="font-size:12px">${d.alerts.alerts.map(a =>
+              `<div style="padding:4px 0;border-top:1px solid #f1f5f9">${dot(a.severity)}<strong>${esc(a.id)}</strong>
+               <span class="muted"> ×${a.count}</span><br><span style="margin-left:14px">${esc(a.detail)}</span>
+               <br><span style="margin-left:14px;color:#0284c7">→ ${esc(a.action)}</span></div>`).join("")}</div>`
+          : `<p class="muted" style="font-size:12px">No alerts. All ${d.alerts.checked.length} conditions checked.</p>`);
+    }
+
+    async function loadRecovery() {
+      let r; try { r = await api("/api/admin/v2/recovery"); } catch (e) { $("recBody").textContent = "Recovery endpoint unavailable."; return; }
+      $("recBody").innerHTML =
+        `<p style="font-size:13px">${dot(r.integrity)}${esc(r.explanation)}</p>
+         <p class="muted" style="font-size:12px">Sources rebuildable: ${r.coverage.covered}/${r.coverage.total} · corrupt rows: ${r.corrupt}</p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th>skill</th><th>observations</th><th>last event</th><th>state hash</th><th>age (d)</th></tr>
+           ${r.rows.map(x => `<tr><td>${esc(x.skill)}</td><td>${x.observations}</td><td>${esc(String(x.lastEventAt || "").slice(0,10))}</td>
+             <td style="font-family:monospace">${esc(String(x.hash || "—").slice(0,16))}</td><td>${x.ageDays}</td></tr>`).join("")}
+         </table></div>`;
+    }
+
+    async function runReplay() {
+      const u = $("replayUser").value.trim();
+      $("replayBody").textContent = "Replaying…";
+      let r; try { r = await api("/api/admin/v2/replay" + (u ? "?user=" + encodeURIComponent(u) : "")); }
+      catch (e) { $("replayBody").textContent = "Replay endpoint unavailable."; return; }
+      $("replayBody").innerHTML =
+        `<p style="font-size:13px">${dot(r.differing === 0 ? "green" : "red")}
+          ${r.identical} identical · ${r.differing} differing · ${r.missing} missing —
+          ${r.observationsProcessed} observations in ${r.durationMs} ms. ${esc(r.note)}</p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th>learner|skill</th><th>status</th><th>applied</th><th>live hash</th><th>rebuilt hash</th><th>differing fields</th></tr>
+           ${r.rows.map(x => `<tr><td>${esc(x.key)}</td><td>${esc(x.status)}</td><td>${x.applied}</td>
+             <td style="font-family:monospace">${esc(String(x.liveHash || "—").slice(0,12))}</td>
+             <td style="font-family:monospace">${esc(String(x.rebuiltHash || "—").slice(0,12))}</td>
+             <td>${esc((x.fields || []).join(", "))}</td></tr>`).join("")}
+         </table></div>`;
+    }
+
+    async function loadCompare() {
+      let c; try { c = await api("/api/admin/v2/compare"); } catch (e) { $("cmpBody").textContent = "Compare endpoint unavailable."; return; }
+      if (!c.rows.length) { $("cmpBody").innerHTML = `<p class="muted" style="font-size:12px">No difference records yet. COMPARE has not observed traffic.</p>`; return; }
+      $("cmpBody").innerHTML =
+        `<p class="muted" style="font-size:12px">${c.summary.n} records · worst ${c.summary.worst} · median ${c.summary.median} ·
+          ${c.summary.overNoticeable} above the ${c.summary.noticeableThreshold} threshold a learner would notice.</p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th></th><th>skill</th><th>legacy</th><th>V2</th><th>delta</th><th>meaning</th></tr>
+           ${c.rows.slice(0,40).map(x => `<tr><td>${dot(x.severity)}</td><td>${esc(x.skill)}</td><td>${esc(String(x.legacy))}</td>
+             <td>${esc(String(x.v2))}</td><td><strong>${x.delta}</strong></td><td class="muted">${esc(x.explanation)}</td></tr>`).join("")}
+         </table></div>`;
+    }
+
+    async function loadTransition() {
+      let t; try { t = await api("/api/admin/v2/transition"); } catch (e) { $("trBody").textContent = "Transition endpoint unavailable."; return; }
+      const c = t.census;
+      $("trBody").innerHTML =
+        `<p style="font-size:13px">${dot(t.active ? "amber" : "green")}${t.active
+          ? "A migration is in progress." : "No learner is mid-migration; this panel has nothing to report."}</p>
+         <p class="muted" style="font-size:12px">legacy ${c.legacy} · preview ${c.preview} · switched ${c.switched} · settled ${c.settled}
+           — ${c.noticeable} would notice the change, ${c.notNoticeable} would not.</p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th>skill</th><th>phase</th><th>legacy</th><th>V2</th><th>delta</th><th>noticeable</th><th>rollback</th></tr>
+           ${t.rows.map(x => `<tr><td>${esc(x.skill)}</td><td>${esc(x.phase)}</td><td>${esc(String(x.legacy))}</td><td>${esc(String(x.v2))}</td>
+             <td>${x.delta == null ? "—" : x.delta}</td><td>${x.noticeable ? "yes" : "no"}</td><td>${x.rollbackPossible ? "possible" : "—"}</td></tr>`).join("")}
+         </table></div>`;
+    }
+
+    async function loadCorpus() {
+      let k; try { k = await api("/api/admin/v2/corpus"); } catch (e) { $("corpusBody").textContent = "Corpus endpoint unavailable."; return; }
+      $("corpusBody").innerHTML = Object.entries(k.pools).map(([name, p]) => `
+        <div style="border-top:1px solid #e2e8f0;padding:10px 0">
+          <strong>${esc(name.replace(/_/g, " "))}</strong> <span class="muted" style="font-size:12px">${p.total} items</span>
+          <div style="font-size:12px;margin-top:4px">
+            <div>levels: ${Object.entries(p.byLevel).map(([l, n]) => `${esc(l)}=${n}`).join(" · ")}
+              ${p.coverage.expectedLevels ? ` — coverage ${p.coverage.complete ? "complete" : "INCOMPLETE"}` : ""}</div>
+            <div>utilisation: ${Math.round(p.utilisation.utilisationPct * 100)}% used · ${p.exposure.neverUsed} never used
+              · ${p.exposure.heavilyUsed} above the 90th percentile (${p.exposure.p90Uses ?? "—"} uses)</div>
+            <div>not used in ${p.ageing.staleDays} days: ${p.ageing.notUsedInAYear}</div>
+            ${p.exposure.note ? `<div class="muted">${esc(p.exposure.note)}</div>` : ""}
+            <div class="muted">discrimination: not available — ${esc(p.discrimination.why)}</div>
+          </div>
+        </div>`).join("");
+    }
+
+    async function runSimulate() {
+      const body = {
+        correct: +$("simC").value, incorrect: +$("simW").value, itemLevel: +$("simL").value,
+        daysSinceLast: +$("simD").value, constructs: +$("simK").value, examItems: +$("simE").value,
+      };
+      let r; try { r = await api("/api/admin/v2/simulate", { method: "POST", body: JSON.stringify(body) }); }
+      catch (e) { $("simBody").textContent = "Simulator endpoint unavailable."; return; }
+      const engineering = (localStorage.getItem("adminViewMode") || "advanced") !== "simple";
+      $("simBody").innerHTML =
+        `<p style="font-size:14px"><strong>Level ${esc(String(r.product.level))}</strong> ·
+          ${esc(r.product.confidence)} <span class="muted">— ${esc(r.product.why)}</span></p>
+         <div style="font-size:12px">${r.product.scale.steps.map(x =>
+           `<div style="opacity:${x.current ? 1 : .45}">${x.current ? "▶" : "&nbsp;"} ${"█".repeat(x.filled)}${"░".repeat(4 - x.filled)} ${esc(x.label)}</div>`).join("")}</div>
+         ${r.product.scale.nextStep ? `<p class="muted" style="font-size:12px">Next: ${esc(r.product.scale.nextStep.to)} — ${esc(r.product.scale.nextStep.how)}</p>` : ""}
+         ${engineering ? `<pre style="font-size:11px;background:#f8fafc;padding:8px;border-radius:6px;overflow-x:auto">${esc(JSON.stringify(r.engineering, null, 1))}</pre>` : ""}`;
     }
 
     function setMode(mode) {
