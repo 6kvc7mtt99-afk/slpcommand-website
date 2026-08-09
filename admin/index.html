@@ -168,6 +168,12 @@
       <!-- PHASE ADMIN-V2-FINALIZE-001 — every remaining endpoint gets a view.
            No orphan endpoints, no empty panels. -->
       <section class="card">
+        <h3>Startup configuration</h3>
+        <p class="muted" style="margin-top:-4px">Exactly what the boot log prints — no need to open Render logs.</p>
+        <div id="startupBody"></div>
+      </section>
+
+      <section class="card">
         <h3>Diagnose system</h3>
         <p class="muted" id="dxVerdict" style="margin-top:-4px">Not run yet.</p>
         <button id="dxRun" style="margin-bottom:10px">Diagnose System</button>
@@ -184,6 +190,7 @@
 
       <section class="card">
         <h3>Compare — Legacy vs V2</h3>
+        <button id="cmpExport" style="float:right">Export CSV</button>
         <div id="cmpBody"></div>
       </section>
 
@@ -310,7 +317,8 @@
         await loadV2();
         // Every remaining panel. Each degrades on its own if its endpoint is
         // missing, so one absent route never blanks the console.
-        await Promise.allSettled([loadRecovery(), loadCompare(), loadTransition(), loadCorpus()]);
+        await Promise.allSettled([loadStartup(), loadRecovery(), loadCompare(), loadTransition(), loadCorpus()]);
+        $("cmpExport").onclick = exportCompare;
         $("dxRun").onclick = runDiagnose;
         $("replayRun").onclick = runReplay;
         $("simRun").onclick = runSimulate;
@@ -628,6 +636,41 @@
     const dot = (st) => { const c = st === "green" ? "#16a34a" : st === "amber" ? "#d97706" : "#dc2626";
       return `<span style="display:inline-block;width:8px;height:8px;border-radius:99px;background:${c};margin-right:6px"></span>`; };
 
+    async function loadStartup() {
+      let r; try { r = await api("/api/admin/v2/startup"); } catch (e) { $("startupBody").textContent = "Startup endpoint unavailable."; return; }
+      $("startupBody").innerHTML =
+        `<p style="font-size:13px">${dot(r.valid ? "green" : "red")}
+          raw <code>${esc(r.rawPresent ? JSON.stringify(r.rawValue) : "(not set)")}</code>
+          → normalized <strong>${esc(r.normalizedValue)}</strong>
+          <span class="muted">· configuration hash ${esc(r.configurationHash)} · started ${esc(String(r.startedAt).slice(0,19))}</span></p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th>skill</th><th>resolved</th><th>source</th><th>variable</th><th>raw</th></tr>
+           ${r.skills.map(x => `<tr><td>${esc(x.skill)}</td><td><strong>${esc(x.resolved)}</strong></td><td>${esc(x.source)}</td>
+             <td style="font-family:monospace;font-size:11px">${esc(x.variable)}</td><td>${esc(String(x.rawValue ?? "—"))}</td></tr>`).join("")}
+         </table></div>
+         ${r.warnings.length ? r.warnings.map(w =>
+            `<p style="font-size:12px;margin:6px 0">${dot(w.severity)}${esc(w.detail)}<br>
+             <span style="margin-left:14px;color:#0284c7">→ ${esc(w.action)}</span></p>`).join("")
+          : `<p class="muted" style="font-size:12px">No configuration warnings.</p>`}
+         <details style="font-size:11px;margin-top:6px"><summary class="muted">Boot log lines</summary>
+           <pre style="background:#f8fafc;padding:8px;border-radius:6px;overflow-x:auto">${esc(r.logLines.join("\n"))}</pre></details>`;
+    }
+
+    async function exportCompare() {
+      // Same rows the screen shows: the endpoint formats what it already built.
+      try {
+        const res = await fetch(API + "/api/admin/v2/compare?format=csv", {
+          headers: { "Authorization": "Bearer " + token },
+        });
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "compare-legacy-vs-v2.csv";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } catch (e) { alert("Export failed: " + e.message); }
+    }
+
     async function runDiagnose() {
       $("dxVerdict").textContent = "Running…";
       let d; try { d = await api("/api/admin/v2/diagnose"); }
@@ -635,9 +678,12 @@
       $("dxVerdict").innerHTML = dot(d.healthy ? "green" : d.alerts.worst) + esc(d.verdict);
       $("dxBody").innerHTML =
         `<div style="font-size:12px;margin-bottom:10px">${d.subsystems.map(x =>
-          `<div style="display:flex;gap:8px;padding:2px 0">${dot(x.ok ? "green" : "amber")}
-           <span style="width:110px">${esc(x.id)}</span><strong style="width:150px">${esc(String(x.measured))}</strong>
-           <span class="muted">${esc(x.detail)}</span></div>`).join("")}</div>` +
+          `<div style="padding:3px 0;border-top:1px solid #f8fafc">
+             <div style="display:flex;gap:8px">${dot(x.severity || (x.ok ? "green" : "amber"))}
+               <span style="width:110px">${esc(x.id)}</span><strong style="width:170px">${esc(String(x.measured))}</strong>
+               <span class="muted">${esc(x.detail)}</span></div>
+             ${x.action ? `<div style="margin-left:124px;color:#0284c7">→ ${esc(x.action)}</div>` : ""}
+           </div>`).join("")}</div>` +
         (d.alerts.alerts.length
           ? `<h4 style="margin:12px 0 4px">Alerts</h4><div style="font-size:12px">${d.alerts.alerts.map(a =>
               `<div style="padding:4px 0;border-top:1px solid #f1f5f9">${dot(a.severity)}<strong>${esc(a.id)}</strong>
