@@ -151,6 +151,20 @@
         <div id="reportsTable"></div></div>
       <div class="section"><h3>Feature Flags</h3><div id="flagsTable"></div></div>
 
+      <!-- PHASE ADMIN-V2-001 — the V2 engine console.
+           Every figure comes from GET /api/admin/v2/overview. This section
+           performs NO calculation: the backend ships product and engineering as
+           two projections of the same rows, so the panel cannot invent a third
+           version of the truth. -->
+      <section class="card" id="v2Section">
+        <h3>Proficiency engine — V2 <span id="v2Mode" class="muted" style="text-transform:none;font-weight:400;letter-spacing:0"></span></h3>
+        <p class="muted" id="v2Headline" style="margin-top:-4px"></p>
+        <div id="v2Lights" style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"></div>
+        <div id="v2Skills"></div>
+        <div id="v2Engineering" class="hidden"></div>
+        <div id="v2Calibration" class="hidden"></div>
+      </section>
+
       <!-- FASE IPS-003B.4 — Proficiency Engine (shadow_v2). READ ONLY: every
            number here comes from GET /api/admin/proficiency/dashboard, gated
            by the SAME requireAdminUser guard as every other section on this
@@ -244,6 +258,9 @@
         token = data.accessToken;
         // Verify admin by loading data; a 403 here means "not an admin".
         await loadAll();
+        // PHASE ADMIN-V2-001 — awaited separately so a missing endpoint on an
+        // older deployment degrades this one section instead of the whole page.
+        await loadV2();
         $("loginView").classList.add("hidden");
         $("dashView").classList.remove("hidden");
       } catch (e) {
@@ -456,6 +473,98 @@
       $("simpleAlerts").innerHTML = alertsHtml;
     }
 
+    // ── PHASE ADMIN-V2-001 — the V2 engine console ───────────────────────────
+    //
+    // Renders `/api/admin/v2/overview`. The endpoint ships PRODUCT and
+    // ENGINEERING as two projections of the same rows; this function chooses
+    // which to show and computes nothing. If the endpoint is not deployed yet it
+    // says so plainly rather than rendering an empty shell.
+    let v2Data = null;
+
+    async function loadV2() {
+      try {
+        v2Data = await api("/api/admin/v2/overview");
+      } catch (e) {
+        $("v2Headline").textContent = "The V2 overview endpoint is not available on this deployment yet.";
+        return;
+      }
+      renderV2();
+    }
+
+    function esc(x) { return String(x == null ? "" : x).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
+
+    function renderV2() {
+      if (!v2Data) return;
+      const engineering = (localStorage.getItem("adminViewMode") || "advanced") !== "simple";
+      const p = v2Data.product, e = v2Data.engineering;
+
+      $("v2Mode").textContent = "· " + Object.values(p.bySkill).map(x => x.mode).filter((v, i, a) => a.indexOf(v) === i).join(" / ");
+      $("v2Headline").textContent = p.headline.summary + " " + p.headline.measurementsHeld + " measurements held.";
+
+      // BLOCK 9 — traffic lights, each with the reason the backend gave.
+      $("v2Lights").innerHTML = v2Data.health.lights.map(l => {
+        const c = l.status === "green" ? "#16a34a" : l.status === "amber" ? "#d97706" : "#dc2626";
+        return `<span style="display:inline-flex;align-items:center;gap:6px;border:1px solid ${c}33;background:${c}14;color:${c};padding:4px 10px;border-radius:999px;font-size:12px" title="${esc(l.detail)}">
+                  <span style="width:8px;height:8px;border-radius:99px;background:${c}"></span>${esc(l.id.replace(/_/g, " "))}</span>`;
+      }).join("");
+
+      // BLOCK 2/3 — per skill. PRODUCT never shows theta or sigma.
+      $("v2Skills").innerHTML = Object.keys(p.bySkill).map(skill => {
+        const s = p.bySkill[skill];
+        const conf = s.confidence, fr = s.freshness;
+        const bar = (label, n, total, color) => {
+          const pct = total > 0 ? Math.round(100 * n / total) : 0;
+          return `<div style="display:flex;align-items:center;gap:8px;margin:2px 0;font-size:12px">
+                    <span style="width:120px;color:#64748b">${esc(label)}</span>
+                    <span style="flex:1;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden">
+                      <span style="display:block;height:100%;width:${pct}%;background:${color}"></span></span>
+                    <span style="width:34px;text-align:right">${n}</span></div>`;
+        };
+        const measured = s.learnersMeasured;
+        return `<div style="border-top:1px solid #e2e8f0;padding:12px 0">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <strong style="text-transform:capitalize">${esc(skill)}</strong>
+            <span class="muted" style="font-size:12px">${esc(s.mode)} · ${measured} measured · ${s.learnersOnPreviousMethod} on the previous method</span>
+          </div>
+          <p class="muted" style="font-size:12px;margin:4px 0 8px">${esc(s.modeExplained)}</p>
+          ${bar("Reliable", conf.reliable, measured, "#16a34a")}
+          ${bar("Fairly reliable", conf.fairly_reliable, measured, "#65a30d")}
+          ${bar("Limited evidence", conf.limited_evidence, measured, "#0284c7")}
+          ${bar("Out of date", conf.out_of_date, measured, "#d97706")}
+          <div style="margin-top:6px">${bar("Fresh", fr.fresh, measured, "#16a34a")}${bar("Ageing", fr.ageing, measured, "#d97706")}${bar("Stale", fr.stale, measured, "#dc2626")}</div>
+        </div>`;
+      }).join("");
+
+      // BLOCK 10 — ENGINEERING. Everything PRODUCT hides.
+      $("v2Engineering").classList.toggle("hidden", !engineering);
+      $("v2Calibration").classList.toggle("hidden", !engineering);
+      if (engineering) {
+        const g = e.promotionGate;
+        $("v2Engineering").innerHTML = `
+          <h4 style="margin:16px 0 6px">Promotion gate — ${g.passed}/${g.total}${g.eligible ? " · eligible" : ""}</h4>
+          <div style="font-size:12px">${g.criteria.map(c =>
+            `<div style="display:flex;gap:8px;padding:2px 0"><span style="color:${c.pass ? "#16a34a" : "#d97706"};width:44px">${c.pass ? "PASS" : "FAIL"}</span>
+             <span style="width:220px">${esc(c.id)}</span><span class="muted">measured ${esc(JSON.stringify(c.measured))} — ${esc(c.required)}</span></div>`).join("")}</div>
+          <h4 style="margin:16px 0 6px">Per-learner state</h4>
+          <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+            <tr style="text-align:left;color:#64748b"><th>skill</th><th>confidence</th><th>limiting</th><th>obs</th><th>constructs</th><th>exam</th><th>days</th><th>theta</th><th>sigma&sup2;</th><th>highest</th></tr>
+            ${Object.keys(e.bySkill).flatMap(sk => e.bySkill[sk].detail.map(d =>
+              `<tr><td>${esc(sk)}</td><td>${esc(d.label)}</td><td>${esc(d.limitingFactor)}</td><td>${d.observations}</td><td>${d.constructs}</td><td>${d.examItems}</td><td>${d.daysSinceLast}</td>
+               <td>${d.engineering.theta}</td><td>${d.engineering.sigma2}</td><td>${d.engineering.highestEvidenced}</td></tr>`)).join("")}
+          </table></div>
+          <h4 style="margin:16px 0 6px">Rebuild coverage</h4>
+          <p style="font-size:12px">${e.rebuild.covered}/${e.rebuild.total} sources rebuildable${e.rebuild.gaps.length ? " · gaps: " + e.rebuild.gaps.map(x => esc(x.source)).join(", ") : " · no gaps"}</p>`;
+
+        // BLOCK 6 — calibration.
+        const cal = v2Data.calibration;
+        $("v2Calibration").innerHTML = `
+          <h4 style="margin:16px 0 6px">Calibration — ${Object.entries(cal.counts).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</h4>
+          <div style="font-size:12px">${cal.parameters.map(x =>
+            `<details style="padding:3px 0"><summary><strong>${esc(x.key)}</strong> <span class="muted">${esc(x.status)} · ${esc(String(x.value))}</span></summary>
+             <p style="margin:4px 0 0 16px">${esc(x.whatItDoes)}<br><span class="muted">If it changed: ${esc(x.ifItChanged)}</span></p></details>`).join("")}</div>`;
+      }
+    }
+
     function setMode(mode) {
       const isSimple = mode === "simple";
       $("simpleView").classList.toggle("hidden", !isSimple);
@@ -463,6 +572,7 @@
       $("simpleModeBtn").style.opacity = isSimple ? "1" : ".6";
       $("advancedModeBtn").style.opacity = isSimple ? ".6" : "1";
       try { localStorage.setItem("adminViewMode", mode); } catch (e) {}
+      renderV2();   // the V2 console follows the same PRODUCT/ENGINEERING switch
     }
 
     // ── FASE IPS-007 Incremento 3 — read-only mode + validation status ────────
