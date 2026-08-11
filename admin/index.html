@@ -180,6 +180,30 @@
         <div id="dxBody"></div>
       </section>
 
+      <!-- PHASE PROJECT-POLISH-FINAL — FLOW 11. The trainer, diagnosable here.
+           GET /api/admin/trainer-pipeline calls the SAME composer that serves
+           the learner, so this panel shows what they were actually told — not a
+           reconstruction of it. This page performs NO calculation: every
+           sentence below, including the reasons, is written by the backend. -->
+      <section class="card">
+        <h3>Trainer pipeline</h3>
+        <p class="muted" style="margin-top:-4px">Why this learner is being told this, today. Read-only.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:10px">
+          <label style="font-size:12px">learner<br>
+            <input id="tpUser" list="tpLearners" placeholder="user id" style="padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;min-width:290px">
+            <datalist id="tpLearners"></datalist>
+          </label>
+          <label style="font-size:12px">minutes<br>
+            <input id="tpMinutes" type="number" value="25" min="5" max="120" style="width:70px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px"></label>
+          <!-- ONE button. Loading the pipeline and diagnosing it are the same
+               request, so offering both would be two controls for one action. -->
+          <button id="tpDiagnose">Diagnose Trainer Pipeline</button>
+        </div>
+        <p class="muted" id="tpLearnerHint" style="font-size:12px"></p>
+        <div id="tpDiagBody"></div>
+        <div id="tpBody"></div>
+      </section>
+
       <section class="card">
         <h3>Recovery &amp; replay</h3>
         <div id="recBody"></div>
@@ -317,9 +341,12 @@
         await loadV2();
         // Every remaining panel. Each degrades on its own if its endpoint is
         // missing, so one absent route never blanks the console.
-        await Promise.allSettled([loadStartup(), loadRecovery(), loadCompare(), loadTransition(), loadCorpus()]);
+        await Promise.allSettled([loadStartup(), loadRecovery(), loadCompare(), loadTransition(), loadCorpus(), loadTrainerLearners()]);
         $("cmpExport").onclick = exportCompare;
         $("dxRun").onclick = runDiagnose;
+        // Always re-fetches: an operator pressing this wants the verdict on the
+        // pipeline as it is NOW, not on whatever was loaded earlier.
+        $("tpDiagnose").onclick = loadTrainerPipeline;
         $("replayRun").onclick = runReplay;
         $("simRun").onclick = runSimulate;
         $("loginView").classList.add("hidden");
@@ -552,7 +579,11 @@
       renderV2();
     }
 
-    function esc(x) { return String(x == null ? "" : x).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
+    // ONE escaper. There were two top-level declarations of esc() in this file
+    // with different behaviour — the second silently won for every call site,
+    // so the first had never run. This is both: null-safe AND quote-safe, the
+    // latter being required because values are interpolated into attributes.
+    function esc(x) { return String(x == null ? "" : x).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
     function renderV2() {
       if (!v2Data) return;
@@ -635,6 +666,148 @@
 
     const dot = (st) => { const c = st === "green" ? "#16a34a" : st === "amber" ? "#d97706" : "#dc2626";
       return `<span style="display:inline-block;width:8px;height:8px;border-radius:99px;background:${c};margin-right:6px"></span>`; };
+
+    // ---- FLOW 11 — trainer pipeline ---------------------------------------
+    //
+    // Every string rendered here was written by the backend. The only thing
+    // this code decides is layout: no threshold, no label, no reason and no
+    // verdict is computed in the browser. That is the same rule the app follows,
+    // and it is why Admin cannot describe a learner differently from the device.
+
+    async function loadTrainerLearners() {
+      let r; try { r = await api("/api/admin/trainer-pipeline"); }
+      catch (e) { $("tpLearnerHint").textContent = "Learner list unavailable."; return; }
+      $("tpLearners").innerHTML = r.learners.map(l =>
+        `<option value="${esc(l.userId)}">${esc(l.skills.join(", "))} · ${l.observations} obs · ${esc(String(l.lastEventAt || "").slice(0, 10))}</option>`).join("");
+      $("tpLearnerHint").textContent = `${r.count} learner${r.count === 1 ? "" : "s"} have proficiency state. Start typing, or pick from the list.`;
+      if (r.learners.length && !$("tpUser").value) $("tpUser").value = r.learners[0].userId;
+    }
+
+    async function loadTrainerPipeline() {
+      const u = $("tpUser").value.trim();
+      if (!u) { $("tpBody").innerHTML = `<p class="muted">Choose a learner first.</p>`; return; }
+      $("tpBody").innerHTML = `<p class="muted">Loading…</p>`;
+      $("tpDiagBody").innerHTML = "";
+      let r;
+      try {
+        r = await api(`/api/admin/trainer-pipeline?user=${encodeURIComponent(u)}&minutes=${encodeURIComponent($("tpMinutes").value || 25)}`);
+      } catch (e) {
+        $("tpBody").innerHTML = `<p style="color:#dc2626">${esc(e.message)}</p>`; return;
+      }
+      renderTrainerPipeline(r);
+      renderTrainerDiagnose(r.diagnose);
+    }
+
+    function renderTrainerDiagnose(d) {
+      if (!d) { $("tpDiagBody").innerHTML = ""; return; }
+      const light = (s) => dot(s === "OK" ? "green" : s === "WARNING" ? "amber" : "red");
+      $("tpDiagBody").innerHTML =
+        `<p style="font-size:13px;margin:0 0 6px">${light(d.status)}<strong>${esc(d.headline)}</strong>
+           <span class="muted">· ${d.counts.ok} OK · ${d.counts.warnings} warning · ${d.counts.errors} error</span></p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th>stage</th><th>status</th><th>detail</th></tr>
+           ${d.checks.map(c => `<tr style="border-top:1px solid #f1f5f9">
+             <td style="padding:4px 6px 4px 0"><strong>${esc(c.label)}</strong></td>
+             <td>${light(c.status)}${esc(c.status)}</td>
+             <td>${esc(c.detail)}${c.action ? `<br><span style="color:#0284c7">→ ${esc(c.action)}</span>` : ""}</td>
+           </tr>`).join("")}
+         </table></div>`;
+    }
+
+    function renderTrainerPipeline(p) {
+      if (!p || p.available === false) {
+        $("tpBody").innerHTML = `<p class="muted">${esc(p?.why || "Nothing to show.")}</p>`; return;
+      }
+      const H = (t) => `<h4 style="margin:16px 0 6px">${t}</h4>`;
+      const li = (xs) => `<ul style="margin:4px 0;padding-left:18px;font-size:12px">${xs.join("")}</ul>`;
+      const row = (k, v) => `<tr style="border-top:1px solid #f1f5f9"><td style="padding:3px 10px 3px 0;color:#64748b;white-space:nowrap">${esc(k)}</td><td>${v}</td></tr>`;
+      const time = (t) => t ? `<span style="font-family:monospace;font-size:11px">${esc(String(t).slice(0, 19).replace("T", " "))}</span>` : `<span class="muted">—</span>`;
+      // A field the product does not store renders as an explicit absence with
+      // its reason, never as a blank cell an operator might read as "just now".
+      const absent = (o) => `<span class="muted">not retained</span> <span style="font-size:11px;color:#64748b">— ${esc(o.why)}</span>`;
+
+      const m = p.mission, s = p.session, pr = p.prediction, r = p.recovery, d = p.difficulty, pl = p.pipeline;
+
+      $("tpBody").innerHTML = `
+        ${H("Today mission")}
+        <p style="font-size:14px;margin:0"><strong>${esc(m.objective || "—")}</strong>
+          <span class="muted">· ${esc(m.priority)}</span></p>
+        <p style="font-size:12px;color:#475569;margin:4px 0">${esc(m.reason || "")}</p>
+        <p style="font-size:12px;color:#64748b;margin:4px 0">${esc(m.priorityWhy)} <em>Status: ${esc(m.status)}.</em></p>
+
+        ${H("Adaptive session")}
+        <p style="font-size:12px;margin:0 0 4px">${s.estimatedMinutes} of ${s.requestedMinutes} minutes planned${s.unusedMinutes ? ` · ${s.unusedMinutes} unused` : ""}</p>
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <tr style="text-align:left;color:#64748b"><th>#</th><th>skill</th><th>min</th><th>mode</th><th>posture</th><th>why this block</th></tr>
+          ${s.plan.map(b => `<tr style="border-top:1px solid #f1f5f9"><td>${b.order}</td><td><strong>${esc(b.skill)}</strong></td>
+            <td>${b.minutes}</td><td>${esc(b.mode)}</td><td>${esc(b.posture)}</td><td>${esc(b.why)}</td></tr>`).join("")}
+        </table></div>
+        <p class="muted" style="font-size:11px;margin:6px 0">${esc(s.orderRule)}</p>
+        ${s.skillsSkipped.length ? li(s.skillsSkipped.map(x => `<li><strong>${esc(x.skill)}</strong> can wait — ${esc(x.why)}</li>`)) : ""}
+
+        ${H("Prediction")}
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <tr style="text-align:left;color:#64748b"><th>skill</th><th>now</th><th>expected</th><th>items</th><th>changes</th></tr>
+          ${pr.perBlock.map(o => `<tr style="border-top:1px solid #f1f5f9"><td>${esc(o.skill)}</td>
+            <td>${esc(o.current?.confidenceLabel ?? "—")}${o.current?.level != null ? ` · ${Number(o.current.level).toFixed(2)}` : ""}</td>
+            <td>${esc(o.expected?.confidenceLabel ?? "—")}${o.expected?.level != null ? ` · ${Number(o.expected.level).toFixed(2)}` : ""}</td>
+            <td>${o.itemsExpected ?? "—"}</td>
+            <td>${(o.changes || []).map(c => `${c.certain ? "✓" : "○"} ${esc(c.text)}`).join("<br>")}</td></tr>`).join("")}
+        </table></div>
+        <p style="font-size:12px;margin:6px 0"><strong>Pass probability:</strong> ${pr.passProbability == null ? `<span class="muted">none</span>` : pr.passProbability}
+          <br><span style="font-size:11px;color:#64748b">${esc(pr.passProbabilityWhy || "")}</span></p>
+        <details style="font-size:11px"><summary class="muted">Limitations of this prediction</summary>
+          ${li(pr.limitations.map(x => `<li>${esc(x)}</li>`))}</details>
+
+        ${H("Confidence")}
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <tr style="text-align:left;color:#64748b"><th>skill</th><th>state</th><th>position</th><th>obs</th><th>days</th><th>why</th><th>how to improve</th></tr>
+          ${p.confidence.map(c => `<tr style="border-top:1px solid #f1f5f9"><td>${esc(c.skill)}</td>
+            <td><strong>${esc(c.label)}</strong></td><td>${c.position + 1} of ${c.total}</td>
+            <td>${c.observations}</td><td>${c.daysSinceLast ?? "—"}</td>
+            <td>${esc(c.why)}</td><td style="color:#0284c7">${esc(c.howToImprove)}</td></tr>`).join("")}
+        </table></div>
+
+        ${H("Recovery")}
+        <p style="font-size:12px;margin:0 0 4px">${esc(r.summary)}</p>
+        ${["recovering", "recovered", "expired", "needsNewEvidence"].map(k => r[k].length
+          ? `<p style="font-size:12px;margin:4px 0"><strong>${esc(k)}</strong>${li(r[k].map(x => `<li>${esc(x.skill)} — ${esc(x.why)}</li>`))}</p>` : "").join("")}
+
+        ${H("ROI")}
+        <p style="font-size:12px;margin:0">${esc(p.roi.why)}</p>
+        ${p.roi.postpone.length ? `<p style="font-size:12px;margin:4px 0"><strong>Worth postponing</strong>${li(p.roi.postpone.map(x => `<li>${esc(x.skill)} — ${esc((x.because || [])[0] || "")}</li>`))}</p>` : ""}
+
+        ${H("Difficulty")}
+        <p style="font-size:12px;margin:0">Intensity <strong>${esc(d.intensity)}</strong> · cognitive load <strong>${esc(d.cognitiveLoad)}</strong>
+          · ${d.productionMinutes} min production / ${d.receptionMinutes} min reception</p>
+        <p style="font-size:12px;color:#475569;margin:4px 0">${esc(d.why || "")}</p>
+        <p style="font-size:11px;color:#64748b;margin:4px 0">${esc(d.cognitiveLoadWhy)}<br><strong>Fatigue:</strong> ${esc(d.fatigueWhy)}</p>
+
+        ${H("Coach")}
+        <p style="font-size:13px;margin:0">${esc(p.coach.served || "—")}</p>
+        <p style="font-size:11px;color:#64748b;margin:4px 0">${esc(p.coach.why)}<br>Produced by <code>${esc(p.coach.engine)}</code></p>
+        ${(p.coach.intelligence?.findings || []).length
+          ? `<details style="font-size:12px"><summary class="muted">Intelligence findings served alongside it</summary>
+             ${li(p.coach.intelligence.findings.map(f => `<li><strong>${esc(f.question)}</strong><br>${esc(f.answer)}</li>`))}</details>` : ""}
+
+        ${H("Pipeline")}
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          ${row("generated at", time(pl.generatedAt))}
+          ${row("cache key", `<span style="font-family:monospace;font-size:11px">${esc(pl.cacheKey || "—")}</span>`)}
+          ${row("cache age", `<span class="muted">n/a (${esc(pl.cacheScope)})</span> <span style="font-size:11px;color:#64748b">— ${esc(pl.cacheAgeWhy)}</span>`)}
+          ${row("last refresh", `${time(pl.lastRefresh)} <span style="font-size:11px;color:#64748b">${esc(pl.lastRefreshNote)}</span>`)}
+          ${row("last training", time(pl.lastTraining))}
+          ${row("last state write", time(pl.lastStateWrite))}
+          ${row("last plan change", `${time(pl.lastPlanChange)} <span style="font-size:11px;color:#64748b">${esc(pl.lastPlanChangeNote)}</span>`)}
+          ${row("last invalidation", `${time(pl.lastInvalidation)} <span style="font-size:11px;color:#64748b">${esc(pl.lastInvalidationBy || "")}</span>`)}
+          ${row("last confidence change", absent(pl.lastConfidenceChange))}
+          ${row("last level change", absent(pl.lastLevelChange))}
+          ${row("last recovery change", absent(pl.lastRecoveryChange))}
+          ${row("last transition", absent(pl.lastTransition))}
+          ${row("source", `<span style="font-size:11px">${esc(pl.source)}</span>`)}
+          ${row("rows inspected", `${pl.rowsInspected} · ${esc(pl.skillsWithState.join(", ") || "none")}`)}
+        </table></div>`;
+    }
 
     async function loadStartup() {
       let r; try { r = await api("/api/admin/v2/startup"); } catch (e) { $("startupBody").textContent = "Startup endpoint unavailable."; return; }
@@ -1040,8 +1213,6 @@
         </tr>`).join("")}
       </table>`;
     }
-
-    function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
     async function setStatus(id, status) {
       try { await api("/api/admin/reports/" + id, { method: "PATCH", body: JSON.stringify({ status }) }); await loadAll(); }
