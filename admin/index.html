@@ -185,6 +185,23 @@
            the learner, so this panel shows what they were actually told — not a
            reconstruction of it. This page performs NO calculation: every
            sentence below, including the reasons, is written by the backend. -->
+      <!-- FASE C-08 / FASE 19 — the writing decision, observable. Every value
+           is read back from what was written at evaluation time; this panel
+           re-derives nothing, so it cannot disagree with what the learner was
+           served. -->
+      <section class="card">
+        <h3>Writing evaluation</h3>
+        <p class="muted" style="margin-top:-4px">What the scores produced, what task coverage did to it, and under which rule.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:10px">
+          <label style="font-size:12px">learner (optional)<br>
+            <input id="weUser" placeholder="user id" style="padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;min-width:280px"></label>
+          <label style="font-size:12px">attempts<br>
+            <input id="weLimit" type="number" value="50" min="1" max="200" style="width:80px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px"></label>
+          <button id="weRun">Load writing evaluations</button>
+        </div>
+        <div id="weBody"></div>
+      </section>
+
       <section class="card">
         <h3>Trainer pipeline</h3>
         <p class="muted" style="margin-top:-4px">Why this learner is being told this, today. Read-only.</p>
@@ -347,6 +364,7 @@
         // Always re-fetches: an operator pressing this wants the verdict on the
         // pipeline as it is NOW, not on whatever was loaded earlier.
         $("tpDiagnose").onclick = loadTrainerPipeline;
+        $("weRun").onclick = loadWritingEvaluation;
         $("replayRun").onclick = runReplay;
         $("simRun").onclick = runSimulate;
         $("loginView").classList.add("hidden");
@@ -807,6 +825,51 @@
           ${row("source", `<span style="font-size:11px">${esc(pl.source)}</span>`)}
           ${row("rows inspected", `${pl.rowsInspected} · ${esc(pl.skillsWithState.join(", ") || "none")}`)}
         </table></div>`;
+    }
+
+    // ---- FASE C-08 / 19 — writing evaluation --------------------------------
+    async function loadWritingEvaluation() {
+      const u = $("weUser").value.trim(), n = $("weLimit").value || 50;
+      $("weBody").innerHTML = `<p class="muted">Loading…</p>`;
+      let r; try {
+        r = await api(`/api/admin/writing-evaluation?limit=${encodeURIComponent(n)}` + (u ? `&user=${encodeURIComponent(u)}` : ""));
+      } catch (e) { $("weBody").innerHTML = `<p style="color:#dc2626">${esc(e.message)}</p>`; return; }
+
+      const lvl = (v) => v == null ? '<span class="muted">—</span>' : `<strong>${esc(v)}</strong>`;
+      $("weBody").innerHTML = `
+        <p style="font-size:13px;margin:0 0 8px">${esc(r.summary.headline)}
+          <span class="muted">· contract ${esc(r.contractVersion)}</span></p>
+
+        <h4 style="margin:14px 0 4px">The rule</h4>
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <tr style="text-align:left;color:#64748b"><th>task coverage</th><th>ceiling</th><th>effect</th><th>seen</th></tr>
+          ${r.rules.map(x => `<tr style="border-top:1px solid #f1f5f9">
+            <td style="font-family:monospace;font-size:11px">${esc(x.value)}</td>
+            <td>${x.ceiling == null ? '<span class="muted">none</span>' : `<strong>${esc(x.ceiling)}</strong>`}</td>
+            <td>${esc(x.effect)}</td>
+            <td>${r.summary.distribution[x.value] ?? 0}</td></tr>`).join("")}
+          ${r.summary.notRecorded ? `<tr style="border-top:1px solid #f1f5f9"><td class="muted" colspan="3">Evaluated before task coverage existed — no ceiling was available</td><td>${r.summary.notRecorded}</td></tr>` : ""}
+        </table></div>
+
+        <h4 style="margin:16px 0 4px">Decision path, per attempt</h4>
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <tr style="text-align:left;color:#64748b">
+            <th>when</th><th>task/content/lang</th><th>band</th><th>coverage</th>
+            <th>before</th><th>ceiling</th><th>final</th><th>applied rule</th></tr>
+          ${r.attempts.map(a => `<tr style="border-top:1px solid #f1f5f9${a.contradiction ? ";background:#fff7ed" : ""}">
+            <td style="white-space:nowrap">${esc(String(a.createdAt || "").slice(0,10))}</td>
+            <td>${a.scores.task ?? "—"} / ${a.scores.content ?? "—"} / ${a.scores.language ?? "—"}</td>
+            <td>${a.overallBand ?? "—"}</td>
+            <td style="font-family:monospace;font-size:11px">${a.taskCoverage ? esc(a.taskCoverage) : '<span class="muted">not recorded</span>'}</td>
+            <td>${lvl(a.levelBeforeCoverage)}</td>
+            <td>${a.ceiling == null ? '<span class="muted">—</span>' : esc(a.ceiling)}</td>
+            <td>${lvl(a.levelAfterCoverage ?? a.reportedLevel)}${a.applied ? ' <span style="color:#d97706">capped</span>' : ""}</td>
+            <td>${esc(a.rule || "")}${a.reason ? `<br><span style="font-size:11px;color:#64748b">Model's reason: ${esc(a.reason)}</span>` : ""}
+                ${a.warning ? `<br><span style="color:#dc2626;font-size:11px">${esc(a.warning)}</span>` : ""}
+                ${a.ceilingSuppressed ? `<br><span style="font-size:11px;color:#64748b">Emerging-level claim suppressed: the task was not delivered.</span>` : ""}</td>
+          </tr>`).join("")}
+        </table></div>
+        ${r.summary.contradictions ? `<p style="font-size:12px;margin-top:8px">${dot("amber")}<strong>${r.summary.contradictions}</strong> attempt(s) highlighted: the model scored the language 60+ and still reported the task unfulfilled. A run of these means the rubric is confusing the model — a content problem, not an engine one.</p>` : ""}`;
     }
 
     async function loadStartup() {
