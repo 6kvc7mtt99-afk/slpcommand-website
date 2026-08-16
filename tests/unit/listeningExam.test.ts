@@ -1,0 +1,58 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { decodeListeningExamStart, decodePlayResult } from "../../lib/api/listeningExam";
+import { decidePolicy } from "../../lib/server/proxyPolicy";
+
+const fetchApi = vi.fn();
+vi.mock("../../lib/api/client", () => ({
+  apiRequest: (...args: unknown[]) => fetchApi(...args),
+}));
+
+const startPayload = {
+  examSessionId: "lex-1",
+  timeLimitSeconds: 90,
+  items: [
+    { position: 0, audioUrl: "https://example.com/a.mp3", prompt: "A?", options: ["1", "2", "3", "4"], transcript: "nope" },
+  ],
+};
+
+describe("listening exam contract", () => {
+  it("trusts timeLimitSeconds and drops transcripts", () => {
+    const start = decodeListeningExamStart(startPayload);
+    expect(start?.timeLimitSeconds).toBe(90);
+    expect(JSON.stringify(start)).not.toContain("nope");
+  });
+
+  it("does not start playback unless play is allowed", () => {
+    expect(decodePlayResult({ allowed: false, allowSeek: true }).allowed).toBe(false);
+    expect(decodePlayResult({ allowed: true, allowSeek: true }).allowSeek).toBe(false);
+    expect(decodePlayResult({ allowed: true }).allowed).toBe(true);
+  });
+
+  it("keeps play/state/finish on the allowlist and recommendation denied", () => {
+    expect(decidePolicy("POST", "/api/listening/slp/exam/play")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/listening/slp/exam/state")).toEqual({ action: "forward" });
+    expect(decidePolicy("POST", "/api/listening/slp/exam/finish")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/listening/recommendation")).toMatchObject({ action: "deny", status: 410 });
+  });
+});
+
+describe("listening exam session", () => {
+  beforeEach(async () => {
+    fetchApi.mockReset();
+    fetchApi.mockResolvedValue(startPayload);
+    const mod = await import("../../lib/listening/examSession");
+    mod.clearListeningExamIntent("user-1");
+  });
+
+  it("starts once and requires play before treating audio as authorised", async () => {
+    const { startListeningExam, requestListeningPlay } = await import("../../lib/listening/examSession");
+    fetchApi.mockResolvedValueOnce(startPayload);
+    const start = await startListeningExam("user-1");
+    expect(start.examSessionId).toBe("lex-1");
+    fetchApi.mockResolvedValueOnce({ allowed: true });
+    const play = await requestListeningPlay("lex-1", 0);
+    expect(play.allowed).toBe(true);
+    expect(fetchApi.mock.calls[0][0]).toBe("/listening/slp/exam/start");
+    expect(fetchApi.mock.calls[1][0]).toBe("/listening/slp/exam/play");
+  });
+});
