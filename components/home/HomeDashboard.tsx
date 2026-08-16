@@ -87,8 +87,8 @@ export function HomeDashboard({
   const flagsDown = !initial.flags.reading_enabled && !initial.flags.listening_enabled && !initial.flags.writing_enabled;
 
   return (
-    <div className="home">
-      <header className="home-greeting">
+    <div className="home command">
+      <header className="home-greeting page-head">
         <p className="section-eyebrow">Today</p>
         <h1>
           {hello}
@@ -102,98 +102,107 @@ export function HomeDashboard({
         {flagsDown ? <p className="muted">Some skill modules are temporarily off.</p> : null}
       </header>
 
-      <TodaySessionCard today={sessionToday} />
-      <ExpectedOutcomeCard today={sessionToday} />
-      <TransitionBanner progress={initial.progress} />
-      <EstimatedSlpHero progress={initial.progress} />
-      <ConfidenceScaleCard progress={initial.progress} />
-      <PlanChip entitlements={initial.entitlements} />
-      <StreakCard streak={initial.streak} />
+      <div className="command-grid">
+        <div className="command-primary">
+          <TodaySessionCard today={sessionToday} />
+          <ExpectedOutcomeCard today={sessionToday} />
+          <TransitionBanner progress={initial.progress} />
+        </div>
+        <aside className="command-rail">
+          <EstimatedSlpHero progress={initial.progress} />
+          <StreakCard streak={initial.streak} />
+          <PlanChip entitlements={initial.entitlements} />
+        </aside>
+      </div>
 
-      <article className="home-card">
-        <p className="home-kicker">Daily goal</p>
-        <label htmlFor="weekly-goal">Practice days each week</label>
-        <select
-          id="weekly-goal"
-          value={prefs.weeklyGoalDays}
-          onChange={(e) => {
-            const days = clampWeeklyGoal(e.target.value);
-            setPrefs((prev) => ({ ...prev, weeklyGoalDays: days }));
-            if (userId) writeWeeklyGoal(userId, days);
-          }}
-        >
-          {[3, 4, 5, 6, 7].map((n) => (
-            <option key={n} value={n}>
-              {n} days
-            </option>
-          ))}
-        </select>
-      </article>
+      <div className="command-secondary">
+        <article className="home-card command-prefs">
+          <p className="home-kicker">Pace</p>
+          <div className="skill-board" style={{ gap: 24 }}>
+            <div>
+              <label htmlFor="weekly-goal">Practice days each week</label>
+              <select
+                id="weekly-goal"
+                value={prefs.weeklyGoalDays}
+                onChange={(e) => {
+                  const days = clampWeeklyGoal(e.target.value);
+                  setPrefs((prev) => ({ ...prev, weeklyGoalDays: days }));
+                  if (userId) writeWeeklyGoal(userId, days);
+                }}
+              >
+                {[3, 4, 5, 6, 7].map((n) => (
+                  <option key={n} value={n}>
+                    {n} days
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="exam-date">Target exam date</label>
+              <input
+                id="exam-date"
+                type="date"
+                value={prefs.targetExamDate}
+                onChange={(e) => {
+                  setPrefs((prev) => ({ ...prev, targetExamDate: e.target.value }));
+                  if (userId) writeExamDate(userId, e.target.value);
+                }}
+              />
+              <label htmlFor="session-minutes">Preferred session length (minutes)</label>
+              <input
+                id="session-minutes"
+                type="number"
+                min={5}
+                max={120}
+                value={prefs.minutes}
+                onChange={(e) => {
+                  const minutes = clampSessionMinutes(e.target.value);
+                  setPrefs((prev) => ({ ...prev, minutes }));
+                }}
+                onBlur={(e) => {
+                  void onMinutesChange(Number(e.target.value));
+                }}
+              />
+              <p className="muted">Changing the length asks the backend for a new today session. Other cards stay as first loaded.</p>
+            </div>
+          </div>
+        </article>
 
-      <article className="home-card">
-        <p className="home-kicker">Pace</p>
-        <label htmlFor="exam-date">Target exam date</label>
-        <input
-          id="exam-date"
-          type="date"
-          value={prefs.targetExamDate}
-          onChange={(e) => {
-            setPrefs((prev) => ({ ...prev, targetExamDate: e.target.value }));
-            if (userId) writeExamDate(userId, e.target.value);
-          }}
-        />
-        <label htmlFor="session-minutes">Preferred session length (minutes)</label>
-        <input
-          id="session-minutes"
-          type="number"
-          min={5}
-          max={120}
-          value={prefs.minutes}
-          onChange={(e) => {
-            const minutes = clampSessionMinutes(e.target.value);
-            setPrefs((prev) => ({ ...prev, minutes }));
-          }}
-          onBlur={(e) => {
-            void onMinutesChange(Number(e.target.value));
-          }}
-        />
-        <p className="muted">Changing the length asks the backend for a new today session. Other cards stay as first loaded.</p>
-      </article>
+        <article className="home-card">
+          <p className="home-kicker">Achievements</p>
+          {achievements == null ? (
+            <p className="muted">Loading…</p>
+          ) : achievements.length === 0 ? (
+            <p className="muted">No achievements to show yet.</p>
+          ) : (
+            <ul className="home-list">
+              {achievements.slice(0, 6).map((item) => (
+                <li key={item.id}>
+                  <strong>{item.title}</strong>
+                  {item.earnedAt ? <span className="muted"> · {item.earnedAt}</span> : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </article>
 
-      <article className="home-card">
-        <p className="home-kicker">Achievements</p>
-        {achievements == null ? (
-          <p className="muted">Loading…</p>
-        ) : achievements.length === 0 ? (
-          <p className="muted">No achievements to show yet.</p>
-        ) : (
-          <ul className="home-list">
-            {achievements.slice(0, 6).map((item) => (
-              <li key={item.id}>
-                <strong>{item.title}</strong>
-                {item.earnedAt ? <span className="muted"> · {item.earnedAt}</span> : null}
-              </li>
-            ))}
-          </ul>
-        )}
-      </article>
-
-      <article className="home-card">
-        <p className="home-kicker">Recent activity</p>
-        {recent == null ? (
-          <p className="muted">Loading…</p>
-        ) : recent.length === 0 ? (
-          <p className="muted">No recent activity.</p>
-        ) : (
-          <ul className="home-list">
-            {recent.map((item) => (
-              <li key={item.id}>
-                {item.skill ? <span className="home-chip">{item.skill}</span> : null} {item.title}
-              </li>
-            ))}
-          </ul>
-        )}
-      </article>
+        <article className="home-card">
+          <p className="home-kicker">Recent activity</p>
+          {recent == null ? (
+            <p className="muted">Loading…</p>
+          ) : recent.length === 0 ? (
+            <p className="muted">No recent activity.</p>
+          ) : (
+            <ul className="home-list">
+              {recent.map((item) => (
+                <li key={item.id}>
+                  {item.skill ? <span className="home-chip">{item.skill}</span> : null} {item.title}
+                </li>
+              ))}
+            </ul>
+          )}
+        </article>
+      </div>
     </div>
   );
 }

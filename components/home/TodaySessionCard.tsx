@@ -1,11 +1,21 @@
+import Link from "next/link";
 import { hasSession } from "@/lib/api/sessionToday";
 import type { SessionToday } from "@/lib/api/types";
+
+const SKILL_HREF: Record<string, string> = {
+  reading: "/reading/practice",
+  listening: "/listening/practice",
+  writing: "/writing/practice",
+  speaking: "/speaking/practice",
+};
 
 export function TodaySessionCard({ today }: { today: SessionToday | null }) {
   if (!hasSession(today) || !today) return null;
 
   const { mission, session } = today;
   const coach = mission.coachLine;
+  const firstSkill = session.blocks[0]?.skill;
+  const firstHref = firstSkill ? SKILL_HREF[firstSkill] : undefined;
 
   return (
     <article className="home-card home-mission">
@@ -52,6 +62,14 @@ export function TodaySessionCard({ today }: { today: SessionToday | null }) {
           {coach.headline ? <p><strong>{coach.headline}</strong></p> : null}
           {coach.why ? <p className="muted">{coach.why}</p> : null}
           {coach.focus ? <p className="muted">{coach.focus}</p> : null}
+        </div>
+      ) : null}
+
+      {firstHref && firstSkill ? (
+        <div className="cta-row">
+          <Link className="btn btn-primary" href={firstHref}>
+            Open {firstSkill}
+          </Link>
         </div>
       ) : null}
     </article>

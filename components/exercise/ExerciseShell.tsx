@@ -1,5 +1,13 @@
 import Link from "next/link";
 
+export function skillClass(skill: string): string {
+  const key = skill.trim().toLowerCase();
+  if (key === "reading" || key === "listening" || key === "writing" || key === "speaking") {
+    return `skill-${key}`;
+  }
+  return "";
+}
+
 export function ExerciseShell({
   skill,
   mode,
@@ -12,7 +20,7 @@ export function ExerciseShell({
   children: React.ReactNode;
 }) {
   return (
-    <section className="exercise">
+    <section className={`exercise page-skill ${skillClass(skill)}`}>
       <p className="section-eyebrow">{skill}</p>
       <p className="home-kicker">{mode}</p>
       <h1>{title}</h1>
@@ -32,25 +40,46 @@ export function SkillLaunch({
   lead: string;
   actions: Array<{ href: string; label: string; detail: string; disabled?: boolean; disabledReason?: string }>;
 }) {
+  const primary = actions.find((action) => !action.disabled) ?? actions[0];
+  const rest = actions.filter((action) => action !== primary);
+
   return (
-    <section className="exercise">
-      <p className="section-eyebrow">{skill}</p>
-      <h1>{title}</h1>
-      <p className="muted">{lead}</p>
-      <div className="skill-launch">
-        {actions.map((action) => (
-          <article key={action.href} className="home-card">
-            <h2>{action.label}</h2>
-            <p className="muted">{action.detail}</p>
-            {action.disabled ? (
-              <p className="muted">{action.disabledReason ?? "Not available on your current plan."}</p>
+    <section className={`exercise page-skill ${skillClass(skill)}`}>
+      <header className="page-head">
+        <p className="section-eyebrow">{skill}</p>
+        <h1>{title}</h1>
+        <p className="muted lead">{lead}</p>
+      </header>
+      <div className="skill-board">
+        {primary ? (
+          <article className="skill-primary">
+            <p className="home-kicker">Start here</p>
+            <h2>{primary.label}</h2>
+            <p className="muted">{primary.detail}</p>
+            {primary.disabled ? (
+              <p className="muted">{primary.disabledReason ?? "Not available on your current plan."}</p>
             ) : (
-              <Link className="btn btn-primary" href={action.href}>
-                {action.label}
+              <Link className="btn btn-primary" href={primary.href}>
+                {primary.label}
               </Link>
             )}
           </article>
-        ))}
+        ) : null}
+        <ul className="skill-destinations">
+          {rest.map((action) => (
+            <li key={action.href}>
+              <strong>{action.label}</strong>
+              <p className="muted">{action.detail}</p>
+              {action.disabled ? (
+                <p className="muted">{action.disabledReason ?? "Not available on your current plan."}</p>
+              ) : (
+                <Link className="btn btn-outline" href={action.href}>
+                  {action.label}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
