@@ -19,6 +19,7 @@ export default function robots(): MetadataRoute.Robots {
           "/profile",
           "/onboarding",
           "/subscription",
+          "/spike",
           "/api",
         ],
       },

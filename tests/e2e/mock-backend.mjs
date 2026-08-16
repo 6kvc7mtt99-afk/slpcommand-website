@@ -154,6 +154,49 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({ items: [{ id: "spk-1", prompt_title: "Readiness Status Report", mode: "practice", created_at: "2026-08-16T00:00:00Z", stanag_band: null }] }));
     return;
   }
+  if (url.pathname === "/api/speaking/coach/readiness") {
+    res.end(JSON.stringify({ ok: true, coachEnabled: true, providerConfigured: true, status: "ready" }));
+    return;
+  }
+  if (url.pathname === "/api/speaking/coach/mission") {
+    res.end(JSON.stringify({
+      ok: true,
+      mission: {
+        objective: "Spike only",
+        objectiveSource: "spike",
+        rationale: "Prove the browser SDK.",
+        estimatedMinutes: 1,
+        eligibility: "eligible",
+        blockedReason: null,
+      },
+    }));
+    return;
+  }
+  if (url.pathname === "/api/speaking/coach/balance") {
+    res.end(JSON.stringify({ ok: true, subscriptionSecs: 60, topupSecs: 0, totalSecs: 60 }));
+    return;
+  }
+  if (url.pathname === "/api/speaking/coach/consent" && req.method === "POST") {
+    res.end(JSON.stringify({ ok: true, consentType: "granted" }));
+    return;
+  }
+  if (url.pathname === "/api/speaking/coach/session" && req.method === "POST") {
+    res.end(JSON.stringify({
+      ok: true,
+      sessionId: "sess-spike-1",
+      budgetSecs: 60,
+      conversationToken: "spike-fake-token-do-not-render",
+      conversationTokenExpiresAt: "2026-08-16T00:10:00Z",
+      conversationId: "conv-spike-1",
+      dynamicVariables: { session_objective: "Spike only", session_ref: "ref-spike-1", minutes_budget: "1" },
+      objective: "Spike only",
+    }));
+    return;
+  }
+  if (url.pathname === "/api/speaking/coach/session/sess-spike-1") {
+    res.end(JSON.stringify({ ok: true, session: { id: "sess-spike-1", status: "completed", evaluation_status: "completed", consumed_secs: 12, result: null } }));
+    return;
+  }
   if (url.pathname === "/api/writing/intelligence/transform" && req.method === "POST") {
     res.end(JSON.stringify({ original: "The unit moved.", upgraded: "The unit was redirected after the bridge failed.", explanation: "Passive + cause.", featuresAdded: ["passive"], memorisePhrases: ["was redirected"] }));
     return;

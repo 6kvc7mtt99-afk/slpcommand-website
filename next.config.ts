@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   eslint: { ignoreDuringBuilds: true },
+  transpilePackages: ["@elevenlabs/react", "@elevenlabs/client", "@elevenlabs/types"],
   outputFileTracingRoot: path.join(__dirname),
   async redirects() {
     return [

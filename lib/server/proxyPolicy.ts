@@ -86,6 +86,12 @@ const ALLOW: Rule[] = [
   { method: "POST", pattern: /^\/api\/speaking\/attempts\/[0-9a-f-]{36}\/save-audio$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/speaking\/history$/, reason: "ok" },
   { method: "DELETE", pattern: /^\/api\/speaking\/attempts\/[0-9a-f-]{36}\/audio$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/speaking\/coach\/readiness$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/speaking\/coach\/mission$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/speaking\/coach\/balance$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/speaking\/coach\/consent$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/speaking\/coach\/session$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/speaking\/coach\/session\/[^/]+$/, reason: "ok" },
   // requireAdminUser console. DENY is evaluated first, so shared-secret
   // POST /api/admin/billing/reconcile stays 410.
   { method: "GET", pattern: /^\/api\/admin\//, reason: "ok" },

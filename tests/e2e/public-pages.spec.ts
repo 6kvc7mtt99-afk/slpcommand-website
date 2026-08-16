@@ -39,4 +39,5 @@ test("robots disallows admin and app", async ({ request }) => {
   const body = await res.text();
   expect(body).toContain("Disallow: /admin");
   expect(body).toContain("Disallow: /dashboard");
+  expect(body).toContain("Disallow: /spike");
 });

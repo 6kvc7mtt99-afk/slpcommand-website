@@ -31,6 +31,6 @@ describe("speaking proxy", () => {
     expect(requiresIdempotency("POST", "/api/speaking/evaluate")).toBe(true);
     expect(decidePolicy("GET", "/api/speaking/history")).toEqual({ action: "forward" });
     expect(decidePolicy("POST", "/api/speaking/coach/webhook")).toMatchObject({ action: "deny", status: 410 });
-    expect(decidePolicy("POST", "/api/speaking/coach/session")).toMatchObject({ action: "deny", status: 404 });
+    expect(decidePolicy("POST", "/api/speaking/coach/session")).toEqual({ action: "forward" });
   });
 });
