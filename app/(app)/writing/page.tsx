@@ -23,6 +23,8 @@ export default async function WritingHome() {
           href: "/writing/exam",
           label: "Exam",
           detail: "70-minute simulation. Formative below SLP 3 — not a level.",
+          disabled: !access.usable,
+          disabledReason: "Writing AI feedback is not available on your current plan. Manage subscriptions in the iOS app.",
         },
         {
           href: "/writing/history",

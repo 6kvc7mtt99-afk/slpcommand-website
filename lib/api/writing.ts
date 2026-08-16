@@ -93,3 +93,21 @@ export async function writingSubmitKey(promptId: string, userText: string): Prom
 export function wordCount(text: string): number {
   return text.trim() ? text.trim().split(/\s+/).length : 0;
 }
+
+export function isSlp3Band(band: string): boolean {
+  const value = band.trim().toLowerCase();
+  return value === "3" || value === "slp3" || value === "slp 3" || value.startsWith("3");
+}
+
+export function submitModeForBand(band: string): "exam" | "formative_exam" {
+  return isSlp3Band(band) ? "exam" : "formative_exam";
+}
+
+export const WRITING_EXAM_MINUTES = 70;
+export const WRITING_EXAM_WORD_TARGET = 300;
+export const WRITING_LOW_WORD_THRESHOLD = 180;
+export const WRITING_LOW_WORD_SECONDS = 300;
+
+export function draftStorageKey(userId: string): string {
+  return `writing_exam_autosave:${userId}`;
+}
