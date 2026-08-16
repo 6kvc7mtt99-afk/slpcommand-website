@@ -1,0 +1,7 @@
+[mcp_servers.graft]
+command = "/opt/homebrew/bin/graft"
+args = [
+    "mcp",
+    "/Users/rafael/Desktop/slpcommand-website",
+]
+enabled = true
