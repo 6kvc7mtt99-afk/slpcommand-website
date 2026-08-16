@@ -104,11 +104,16 @@ export function SpeakingRecorder({
   const canSubmit = seconds >= minSubmitSeconds;
 
   return (
-    <div>
+    <div className={`recorder${state === "recording" ? " is-recording" : ""}${state === "denied" ? " is-denied" : ""}`}>
       <p className="home-kicker">Microphone</p>
-      <p role="timer" aria-label="Recording" aria-live="polite">
-        {state === "recording" ? "Recording" : "Recording length"} {formatClock(seconds)} of a {Math.round(maxSeconds / 60)} minute maximum
-      </p>
+      <div className="recorder-face">
+        <div className="recorder-ring" aria-hidden="true">
+          <span className="recorder-dot" />
+        </div>
+        <p className="recorder-clock" role="timer" aria-label="Recording" aria-live="polite">
+          {state === "recording" ? "Recording" : "Recording length"} {formatClock(seconds)} of a {Math.round(maxSeconds / 60)} minute maximum
+        </p>
+      </div>
       {state === "denied" ? <p className="err" role="alert">Microphone permission was denied. Speaking cannot start without it.</p> : null}
       {state === "interrupted" ? <p className="muted">The recording was discarded because the tab was hidden.</p> : null}
       <div className="admin-row" style={{ marginTop: 12 }}>

@@ -85,10 +85,23 @@ export default function SignupPage() {
 
   return (
     <>
-      <SiteHeader />
-      <main className="wrap" style={{ maxWidth: 480 }}>
+      <SiteHeader
+        links={[
+          { href: "/trust-center", label: "Trust Center" },
+          { href: "/support", label: "Support" },
+          { href: "/login", label: "Log in" },
+        ]}
+      />
+      <main className="auth-stage">
+        <div className="auth-card">
+        <p className="section-eyebrow">Workspace</p>
         <h1>Create an account</h1>
         <p className="updated">Step {Math.min(step + 1, 5)} of 5</p>
+        <div className="auth-steps" aria-hidden="true">
+          {[0, 1, 2, 3, 4].map((n) => (
+            <span key={n} className={n <= Math.min(step, 4) ? "is-on" : ""} />
+          ))}
+        </div>
         {step === 5 ? (
           <p>Check your email to confirm the account, then log in.</p>
         ) : (
@@ -160,6 +173,7 @@ export default function SignupPage() {
         <p style={{ marginTop: 20 }}>
           Already have an account? <Link href="/login">Log in</Link>
         </p>
+        </div>
       </main>
     </>
   );

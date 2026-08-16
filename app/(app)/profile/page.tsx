@@ -111,8 +111,10 @@ export default function ProfilePage() {
 
   return (
     <section className="exercise">
-      <p className="section-eyebrow">Account</p>
-      <h1>Profile</h1>
+      <header className="page-head">
+        <p className="section-eyebrow">Account</p>
+        <h1>Profile</h1>
+      </header>
       <article className="home-card">
         <p><strong>Email</strong><br />{email ?? "—"}</p>
         <p><strong>Plan</strong><br />{plan}</p>

@@ -25,14 +25,17 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="wrap" style={{ maxWidth: 520 }}>
-      <h1>Choose your target level</h1>
-      <p>SLP Command trains SLP Level 2 and SLP Level 3. Pick the band you are preparing for. You can change this later in Profile.</p>
-      <div style={{ display: "flex", gap: 16, marginTop: 24 }}>
-        <button className="btn btn-outline" disabled={busy} onClick={() => choose("2")}>SLP 2</button>
-        <button className="btn btn-primary" disabled={busy} onClick={() => choose("3")}>SLP 3</button>
+    <main className="auth-stage">
+      <div className="auth-card">
+        <p className="section-eyebrow">Onboarding</p>
+        <h1>Choose your target level</h1>
+        <p>SLP Command trains SLP Level 2 and SLP Level 3. Pick the band you are preparing for. You can change this later in Profile.</p>
+        <div className="onboard-choices">
+          <button className="btn btn-outline" disabled={busy} onClick={() => choose("2")}>SLP 2</button>
+          <button className="btn btn-primary" disabled={busy} onClick={() => choose("3")}>SLP 3</button>
+        </div>
+        {error ? <p className="err" role="alert">{error}</p> : null}
       </div>
-      {error ? <p className="err" role="alert">{error}</p> : null}
     </main>
   );
 }

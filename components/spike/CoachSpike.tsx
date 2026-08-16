@@ -43,6 +43,7 @@ import {
   countSubstantialUserTurns,
   type ClassifiedCoachMessage,
 } from "@/lib/coach/transcript";
+import { CoachStage, coachStateFromSpike } from "@/components/coach/CoachVisualFoundation";
 
 type LogLevel = "info" | "ok" | "warn" | "err";
 type LogLine = { t: string; level: LogLevel; text: string };
@@ -247,13 +248,16 @@ function CoachSpikeInner() {
 
   const userTurns = messages.filter((item) => item.role === "user");
 
+  const visual = coachStateFromSpike({ status, isSpeaking, isListening, mic });
+
   return (
-    <main className="wrap" style={{ maxWidth: 880 }}>
+    <main className="wrap coach-console" style={{ maxWidth: 880 }}>
       <p className="section-eyebrow">PR-19 spike · not product</p>
       <h1>ElevenLabs Web Coach spike</h1>
       <p className="muted">
         Desktop Chrome + desktop Safari only. No production nav. Token stays in memory. End the call quickly — short budget.
       </p>
+      <CoachStage state={visual} />
 
       <section style={{ marginTop: 24 }}>
         <h2>SDK</h2>

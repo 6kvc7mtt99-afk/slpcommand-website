@@ -44,23 +44,32 @@ export default function LoginPage() {
 
   return (
     <>
-      <SiteHeader />
-      <main className="wrap" style={{ maxWidth: 420 }}>
-        <h1>Log in</h1>
-        <p className="updated">Use the same email and password as the iOS app.</p>
-        <form onSubmit={onSubmit}>
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-          <label htmlFor="password">Password</label>
-          <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
-          {error ? <p className="err" role="alert">{error}</p> : null}
-          <button className="btn btn-primary" type="submit" disabled={busy} style={{ marginTop: 16, width: "100%", justifyContent: "center" }}>
-            {busy ? "Signing in…" : "Log in"}
-          </button>
-        </form>
-        <p style={{ marginTop: 20 }}>
-          No account? <Link href="/signup">Create one</Link>
-        </p>
+      <SiteHeader
+        links={[
+          { href: "/trust-center", label: "Trust Center" },
+          { href: "/support", label: "Support" },
+          { href: "/signup", label: "Create account" },
+        ]}
+      />
+      <main className="auth-stage">
+        <div className="auth-card">
+          <p className="section-eyebrow">Workspace</p>
+          <h1>Log in</h1>
+          <p className="updated">Use the same email and password as the iOS app.</p>
+          <form onSubmit={onSubmit}>
+            <label htmlFor="email">Email</label>
+            <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+            <label htmlFor="password">Password</label>
+            <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+            {error ? <p className="err" role="alert">{error}</p> : null}
+            <button className="btn btn-primary" type="submit" disabled={busy} style={{ marginTop: 20, width: "100%" }}>
+              {busy ? "Signing in…" : "Log in"}
+            </button>
+          </form>
+          <p style={{ marginTop: 20 }}>
+            No account? <Link href="/signup">Create one</Link>
+          </p>
+        </div>
       </main>
     </>
   );
