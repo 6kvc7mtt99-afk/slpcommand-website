@@ -23,9 +23,11 @@ Verified 2026-08-16 against local Workers runtime (`opennextjs-cloudflare previe
 
 ## Remaining PRs in this train
 
-- PR-01 scaffold + tokens + tests
-- PR-02 absorb 15 public pages
-- PR-03 secure proxy
-- PR-04 Cookie Policy
-- PR-05 auth + onboarding
-- PR-06 app shell + entitlements
+- PR-01 scaffold + tokens + tests — implemented
+- PR-02 absorb 15 public pages — implemented
+- PR-03 secure proxy — implemented
+- PR-04 Cookie Policy — implemented
+- PR-05 auth + onboarding — implemented
+- PR-06 app shell + entitlements — implemented
+
+See the implementation report in the final session note. No production deploy. No push.
