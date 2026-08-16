@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>SLP Command — Admin</title>
+  <style>
+    :root {
+      --bg: #0f1420; --card: #1a2233; --line: #2a3450; --text: #e7ecf5;
+      --muted: #93a0bb; --accent: #4f8cff; --green: #34c759; --red: #ff4d4f; --orange: #ff9f0a;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text); }
+    header { padding: 20px 24px; border-bottom: 1px solid var(--line); display: flex;
+      align-items: center; justify-content: space-between; }
+    header h1 { font-size: 18px; margin: 0; }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .login { max-width: 360px; margin: 12vh auto; background: var(--card); padding: 28px;
+      border-radius: 16px; border: 1px solid var(--line); }
+    .login h2 { margin-top: 0; }
+    input { width: 100%; padding: 11px 12px; margin: 8px 0; border-radius: 10px;
+      border: 1px solid var(--line); background: #0c1120; color: var(--text); font-size: 15px; }
+    button { cursor: pointer; border: none; border-radius: 10px; background: var(--accent);
+      color: #fff; padding: 11px 16px; font-size: 15px; font-weight: 600; }
+    button.ghost { background: transparent; border: 1px solid var(--line); color: var(--text); }
+    button:disabled { opacity: .5; cursor: default; }
+    .err { color: var(--red); font-size: 14px; min-height: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+    .section { margin-bottom: 30px; }
+    .section h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+    .tile { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+    .tile .n { font-size: 28px; font-weight: 700; }
+    .tile .l { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; }
+    .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .pill.open { background: rgba(255,159,10,.15); color: var(--orange); }
+    .pill.resolved { background: rgba(52,199,89,.15); color: var(--green); }
+    .muted { color: var(--muted); }
+    .row { display: flex; gap: 10px; align-items: center; }
+    .hidden { display: none; }
+    .warn { background: rgba(255,159,10,.1); border: 1px solid rgba(255,159,10,.3);
+      border-radius: 10px; padding: 10px 12px; font-size: 13px; color: var(--orange); margin-bottom: 18px; }
+    .dep { display: flex; align-items: center; gap: 8px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .dot.ok { background: var(--green); }
+    .dot.degraded { background: var(--orange); }
+    .dot.down { background: var(--red); }
+    .mode-banner { display: inline-block; padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+    .mode-healthy { background: rgba(52,199,89,.15); color: var(--green); }
+    .mode-degraded { background: rgba(255,159,10,.15); color: var(--orange); }
+    .mode-outage { background: rgba(255,77,79,.15); color: var(--red); }
+    .toggle { position: relative; width: 42px; height: 24px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: var(--line); border-radius: 999px; cursor: pointer; transition: .15s; }
+    .slider:before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
+      background: #fff; border-radius: 50%; transition: .15s; }
+    input:checked + .slider { background: var(--green); }
+    input:checked + .slider:before { transform: translateX(18px); }
+    code { background: #0c1120; padding: 2px 6px; border-radius: 6px; font-size: 12px; }
+
+    /* FASE IPS-003B.4 — Proficiency Engine section. Reuses every existing
+       token/class above (--bg/--card/--line/--accent/--green/--orange/--red,
+       .tile/.grid/.section/table/.pill/.warn) — these are the only NEW rules,
+       for the sub-headers and the small dependency-free bar histograms. */
+    .pe-sub { font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--muted); margin: 22px 0 8px; font-weight: 700; }
+    .pe-sub:first-child { margin-top: 4px; }
+    .hbar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 3px 0; }
+    .hbar-label { width: 52px; flex-shrink: 0; color: var(--muted); text-align: right; }
+    .hbar-track { flex: 1; background: #0c1120; border-radius: 6px; height: 10px; overflow: hidden; }
+    .hbar-fill { height: 100%; background: var(--accent); }
+    .hbar-n { width: 34px; flex-shrink: 0; text-align: right; }
+    .readiness-score { font-size: 40px; font-weight: 800; line-height: 1; }
+    .readiness-band { display: inline-block; padding: 4px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 700; margin-left: 12px; vertical-align: middle; }
+    .band-ready { background: rgba(52,199,89,.15); color: var(--green); }
+    .band-promising { background: rgba(79,140,255,.15); color: var(--accent); }
+    .band-early { background: rgba(255,159,10,.15); color: var(--orange); }
+    .band-not_ready { background: rgba(255,77,79,.15); color: var(--red); }
+    .rec-item { border-left: 3px solid var(--line); padding: 6px 10px; margin: 6px 0; font-size: 13px; }
+    .rec-critical { border-left-color: var(--red); }
+    .rec-warning { border-left-color: var(--orange); }
+    .rec-info { border-left-color: var(--muted); }
+  </style>
+</head>
+<body>
+  <!-- Login -->
+  <div id="loginView" class="login">
+    <h2>Admin access</h2>
+    <p class="muted" style="font-size:14px">Sign in with an administrator account.</p>
+    <input id="email" type="email" placeholder="Email" autocomplete="username" />
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+    <button id="loginBtn" style="width:100%; margin-top:8px">Sign in</button>
+    <p id="loginErr" class="err"></p>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashView" class="hidden">
+    <header>
+      <h1>SLP Command · Operations</h1>
+      <div class="row">
+        <!-- FASE HOME-PRODUCT-REDESIGN-001 (FASE 11-14) — Simple/Advanced toggle.
+             Both modes use the SAME session token and the SAME already-fetched
+             data from loadAll()'s Promise.all — Simple is a friendlier rendering
+             layer, not a separate (or lower-security) data path. Advanced is
+             completely unchanged below. -->
+        <button id="simpleModeBtn" class="ghost">Simple</button>
+        <button id="advancedModeBtn" class="ghost">Advanced</button>
+        <button id="refreshBtn" class="ghost">Refresh</button>
+        <button id="logoutBtn" class="ghost">Sign out</button>
+      </div>
+    </header>
+    <main>
+      <!-- ── Simple Mode ─────────────────────────────────────────────────── -->
+      <div id="simpleView" class="hidden">
+        <div class="warn">Simple view — plain-language summary. Every figure below comes from the
+          same data as Advanced; nothing here is estimated or invented. Figures not yet available
+          from the backend are shown as "Not available yet", never guessed.</div>
+        <div class="section"><h3>System status</h3><div id="simpleStatus" class="grid"></div></div>
+        <div class="section"><h3>Users</h3><div id="simpleUsers" class="grid"></div></div>
+        <div class="section"><h3>Usage per skill (last 30 days)</h3><div id="simpleUsage" class="grid"></div></div>
+        <div class="section"><h3>Subscriptions</h3><div id="simpleSubs" class="grid"></div></div>
+        <div class="section"><h3>AI cost</h3><div id="simpleCost" class="grid"></div></div>
+        <div class="section"><h3>Proficiency engine (per skill)</h3><div id="simplePE" class="grid"></div></div>
+        <div class="section"><h3>Data integrity &amp; alerts</h3><div id="simpleAlerts"></div></div>
+        <p class="muted" style="font-size:12px">Need the raw numbers, flags or logs? Switch to
+          <a href="#" onclick="setMode('advanced');return false;" style="color:var(--accent)">Advanced</a>.</p>
+      </div>
+
+      <!-- ── Advanced Mode (unchanged) ───────────────────────────────────── -->
+      <div id="advancedView">
+      <div class="warn">Crash &amp; error trends (Sentry) and product funnels (PostHog) live in their
+        own dashboards. This panel shows platform data owned by the backend.</div>
+
+      <div class="section"><h3>Users</h3><div id="usersGrid" class="grid"></div></div>
+      <div class="section"><h3>Retention &amp; Segments</h3><div id="retentionGrid" class="grid"></div></div>
+      <div class="section"><h3>Learning</h3><div id="learningGrid" class="grid"></div></div>
+      <div class="section"><h3>Usage (last 30 days)</h3><div id="usageGrid" class="grid"></div></div>
+      <div class="section"><h3>System Health — Backend (since last deploy)</h3><div id="healthGrid" class="grid"></div>
+        <div id="recentErrors" style="margin-top:14px"></div></div>
+      <div class="section"><h3>System Health — Dependencies</h3>
+        <div id="depsMode" style="margin-bottom:10px"></div>
+        <div id="depsGrid" class="grid"></div></div>
+      <div class="section"><h3>User Reports</h3>
+        <div id="reportsGrid" class="grid" style="margin-bottom:14px"></div>
+        <div id="reportsTable"></div></div>
+      <div class="section"><h3>Feature Flags</h3><div id="flagsTable"></div></div>
+
+      <!-- PHASE ADMIN-V2-001 — the V2 engine console.
+           Every figure comes from GET /api/admin/v2/overview. This section
+           performs NO calculation: the backend ships product and engineering as
+           two projections of the same rows, so the panel cannot invent a third
+           version of the truth. -->
+      <section class="card" id="v2Section">
+        <h3>Proficiency engine — V2 <span id="v2Mode" class="muted" style="text-transform:none;font-weight:400;letter-spacing:0"></span></h3>
+        <p class="muted" id="v2Headline" style="margin-top:-4px"></p>
+        <div id="v2Lights" style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0"></div>
+        <div id="v2Skills"></div>
+        <div id="v2Engineering" class="hidden"></div>
+        <div id="v2Calibration" class="hidden"></div>
+      </section>
+
+      <!-- PHASE ADMIN-V2-FINALIZE-001 — every remaining endpoint gets a view.
+           No orphan endpoints, no empty panels. -->
+      <section class="card">
+        <h3>Startup configuration</h3>
+        <p class="muted" style="margin-top:-4px">Exactly what the boot log prints — no need to open Render logs.</p>
+        <div id="startupBody"></div>
+      </section>
+
+      <section class="card">
+        <h3>Diagnose system</h3>
+        <p class="muted" id="dxVerdict" style="margin-top:-4px">Not run yet.</p>
+        <button id="dxRun" style="margin-bottom:10px">Diagnose System</button>
+        <div id="dxBody"></div>
+      </section>
+
+      <!-- PHASE PROJECT-POLISH-FINAL — FLOW 11. The trainer, diagnosable here.
+           GET /api/admin/trainer-pipeline calls the SAME composer that serves
+           the learner, so this panel shows what they were actually told — not a
+           reconstruction of it. This page performs NO calculation: every
+           sentence below, including the reasons, is written by the backend. -->
+      <!-- FASE C-08 / FASE 19 — the writing decision, observable. Every value
+           is read back from what was written at evaluation time; this panel
+           re-derives nothing, so it cannot disagree with what the learner was
+           served. -->
+      <section class="card">
+        <h3>Writing evaluation</h3>
+        <p class="muted" style="margin-top:-4px">What the scores produced, what task coverage did to it, and under which rule.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:10px">
+          <label style="font-size:12px">learner (optional)<br>
+            <input id="weUser" placeholder="user id" style="padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;min-width:280px"></label>
+          <label style="font-size:12px">attempts<br>
+            <input id="weLimit" type="number" value="50" min="1" max="200" style="width:80px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px"></label>
+          <button id="weRun">Load writing evaluations</button>
+        </div>
+        <div id="weBody"></div>
+      </section>
+
+      <section class="card">
+        <h3>Trainer pipeline</h3>
+        <p class="muted" style="margin-top:-4px">Why this learner is being told this, today. Read-only.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:10px">
+          <label style="font-size:12px">learner<br>
+            <input id="tpUser" list="tpLearners" placeholder="user id" style="padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;min-width:290px">
+            <datalist id="tpLearners"></datalist>
+          </label>
+          <label style="font-size:12px">minutes<br>
+            <input id="tpMinutes" type="number" value="25" min="5" max="120" style="width:70px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px"></label>
+          <!-- ONE button. Loading the pipeline and diagnosing it are the same
+               request, so offering both would be two controls for one action. -->
+          <button id="tpDiagnose">Diagnose Trainer Pipeline</button>
+        </div>
+        <p class="muted" id="tpLearnerHint" style="font-size:12px"></p>
+        <div id="tpDiagBody"></div>
+        <div id="tpBody"></div>
+      </section>
+
+      <section class="card">
+        <h3>Recovery &amp; replay</h3>
+        <div id="recBody"></div>
+        <button id="replayRun" style="margin:10px 8px 0 0">Validate recovery (replay, read-only)</button>
+        <input id="replayUser" placeholder="user id (optional)" style="padding:6px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px">
+        <div id="replayBody" style="margin-top:10px"></div>
+      </section>
+
+      <section class="card">
+        <h3>Compare — Legacy vs V2</h3>
+        <button id="cmpExport" style="float:right">Export CSV</button>
+        <div id="cmpBody"></div>
+      </section>
+
+      <section class="card">
+        <h3>Transition</h3>
+        <div id="trBody"></div>
+      </section>
+
+      <section class="card">
+        <h3>Corpus</h3>
+        <div id="corpusBody"></div>
+      </section>
+
+      <section class="card">
+        <h3>Simulator</h3>
+        <p class="muted" style="margin-top:-4px">Runs the certified engine on synthetic input. Writes nothing.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:10px">
+          <label style="font-size:12px">correct<br><input id="simC" type="number" value="15" style="width:70px;padding:5px"></label>
+          <label style="font-size:12px">incorrect<br><input id="simW" type="number" value="5" style="width:70px;padding:5px"></label>
+          <label style="font-size:12px">item level<br><input id="simL" type="number" value="3" step="1" style="width:70px;padding:5px"></label>
+          <label style="font-size:12px">days idle<br><input id="simD" type="number" value="0" style="width:70px;padding:5px"></label>
+          <label style="font-size:12px">constructs<br><input id="simK" type="number" value="4" style="width:70px;padding:5px"></label>
+          <label style="font-size:12px">exam items<br><input id="simE" type="number" value="1" style="width:70px;padding:5px"></label>
+          <button id="simRun">Simulate</button>
+        </div>
+        <div id="simBody"></div>
+      </section>
+
+      <!-- FASE IPS-003B.4 — Proficiency Engine (shadow_v2). READ ONLY: every
+           number here comes from GET /api/admin/proficiency/dashboard, gated
+           by the SAME requireAdminUser guard as every other section on this
+           page. No PII, no raw user_id — only userHash where a per-user row
+           is unavoidable (top divergences / top outliers). -->
+      <div class="section">
+        <h3>Proficiency Engine <span id="peSkillNote" class="muted" style="text-transform:none; font-weight:400; letter-spacing:0"></span></h3>
+        <div class="pe-sub">Control &amp; Validation · Reading</div>
+        <div id="peModeStatus" class="grid"></div>
+        <!-- FASE IPS-009 — Listening's own mode/validation block. Same
+             renderer, own fetch, own container: a Listening failure here
+             cannot affect the Reading block above it. -->
+        <div class="pe-sub">Control &amp; Validation · Listening</div>
+        <div id="peModeStatusListening" class="grid"></div>
+        <!-- FASE IPS-009 (Writing pass) — same isolated pattern as Listening. -->
+        <div class="pe-sub">Control &amp; Validation · Writing</div>
+        <div id="peModeStatusWriting" class="grid"></div>
+        <!-- FASE SPEAKING-PEV2-INTEGRATION-001 — Speaking is PEV2's 4th skill.
+             Same isolated pattern again. Speaking ships intentionally OFF: its
+             shadow flag row does not exist, so this block is expected to read
+             flag=off / no validation until it is deliberately enabled. -->
+        <div class="pe-sub">Control &amp; Validation · Speaking</div>
+        <div id="peModeStatusSpeaking" class="grid"></div>
+        <div id="peUnavailable"></div>
+        <div id="peBody" class="hidden">
+          <div id="peSummaryGrid" class="grid"></div>
+
+          <div class="pe-sub">Readiness Score</div>
+          <div id="peReadiness"></div>
+
+          <div class="pe-sub">Convergence</div>
+          <div id="peConvergenceGrid" class="grid"></div>
+          <div id="peConvergenceHist"></div>
+
+          <div class="pe-sub">Drift — Shadow vs Current</div>
+          <div id="peDriftGrid" class="grid"></div>
+          <div id="peDriftHist"></div>
+          <div id="peDriftTop"></div>
+
+          <div class="pe-sub">Regime Shift</div>
+          <div id="peRegimeGrid" class="grid"></div>
+
+          <div class="pe-sub">Outliers</div>
+          <div id="peOutliersGrid" class="grid"></div>
+          <div id="peOutliersTop"></div>
+
+          <div class="pe-sub">Integrity</div>
+          <div id="peIntegrity"></div>
+
+          <div class="pe-sub">Telemetry</div>
+          <div id="peTelemetryNote" class="warn" style="margin-bottom:10px"></div>
+          <div id="peTelemetryGrid" class="grid"></div>
+
+          <div class="pe-sub">Recommendations</div>
+          <div id="peRecommendations"></div>
+        </div>
+      </div>
+
+      <div class="section"><h3>Audit Log</h3><div id="auditTable"></div></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Production backend. requireAdminUser (JWT + user_profiles.is_admin) gates every /api/admin route.
+    const API = "https://english-learning-backend-b5uw.onrender.com";
+    let token = null;
+
+    const $ = (id) => document.getElementById(id);
+    const tile = (n, l) => `<div class="tile"><div class="n">${n ?? "—"}</div><div class="l">${l}</div></div>`;
+
+    async function api(path, opts = {}) {
+      const res = await fetch(API + path, {
+        ...opts,
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, ...(opts.headers || {}) }
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || ("HTTP " + res.status));
+      return res.json();
+    }
+
+    async function login() {
+      $("loginErr").textContent = "";
+      $("loginBtn").disabled = true;
+      try {
+        const res = await fetch(API + "/api/auth/login", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: $("email").value.trim(), password: $("password").value })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.accessToken) throw new Error(data.error || "Login failed");
+        token = data.accessToken;
+        // Verify admin by loading data; a 403 here means "not an admin".
+        await loadAll();
+        // PHASE ADMIN-V2-001 — awaited separately so a missing endpoint on an
+        // older deployment degrades this one section instead of the whole page.
+        await loadV2();
+        // Every remaining panel. Each degrades on its own if its endpoint is
+        // missing, so one absent route never blanks the console.
+        await Promise.allSettled([loadStartup(), loadRecovery(), loadCompare(), loadTransition(), loadCorpus(), loadTrainerLearners()]);
+        $("cmpExport").onclick = exportCompare;
+        $("dxRun").onclick = runDiagnose;
+        // Always re-fetches: an operator pressing this wants the verdict on the
+        // pipeline as it is NOW, not on whatever was loaded earlier.
+        $("tpDiagnose").onclick = loadTrainerPipeline;
+        $("weRun").onclick = loadWritingEvaluation;
+        $("replayRun").onclick = runReplay;
+        $("simRun").onclick = runSimulate;
+        $("loginView").classList.add("hidden");
+        $("dashView").classList.remove("hidden");
+      } catch (e) {
+        token = null;
+        $("loginErr").textContent = /admin/i.test(e.message) ? "This account is not an administrator." : e.message;
+      } finally {
+        $("loginBtn").disabled = false;
+      }
+    }
+
+    function logout() {
+      token = null;
+      $("dashView").classList.add("hidden");
+      $("loginView").classList.remove("hidden");
+      $("password").value = "";
+    }
+
+    async function loadAll() {
+      // FASE IPS-003B.4 — the Proficiency Engine fetch is deliberately
+      // isolated with its own .catch(): if proficiency_dashboard_report()
+      // isn't deployed/migrated yet in a given environment (true today —
+      // no IPS-003B migration has been applied to production), it must
+      // NEVER take down the rest of this page via Promise.all rejecting.
+      // Every other call below still throws normally, so the existing
+      // "a 403 here means not-admin" check in login() is unaffected.
+      const [users, learning, usage, health, reports, retention, deps, flags, audit, pe, ms, msListening, msWriting, msSpeaking] = await Promise.all([
+        api("/api/admin/metrics/users"),
+        api("/api/admin/metrics/learning"),
+        api("/api/admin/metrics/usage"),
+        api("/api/admin/metrics/health"),
+        api("/api/admin/metrics/reports"),
+        api("/api/admin/metrics/retention"),
+        api("/api/admin/metrics/system-health"),
+        api("/api/admin/feature-flags"),
+        api("/api/admin/audit-logs?limit=30"),
+        api("/api/admin/proficiency/dashboard?skill=reading").catch((e) => ({ __peError: e.message })),
+        // FASE IPS-007 Incremento 3 — mode + validation status, isolated so a
+        // failure (endpoint not yet deployed) never breaks the rest of /admin.
+        api("/api/admin/proficiency/mode-status?skill=reading").catch((e) => ({ __msError: e.message })),
+        // FASE IPS-009 — Listening's mode-status, isolated the same way.
+        api("/api/admin/proficiency/mode-status?skill=listening").catch((e) => ({ __msError: e.message })),
+        api("/api/admin/proficiency/mode-status?skill=writing").catch((e) => ({ __msError: e.message })),
+        // FASE SPEAKING-PEV2-INTEGRATION-001 — Speaking's mode-status, isolated
+        // the same way. Note: a backend that predates Speaking's addition to
+        // PROFICIENCY_SKILL_CONFIG silently falls back to Reading's config, so
+        // this tile reading "shadow_v2" instead of "speaking_v1" means the
+        // backend deploy has not landed yet — not that Speaking is misconfigured.
+        api("/api/admin/proficiency/mode-status?skill=speaking").catch((e) => ({ __msError: e.message }))
+      ]);
+
+      $("usersGrid").innerHTML =
+        tile(users.total, "Total users") + tile(users.activeToday, "Active today") +
+        tile(users.active7d, "Active 7 days") + tile(users.active30d, "Active 30 days") +
+        tile(users.newRegistrations?.d7, "New (7d)") + tile(users.newRegistrations?.d30, "New (30d)");
+
+      const a = learning.attempts || {};
+      $("learningGrid").innerHTML =
+        tile(a.listening, "Listening attempts") + tile(a.reading, "Reading attempts") +
+        tile(a.writing, "Writing attempts") + tile(a.speaking, "Speaking attempts") +
+        tile(learning.examsStarted, "Exams started") + tile(learning.examsCompleted, "Exams completed");
+
+      const u = usage.last30dAttemptsByModule || {};
+      $("usageGrid").innerHTML =
+        tile(usage.mostUsedModule || "—", "Most used module") +
+        tile(u.listening, "Listening (30d)") + tile(u.reading, "Reading (30d)") +
+        tile(u.writing, "Writing (30d)") + tile(u.speaking, "Speaking (30d)");
+
+      $("healthGrid").innerHTML =
+        tile(health.status5xx, "5xx errors") + tile(health.status4xx, "4xx errors") +
+        tile(health.jwtFailures, "JWT failures (401)") + tile(health.rateLimitHits, "Rate-limit hits (429)") +
+        tile(health.total, "Total API calls");
+      $("recentErrors").innerHTML = (health.recentErrors && health.recentErrors.length)
+        ? `<table><tr><th>When</th><th>Status</th><th>Endpoint</th></tr>${health.recentErrors.map(e =>
+            `<tr><td class="muted">${new Date(e.at).toLocaleString()}</td><td>${e.status}</td><td>${e.method} ${e.path}</td></tr>`).join("")}</table>`
+        : `<p class="muted" style="font-size:13px">No recent 4xx/5xx since last deploy.</p>`;
+
+      $("reportsGrid").innerHTML = tile(reports.open, "Open reports") + tile(reports.resolved, "Resolved reports");
+      renderReports(reports.latest || []);
+
+      $("retentionGrid").innerHTML =
+        tile(retention.d1?.pct != null ? retention.d1.pct + "%" : "—", "D1 retention") +
+        tile(retention.d7?.pct != null ? retention.d7.pct + "%" : "—", "D7 retention") +
+        tile(retention.d30?.pct != null ? retention.d30.pct + "%" : "—", "D30 retention") +
+        tile(retention.segments?.power, "Power users (≤3d)") +
+        tile(retention.segments?.engaged, "Engaged (4–14d)") +
+        tile(retention.segments?.churnRisk, "Churn risk (15–30d)") +
+        tile(retention.segments?.inactive, "Inactive (30d+)");
+
+      const modeClass = "mode-" + deps.mode;
+      $("depsMode").innerHTML = `Overall: <span class="mode-banner ${modeClass}">${deps.mode.toUpperCase()}</span>
+        <span class="muted" style="margin-left:10px">Backend uptime: ${deps.backend?.uptimeSeconds ?? "—"}s ·
+        error rate: ${deps.backend?.errorRatePct ?? "—"}%</span>`;
+      $("depsGrid").innerHTML = Object.entries(deps.dependencies || {}).map(([name, d]) => {
+        const state = d.ok ? "ok" : (d.degraded ? "degraded" : "down");
+        return `<div class="tile dep"><span class="dot ${state}"></span>
+          <div><div style="font-weight:600">${name}</div><div class="l">${state}</div></div></div>`;
+      }).join("");
+
+      renderFlags(flags.flags || []);
+      renderAudit(audit.logs || []);
+      renderModeStatus(ms, "peModeStatus");
+      renderModeStatus(msListening, "peModeStatusListening");
+      renderModeStatus(msWriting, "peModeStatusWriting");
+      renderModeStatus(msSpeaking, "peModeStatusSpeaking");
+      renderProficiencyEngine(pe);
+
+      // FASE HOME-PRODUCT-REDESIGN-001 (FASE 11-14) — Simple view is rendered
+      // from the SAME already-fetched objects above. No new fetches.
+      renderSimpleView({ users, learning, usage, health, reports, retention, deps, pe,
+        ms, msListening, msWriting, msSpeaking });
+    }
+
+    // ── FASE 11-14 — Admin Simple Mode ────────────────────────────────────
+    // Plain-language translation layer over data ALREADY fetched by loadAll's
+    // Promise.all. Never fabricates a figure: anything the backend doesn't
+    // expose (MRR, churn, per-plan user counts, AI cost) renders as "Not
+    // available yet" rather than an invented number. Same admin JWT / same
+    // requireAdminUser-gated endpoints as Advanced — this is a rendering
+    // layer, not a separate or lower-security data path.
+    const NA = '<span class="muted">Not available yet</span>';
+
+    function simpleTile(value, label, info) {
+      const infoHtml = info
+        ? ` <span class="muted" title="${esc(info)}" style="cursor:help">ⓘ</span>` : "";
+      return `<div class="tile"><div class="n">${value}</div><div class="l">${label}${infoHtml}</div></div>`;
+    }
+
+    function modeStatusToSimple(ms, skillLabel) {
+      if (!ms || ms.__msError) {
+        return simpleTile(NA, `${skillLabel} — proficiency engine`,
+          "Mode/validation status not deployed in this environment yet.");
+      }
+      const rollout = ms.shadowFlagEnabled ? `Enabled for ${ms.rolloutPercent ?? 0}% of users` : "Disabled";
+      const integrityText = (ms.validation && ms.validation.status)
+        ? (ms.validation.status === "PASS" ? "Healthy" : `${esc(ms.validation.status.replace(/_/g, " "))}`)
+        : "Not available yet";
+      return `<div class="tile">
+        <div class="l" style="font-weight:600;margin-bottom:6px">${esc(skillLabel)}</div>
+        <div class="l">Rollout: <b>${rollout}</b>
+          <span class="muted" title="Percentage of users receiving the new proficiency engine for this skill." style="cursor:help">ⓘ</span></div>
+        <div class="l">Data integrity: <b>${integrityText}</b>
+          <span class="muted" title="Whether the engine's own consistency checks are passing." style="cursor:help">ⓘ</span></div>
+      </div>`;
+    }
+
+    function renderSimpleView(d) {
+      const { users, learning, usage, health, reports, retention, deps, pe, ms, msListening, msWriting, msSpeaking } = d;
+
+      // System status
+      const modeClass = "mode-" + (deps.mode || "unknown");
+      const statusLabel = deps.mode === "healthy" ? "All systems normal"
+        : deps.mode === "degraded" ? "Degraded — some features may be slow"
+        : deps.mode === "outage" ? "Outage — investigate now" : "Unknown";
+      $("simpleStatus").innerHTML =
+        `<div class="tile"><div class="n"><span class="mode-banner ${modeClass}">${statusLabel}</span></div>
+          <div class="l">Backend system status</div></div>` +
+        simpleTile(health.status5xx ?? 0, "Server errors (since last deploy)",
+          "Count of 5xx server errors — should be near zero.") +
+        simpleTile(reports.open ?? 0, "Open user reports");
+
+      // Users — real totals are available; a Free/Pro split is NOT exposed by
+      // /api/admin/metrics/users today, so it is explicitly marked unavailable
+      // rather than guessed from entitlements data this page doesn't fetch.
+      $("simpleUsers").innerHTML =
+        simpleTile(users.total ?? NA, "Total users") +
+        simpleTile(users.activeToday ?? NA, "Active today") +
+        simpleTile(users.active30d ?? NA, "Active in last 30 days") +
+        simpleTile(NA, "Free vs Pro split",
+          "The users metrics endpoint does not currently break users down by plan.");
+
+      // Usage per skill
+      const u = usage.last30dAttemptsByModule || {};
+      $("simpleUsage").innerHTML =
+        simpleTile(u.reading ?? NA, "Reading sessions") +
+        simpleTile(u.listening ?? NA, "Listening sessions") +
+        simpleTile(u.writing ?? NA, "Writing sessions") +
+        simpleTile(u.speaking ?? NA, "Speaking sessions");
+
+      // Subscriptions — no MRR/subscription-count endpoint exists yet.
+      $("simpleSubs").innerHTML = simpleTile(NA, "Active Pro subscriptions",
+        "No subscription/revenue endpoint is exposed to /api/admin yet. This is intentionally left blank rather than estimated.");
+
+      // AI cost — never fabricated.
+      $("simpleCost").innerHTML = simpleTile(NA, "AI cost (last 30 days)",
+        "No AI-cost metric is exposed to /api/admin yet.");
+
+      // Proficiency engine, per skill, in plain language.
+      $("simplePE").innerHTML =
+        modeStatusToSimple(ms, "Reading") +
+        modeStatusToSimple(msListening, "Listening") +
+        modeStatusToSimple(msWriting, "Writing") +
+        modeStatusToSimple(msSpeaking, "Speaking");
+
+      // Alerts — integrity findings translated, plus open reports.
+      const findings = (pe && !pe.__peError && pe.integrity) ? pe.integrity : null;
+      let alertsHtml = "";
+      if (!findings) {
+        alertsHtml += `<p class="muted" style="font-size:13px">Proficiency engine integrity data not available yet in this environment.</p>`;
+      } else {
+        const failing = findings.filter((c) => c.status !== "PASS");
+        alertsHtml += failing.length
+          ? `<div class="warn">Data integrity: ${failing.length} issue${failing.length === 1 ? "" : "s"} detected</div>
+             <table><tr><th>Check</th><th>Status</th></tr>${failing.map(f =>
+               `<tr><td>${esc(f.name || f.check || "—")}</td><td>${esc(f.status)}</td></tr>`).join("")}</table>`
+          : `<p style="font-size:13px;color:var(--green)">Data integrity: Healthy — all checks passing.</p>`;
+      }
+      if ((reports.open ?? 0) > 0) {
+        alertsHtml += `<p style="font-size:13px;margin-top:10px">${reports.open} open user report${reports.open === 1 ? "" : "s"} awaiting review.</p>`;
+      }
+      $("simpleAlerts").innerHTML = alertsHtml;
+    }
+
+    // ── PHASE ADMIN-V2-001 — the V2 engine console ───────────────────────────
+    //
+    // Renders `/api/admin/v2/overview`. The endpoint ships PRODUCT and
+    // ENGINEERING as two projections of the same rows; this function chooses
+    // which to show and computes nothing. If the endpoint is not deployed yet it
+    // says so plainly rather than rendering an empty shell.
+    let v2Data = null;
+
+    async function loadV2() {
+      try {
+        v2Data = await api("/api/admin/v2/overview");
+      } catch (e) {
+        $("v2Headline").textContent = "The V2 overview endpoint is not available on this deployment yet.";
+        return;
+      }
+      renderV2();
+    }
+
+    // ONE escaper. There were two top-level declarations of esc() in this file
+    // with different behaviour — the second silently won for every call site,
+    // so the first had never run. This is both: null-safe AND quote-safe, the
+    // latter being required because values are interpolated into attributes.
+    function esc(x) { return String(x == null ? "" : x).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+    function renderV2() {
+      if (!v2Data) return;
+      const engineering = (localStorage.getItem("adminViewMode") || "advanced") !== "simple";
+      const p = v2Data.product, e = v2Data.engineering;
+
+      $("v2Mode").textContent = "· " + Object.values(p.bySkill).map(x => x.mode).filter((v, i, a) => a.indexOf(v) === i).join(" / ");
+      $("v2Headline").textContent = p.headline.summary + " " + p.headline.measurementsHeld + " measurements held.";
+
+      // BLOCK 9 — traffic lights, each with the reason the backend gave.
+      $("v2Lights").innerHTML = v2Data.health.lights.map(l => {
+        const c = l.status === "green" ? "#16a34a" : l.status === "amber" ? "#d97706" : "#dc2626";
+        return `<span style="display:inline-flex;align-items:center;gap:6px;border:1px solid ${c}33;background:${c}14;color:${c};padding:4px 10px;border-radius:999px;font-size:12px" title="${esc(l.detail)}">
+                  <span style="width:8px;height:8px;border-radius:99px;background:${c}"></span>${esc(l.id.replace(/_/g, " "))}</span>`;
+      }).join("");
+
+      // BLOCK 2/3 — per skill. PRODUCT never shows theta or sigma.
+      $("v2Skills").innerHTML = Object.keys(p.bySkill).map(skill => {
+        const s = p.bySkill[skill];
+        const conf = s.confidence, fr = s.freshness;
+        const bar = (label, n, total, color) => {
+          const pct = total > 0 ? Math.round(100 * n / total) : 0;
+          return `<div style="display:flex;align-items:center;gap:8px;margin:2px 0;font-size:12px">
+                    <span style="width:120px;color:#64748b">${esc(label)}</span>
+                    <span style="flex:1;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden">
+                      <span style="display:block;height:100%;width:${pct}%;background:${color}"></span></span>
+                    <span style="width:34px;text-align:right">${n}</span></div>`;
+        };
+        const measured = s.learnersMeasured;
+        return `<div style="border-top:1px solid #e2e8f0;padding:12px 0">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <strong style="text-transform:capitalize">${esc(skill)}</strong>
+            <span class="muted" style="font-size:12px">${esc(s.mode)} · ${measured} measured · ${s.learnersOnPreviousMethod} on the previous method</span>
+          </div>
+          <p class="muted" style="font-size:12px;margin:4px 0 8px">${esc(s.modeExplained)}</p>
+          ${bar("Reliable", conf.reliable, measured, "#16a34a")}
+          ${bar("Fairly reliable", conf.fairly_reliable, measured, "#65a30d")}
+          ${bar("Limited evidence", conf.limited_evidence, measured, "#0284c7")}
+          ${bar("Out of date", conf.out_of_date, measured, "#d97706")}
+          <div style="margin-top:6px">${bar("Fresh", fr.fresh, measured, "#16a34a")}${bar("Ageing", fr.ageing, measured, "#d97706")}${bar("Stale", fr.stale, measured, "#dc2626")}</div>
+        </div>`;
+      }).join("");
+
+      // BLOCK 10 — ENGINEERING. Everything PRODUCT hides.
+      $("v2Engineering").classList.toggle("hidden", !engineering);
+      $("v2Calibration").classList.toggle("hidden", !engineering);
+      if (engineering) {
+        const g = e.promotionGate;
+        $("v2Engineering").innerHTML = `
+          <h4 style="margin:16px 0 6px">Promotion gate — ${g.passed}/${g.total}${g.eligible ? " · eligible" : ""}</h4>
+          <div style="font-size:12px">${g.criteria.map(c =>
+            `<div style="display:flex;gap:8px;padding:2px 0"><span style="color:${c.pass ? "#16a34a" : "#d97706"};width:44px">${c.pass ? "PASS" : "FAIL"}</span>
+             <span style="width:220px">${esc(c.id)}</span><span class="muted">measured ${esc(JSON.stringify(c.measured))} — ${esc(c.required)}</span></div>`).join("")}</div>
+          <h4 style="margin:16px 0 6px">Per-learner state</h4>
+          <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+            <tr style="text-align:left;color:#64748b"><th>skill</th><th>confidence</th><th>limiting</th><th>obs</th><th>constructs</th><th>exam</th><th>days</th><th>theta</th><th>sigma&sup2;</th><th>highest</th></tr>
+            ${Object.keys(e.bySkill).flatMap(sk => e.bySkill[sk].detail.map(d =>
+              `<tr><td>${esc(sk)}</td><td>${esc(d.label)}</td><td>${esc(d.limitingFactor)}</td><td>${d.observations}</td><td>${d.constructs}</td><td>${d.examItems}</td><td>${d.daysSinceLast}</td>
+               <td>${d.engineering.theta}</td><td>${d.engineering.sigma2}</td><td>${d.engineering.highestEvidenced}</td></tr>`)).join("")}
+          </table></div>
+          <h4 style="margin:16px 0 6px">Rebuild coverage</h4>
+          <p style="font-size:12px">${e.rebuild.covered}/${e.rebuild.total} sources rebuildable${e.rebuild.gaps.length ? " · gaps: " + e.rebuild.gaps.map(x => esc(x.source)).join(", ") : " · no gaps"}</p>`;
+
+        // BLOCK 6 — calibration.
+        const cal = v2Data.calibration;
+        $("v2Calibration").innerHTML = `
+          <h4 style="margin:16px 0 6px">Calibration — ${Object.entries(cal.counts).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</h4>
+          <div style="font-size:12px">${cal.parameters.map(x =>
+            `<details style="padding:3px 0"><summary><strong>${esc(x.key)}</strong> <span class="muted">${esc(x.status)} · ${esc(String(x.value))}</span></summary>
+             <p style="margin:4px 0 0 16px">${esc(x.whatItDoes)}<br><span class="muted">If it changed: ${esc(x.ifItChanged)}</span></p></details>`).join("")}</div>`;
+      }
+    }
+
+    // ── PHASE ADMIN-V2-FINALIZE-001 — renderers for every remaining endpoint ──
+    //
+    // Each one renders exactly what its endpoint returns and computes nothing.
+    // Where the backend states a limitation (a pool with no use_count, a metric
+    // that is not measured), the panel SHOWS that statement rather than hiding
+    // an absence behind a blank cell.
+
+    const dot = (st) => { const c = st === "green" ? "#16a34a" : st === "amber" ? "#d97706" : "#dc2626";
+      return `<span style="display:inline-block;width:8px;height:8px;border-radius:99px;background:${c};margin-right:6px"></span>`; };
+
+    // ---- FLOW 11 — trainer pipeline ---------------------------------------
+    //
+    // Every string rendered here was written by the backend. The only thing
+    // this code decides is layout: no threshold, no label, no reason and no
+    // verdict is computed in the browser. That is the same rule the app follows,
+    // and it is why Admin cannot describe a learner differently from the device.
+
+    async function loadTrainerLearners() {
+      let r; try { r = await api("/api/admin/trainer-pipeline"); }
+      catch (e) { $("tpLearnerHint").textContent = "Learner list unavailable."; return; }
+      $("tpLearners").innerHTML = r.learners.map(l =>
+        `<option value="${esc(l.userId)}">${esc(l.skills.join(", "))} · ${l.observations} obs · ${esc(String(l.lastEventAt || "").slice(0, 10))}</option>`).join("");
+      $("tpLearnerHint").textContent = `${r.count} learner${r.count === 1 ? "" : "s"} have proficiency state. Start typing, or pick from the list.`;
+      if (r.learners.length && !$("tpUser").value) $("tpUser").value = r.learners[0].userId;
+    }
+
+    async function loadTrainerPipeline() {
+      const u = $("tpUser").value.trim();
+      if (!u) { $("tpBody").innerHTML = `<p class="muted">Choose a learner first.</p>`; return; }
+      $("tpBody").innerHTML = `<p class="muted">Loading…</p>`;
+      $("tpDiagBody").innerHTML = "";
+      let r;
+      try {
+        r = await api(`/api/admin/trainer-pipeline?user=${encodeURIComponent(u)}&minutes=${encodeURIComponent($("tpMinutes").value || 25)}`);
+      } catch (e) {
+        $("tpBody").innerHTML = `<p style="color:#dc2626">${esc(e.message)}</p>`; return;
+      }
+      renderTrainerPipeline(r);
+      renderTrainerDiagnose(r.diagnose);
+    }
+
+    function renderTrainerDiagnose(d) {
+      if (!d) { $("tpDiagBody").innerHTML = ""; return; }
+      const light = (s) => dot(s === "OK" ? "green" : s === "WARNING" ? "amber" : "red");
+      $("tpDiagBody").innerHTML =
+        `<p style="font-size:13px;margin:0 0 6px">${light(d.status)}<strong>${esc(d.headline)}</strong>
+           <span class="muted">· ${d.counts.ok} OK · ${d.counts.warnings} warning · ${d.counts.errors} error</span></p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th>stage</th><th>status</th><th>detail</th></tr>
+           ${d.checks.map(c => `<tr style="border-top:1px solid #f1f5f9">
+             <td style="padding:4px 6px 4px 0"><strong>${esc(c.label)}</strong></td>
+             <td>${light(c.status)}${esc(c.status)}</td>
+             <td>${esc(c.detail)}${c.action ? `<br><span style="color:#0284c7">→ ${esc(c.action)}</span>` : ""}</td>
+           </tr>`).join("")}
+         </table></div>`;
+    }
+
+    function renderTrainerPipeline(p) {
+      if (!p || p.available === false) {
+        $("tpBody").innerHTML = `<p class="muted">${esc(p?.why || "Nothing to show.")}</p>`; return;
+      }
+      const H = (t) => `<h4 style="margin:16px 0 6px">${t}</h4>`;
+      const li = (xs) => `<ul style="margin:4px 0;padding-left:18px;font-size:12px">${xs.join("")}</ul>`;
+      const row = (k, v) => `<tr style="border-top:1px solid #f1f5f9"><td style="padding:3px 10px 3px 0;color:#64748b;white-space:nowrap">${esc(k)}</td><td>${v}</td></tr>`;
+      const time = (t) => t ? `<span style="font-family:monospace;font-size:11px">${esc(String(t).slice(0, 19).replace("T", " "))}</span>` : `<span class="muted">—</span>`;
+      // A field the product does not store renders as an explicit absence with
+      // its reason, never as a blank cell an operator might read as "just now".
+      const absent = (o) => `<span class="muted">not retained</span> <span style="font-size:11px;color:#64748b">— ${esc(o.why)}</span>`;
+
+      const m = p.mission, s = p.session, pr = p.prediction, r = p.recovery, d = p.difficulty, pl = p.pipeline;
+
+      $("tpBody").innerHTML = `
+        ${H("Today mission")}
+        <p style="font-size:14px;margin:0"><strong>${esc(m.objective || "—")}</strong>
+          <span class="muted">· ${esc(m.priority)}</span></p>
+        <p style="font-size:12px;color:#475569;margin:4px 0">${esc(m.reason || "")}</p>
+        <p style="font-size:12px;color:#64748b;margin:4px 0">${esc(m.priorityWhy)} <em>Status: ${esc(m.status)}.</em></p>
+
+        ${H("Adaptive session")}
+        <p style="font-size:12px;margin:0 0 4px">${s.estimatedMinutes} of ${s.requestedMinutes} minutes planned${s.unusedMinutes ? ` · ${s.unusedMinutes} unused` : ""}</p>
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <tr style="text-align:left;color:#64748b"><th>#</th><th>skill</th><th>min</th><th>mode</th><th>posture</th><th>why this block</th></tr>
+          ${s.plan.map(b => `<tr style="border-top:1px solid #f1f5f9"><td>${b.order}</td><td><strong>${esc(b.skill)}</strong></td>
+            <td>${b.minutes}</td><td>${esc(b.mode)}</td><td>${esc(b.posture)}</td><td>${esc(b.why)}</td></tr>`).join("")}
+        </table></div>
+        <p class="muted" style="font-size:11px;margin:6px 0">${esc(s.orderRule)}</p>
+        ${s.skillsSkipped.length ? li(s.skillsSkipped.map(x => `<li><strong>${esc(x.skill)}</strong> can wait — ${esc(x.why)}</li>`)) : ""}
+
+        ${H("Prediction")}
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <tr style="text-align:left;color:#64748b"><th>skill</th><th>now</th><th>expected</th><th>items</th><th>changes</th></tr>
+          ${pr.perBlock.map(o => `<tr style="border-top:1px solid #f1f5f9"><td>${esc(o.skill)}</td>
+            <td>${esc(o.current?.confidenceLabel ?? "—")}${o.current?.level != null ? ` · ${Number(o.current.level).toFixed(2)}` : ""}</td>
+            <td>${esc(o.expected?.confidenceLabel ?? "—")}${o.expected?.level != null ? ` · ${Number(o.expected.level).toFixed(2)}` : ""}</td>
+            <td>${o.itemsExpected ?? "—"}</td>
+            <td>${(o.changes || []).map(c => `${c.certain ? "✓" : "○"} ${esc(c.text)}`).join("<br>")}</td></tr>`).join("")}
+        </table></div>
+        <p style="font-size:12px;margin:6px 0"><strong>Pass probability:</strong> ${pr.passProbability == null ? `<span class="muted">none</span>` : pr.passProbability}
+          <br><span style="font-size:11px;color:#64748b">${esc(pr.passProbabilityWhy || "")}</span></p>
+        <details style="font-size:11px"><summary class="muted">Limitations of this prediction</summary>
+          ${li(pr.limitations.map(x => `<li>${esc(x)}</li>`))}</details>
+
+        ${H("Confidence")}
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <tr style="text-align:left;color:#64748b"><th>skill</th><th>state</th><th>position</th><th>obs</th><th>days</th><th>why</th><th>how to improve</th></tr>
+          ${p.confidence.map(c => `<tr style="border-top:1px solid #f1f5f9"><td>${esc(c.skill)}</td>
+            <td><strong>${esc(c.label)}</strong></td><td>${c.position + 1} of ${c.total}</td>
+            <td>${c.observations}</td><td>${c.daysSinceLast ?? "—"}</td>
+            <td>${esc(c.why)}</td><td style="color:#0284c7">${esc(c.howToImprove)}</td></tr>`).join("")}
+        </table></div>
+
+        ${H("Recovery")}
+        <p style="font-size:12px;margin:0 0 4px">${esc(r.summary)}</p>
+        ${["recovering", "recovered", "expired", "needsNewEvidence"].map(k => r[k].length
+          ? `<p style="font-size:12px;margin:4px 0"><strong>${esc(k)}</strong>${li(r[k].map(x => `<li>${esc(x.skill)} — ${esc(x.why)}</li>`))}</p>` : "").join("")}
+
+        ${H("ROI")}
+        <p style="font-size:12px;margin:0">${esc(p.roi.why)}</p>
+        ${p.roi.postpone.length ? `<p style="font-size:12px;margin:4px 0"><strong>Worth postponing</strong>${li(p.roi.postpone.map(x => `<li>${esc(x.skill)} — ${esc((x.because || [])[0] || "")}</li>`))}</p>` : ""}
+
+        ${H("Difficulty")}
+        <p style="font-size:12px;margin:0">Intensity <strong>${esc(d.intensity)}</strong> · cognitive load <strong>${esc(d.cognitiveLoad)}</strong>
+          · ${d.productionMinutes} min production / ${d.receptionMinutes} min reception</p>
+        <p style="font-size:12px;color:#475569;margin:4px 0">${esc(d.why || "")}</p>
+        <p style="font-size:11px;color:#64748b;margin:4px 0">${esc(d.cognitiveLoadWhy)}<br><strong>Fatigue:</strong> ${esc(d.fatigueWhy)}</p>
+
+        ${H("Coach")}
+        <p style="font-size:13px;margin:0">${esc(p.coach.served || "—")}</p>
+        <p style="font-size:11px;color:#64748b;margin:4px 0">${esc(p.coach.why)}<br>Produced by <code>${esc(p.coach.engine)}</code></p>
+        ${(p.coach.intelligence?.findings || []).length
+          ? `<details style="font-size:12px"><summary class="muted">Intelligence findings served alongside it</summary>
+             ${li(p.coach.intelligence.findings.map(f => `<li><strong>${esc(f.question)}</strong><br>${esc(f.answer)}</li>`))}</details>` : ""}
+
+        ${H("Pipeline")}
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          ${row("generated at", time(pl.generatedAt))}
+          ${row("cache key", `<span style="font-family:monospace;font-size:11px">${esc(pl.cacheKey || "—")}</span>`)}
+          ${row("cache age", `<span class="muted">n/a (${esc(pl.cacheScope)})</span> <span style="font-size:11px;color:#64748b">— ${esc(pl.cacheAgeWhy)}</span>`)}
+          ${row("last refresh", `${time(pl.lastRefresh)} <span style="font-size:11px;color:#64748b">${esc(pl.lastRefreshNote)}</span>`)}
+          ${row("last training", time(pl.lastTraining))}
+          ${row("last state write", time(pl.lastStateWrite))}
+          ${row("last plan change", `${time(pl.lastPlanChange)} <span style="font-size:11px;color:#64748b">${esc(pl.lastPlanChangeNote)}</span>`)}
+          ${row("last invalidation", `${time(pl.lastInvalidation)} <span style="font-size:11px;color:#64748b">${esc(pl.lastInvalidationBy || "")}</span>`)}
+          ${row("last confidence change", absent(pl.lastConfidenceChange))}
+          ${row("last level change", absent(pl.lastLevelChange))}
+          ${row("last recovery change", absent(pl.lastRecoveryChange))}
+          ${row("last transition", absent(pl.lastTransition))}
+          ${row("source", `<span style="font-size:11px">${esc(pl.source)}</span>`)}
+          ${row("rows inspected", `${pl.rowsInspected} · ${esc(pl.skillsWithState.join(", ") || "none")}`)}
+        </table></div>`;
+    }
+
+    // ---- FASE C-08 / 19 — writing evaluation --------------------------------
+    async function loadWritingEvaluation() {
+      const u = $("weUser").value.trim(), n = $("weLimit").value || 50;
+      $("weBody").innerHTML = `<p class="muted">Loading…</p>`;
+      let r; try {
+        r = await api(`/api/admin/writing-evaluation?limit=${encodeURIComponent(n)}` + (u ? `&user=${encodeURIComponent(u)}` : ""));
+      } catch (e) { $("weBody").innerHTML = `<p style="color:#dc2626">${esc(e.message)}</p>`; return; }
+
+      const lvl = (v) => v == null ? '<span class="muted">—</span>' : `<strong>${esc(v)}</strong>`;
+      $("weBody").innerHTML = `
+        <p style="font-size:13px;margin:0 0 8px">${esc(r.summary.headline)}
+          <span class="muted">· contract ${esc(r.contractVersion)}</span></p>
+
+        <h4 style="margin:14px 0 4px">The rule</h4>
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <tr style="text-align:left;color:#64748b"><th>task coverage</th><th>ceiling</th><th>effect</th><th>seen</th></tr>
+          ${r.rules.map(x => `<tr style="border-top:1px solid #f1f5f9">
+            <td style="font-family:monospace;font-size:11px">${esc(x.value)}</td>
+            <td>${x.ceiling == null ? '<span class="muted">none</span>' : `<strong>${esc(x.ceiling)}</strong>`}</td>
+            <td>${esc(x.effect)}</td>
+            <td>${r.summary.distribution[x.value] ?? 0}</td></tr>`).join("")}
+          ${r.summary.notRecorded ? `<tr style="border-top:1px solid #f1f5f9"><td class="muted" colspan="3">Evaluated before task coverage existed — no ceiling was available</td><td>${r.summary.notRecorded}</td></tr>` : ""}
+        </table></div>
+
+        <h4 style="margin:16px 0 4px">Decision path, per attempt</h4>
+        <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <tr style="text-align:left;color:#64748b">
+            <th>when</th><th>task/content/lang</th><th>band</th><th>coverage</th>
+            <th>before</th><th>ceiling</th><th>final</th><th>applied rule</th></tr>
+          ${r.attempts.map(a => `<tr style="border-top:1px solid #f1f5f9${a.contradiction ? ";background:#fff7ed" : ""}">
+            <td style="white-space:nowrap">${esc(String(a.createdAt || "").slice(0,10))}</td>
+            <td>${a.scores.task ?? "—"} / ${a.scores.content ?? "—"} / ${a.scores.language ?? "—"}</td>
+            <td>${a.overallBand ?? "—"}</td>
+            <td style="font-family:monospace;font-size:11px">${a.taskCoverage ? esc(a.taskCoverage) : '<span class="muted">not recorded</span>'}</td>
+            <td>${lvl(a.levelBeforeCoverage)}</td>
+            <td>${a.ceiling == null ? '<span class="muted">—</span>' : esc(a.ceiling)}</td>
+            <td>${lvl(a.levelAfterCoverage ?? a.reportedLevel)}${a.applied ? ' <span style="color:#d97706">capped</span>' : ""}</td>
+            <td>${esc(a.rule || "")}${a.reason ? `<br><span style="font-size:11px;color:#64748b">Model's reason: ${esc(a.reason)}</span>` : ""}
+                ${a.warning ? `<br><span style="color:#dc2626;font-size:11px">${esc(a.warning)}</span>` : ""}
+                ${a.ceilingSuppressed ? `<br><span style="font-size:11px;color:#64748b">Emerging-level claim suppressed: the task was not delivered.</span>` : ""}</td>
+          </tr>`).join("")}
+        </table></div>
+        ${r.summary.contradictions ? `<p style="font-size:12px;margin-top:8px">${dot("amber")}<strong>${r.summary.contradictions}</strong> attempt(s) highlighted: the model scored the language 60+ and still reported the task unfulfilled. A run of these means the rubric is confusing the model — a content problem, not an engine one.</p>` : ""}`;
+    }
+
+    async function loadStartup() {
+      let r; try { r = await api("/api/admin/v2/startup"); } catch (e) { $("startupBody").textContent = "Startup endpoint unavailable."; return; }
+      $("startupBody").innerHTML =
+        `<p style="font-size:13px">${dot(r.valid ? "green" : "red")}
+          raw <code>${esc(r.rawPresent ? JSON.stringify(r.rawValue) : "(not set)")}</code>
+          → normalized <strong>${esc(r.normalizedValue)}</strong>
+          <span class="muted">· configuration hash ${esc(r.configurationHash)} · started ${esc(String(r.startedAt).slice(0,19))}</span></p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th>skill</th><th>resolved</th><th>source</th><th>variable</th><th>raw</th></tr>
+           ${r.skills.map(x => `<tr><td>${esc(x.skill)}</td><td><strong>${esc(x.resolved)}</strong></td><td>${esc(x.source)}</td>
+             <td style="font-family:monospace;font-size:11px">${esc(x.variable)}</td><td>${esc(String(x.rawValue ?? "—"))}</td></tr>`).join("")}
+         </table></div>
+         ${r.warnings.length ? r.warnings.map(w =>
+            `<p style="font-size:12px;margin:6px 0">${dot(w.severity)}${esc(w.detail)}<br>
+             <span style="margin-left:14px;color:#0284c7">→ ${esc(w.action)}</span></p>`).join("")
+          : `<p class="muted" style="font-size:12px">No configuration warnings.</p>`}
+         <details style="font-size:11px;margin-top:6px"><summary class="muted">Boot log lines</summary>
+           <pre style="background:#f8fafc;padding:8px;border-radius:6px;overflow-x:auto">${esc(r.logLines.join("\n"))}</pre></details>`;
+    }
+
+    async function exportCompare() {
+      // Same rows the screen shows: the endpoint formats what it already built.
+      try {
+        const res = await fetch(API + "/api/admin/v2/compare?format=csv", {
+          headers: { "Authorization": "Bearer " + token },
+        });
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "compare-legacy-vs-v2.csv";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } catch (e) { alert("Export failed: " + e.message); }
+    }
+
+    async function runDiagnose() {
+      $("dxVerdict").textContent = "Running…";
+      let d; try { d = await api("/api/admin/v2/diagnose"); }
+      catch (e) { $("dxVerdict").textContent = "Diagnosis endpoint unavailable on this deployment."; return; }
+      $("dxVerdict").innerHTML = dot(d.healthy ? "green" : d.alerts.worst) + esc(d.verdict);
+      $("dxBody").innerHTML =
+        `<div style="font-size:12px;margin-bottom:10px">${d.subsystems.map(x =>
+          `<div style="padding:3px 0;border-top:1px solid #f8fafc">
+             <div style="display:flex;gap:8px">${dot(x.severity || (x.ok ? "green" : "amber"))}
+               <span style="width:110px">${esc(x.id)}</span><strong style="width:170px">${esc(String(x.measured))}</strong>
+               <span class="muted">${esc(x.detail)}</span></div>
+             ${x.action ? `<div style="margin-left:124px;color:#0284c7">→ ${esc(x.action)}</div>` : ""}
+           </div>`).join("")}</div>` +
+        (d.alerts.alerts.length
+          ? `<h4 style="margin:12px 0 4px">Alerts</h4><div style="font-size:12px">${d.alerts.alerts.map(a =>
+              `<div style="padding:4px 0;border-top:1px solid #f1f5f9">${dot(a.severity)}<strong>${esc(a.id)}</strong>
+               <span class="muted"> ×${a.count}</span><br><span style="margin-left:14px">${esc(a.detail)}</span>
+               <br><span style="margin-left:14px;color:#0284c7">→ ${esc(a.action)}</span></div>`).join("")}</div>`
+          : `<p class="muted" style="font-size:12px">No alerts. All ${d.alerts.checked.length} conditions checked.</p>`);
+    }
+
+    async function loadRecovery() {
+      let r; try { r = await api("/api/admin/v2/recovery"); } catch (e) { $("recBody").textContent = "Recovery endpoint unavailable."; return; }
+      $("recBody").innerHTML =
+        `<p style="font-size:13px">${dot(r.integrity)}${esc(r.explanation)}</p>
+         <p class="muted" style="font-size:12px">Sources rebuildable: ${r.coverage.covered}/${r.coverage.total} · corrupt rows: ${r.corrupt}</p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th>skill</th><th>observations</th><th>last event</th><th>state hash</th><th>age (d)</th></tr>
+           ${r.rows.map(x => `<tr><td>${esc(x.skill)}</td><td>${x.observations}</td><td>${esc(String(x.lastEventAt || "").slice(0,10))}</td>
+             <td style="font-family:monospace">${esc(String(x.hash || "—").slice(0,16))}</td><td>${x.ageDays}</td></tr>`).join("")}
+         </table></div>`;
+    }
+
+    async function runReplay() {
+      const u = $("replayUser").value.trim();
+      $("replayBody").textContent = "Replaying…";
+      let r; try { r = await api("/api/admin/v2/replay" + (u ? "?user=" + encodeURIComponent(u) : "")); }
+      catch (e) { $("replayBody").textContent = "Replay endpoint unavailable."; return; }
+      $("replayBody").innerHTML =
+        `<p style="font-size:13px">${dot(r.differing === 0 ? "green" : "red")}
+          ${r.identical} identical · ${r.differing} differing · ${r.missing} missing —
+          ${r.observationsProcessed} observations in ${r.durationMs} ms. ${esc(r.note)}</p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th>learner|skill</th><th>status</th><th>applied</th><th>live hash</th><th>rebuilt hash</th><th>differing fields</th></tr>
+           ${r.rows.map(x => `<tr><td>${esc(x.key)}</td><td>${esc(x.status)}</td><td>${x.applied}</td>
+             <td style="font-family:monospace">${esc(String(x.liveHash || "—").slice(0,12))}</td>
+             <td style="font-family:monospace">${esc(String(x.rebuiltHash || "—").slice(0,12))}</td>
+             <td>${esc((x.fields || []).join(", "))}</td></tr>`).join("")}
+         </table></div>`;
+    }
+
+    async function loadCompare() {
+      let c; try { c = await api("/api/admin/v2/compare"); } catch (e) { $("cmpBody").textContent = "Compare endpoint unavailable."; return; }
+      if (!c.rows.length) { $("cmpBody").innerHTML = `<p class="muted" style="font-size:12px">No difference records yet. COMPARE has not observed traffic.</p>`; return; }
+      $("cmpBody").innerHTML =
+        `<p class="muted" style="font-size:12px">${c.summary.n} records · worst ${c.summary.worst} · median ${c.summary.median} ·
+          ${c.summary.overNoticeable} above the ${c.summary.noticeableThreshold} threshold a learner would notice.</p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th></th><th>skill</th><th>legacy</th><th>V2</th><th>delta</th><th>meaning</th></tr>
+           ${c.rows.slice(0,40).map(x => `<tr><td>${dot(x.severity)}</td><td>${esc(x.skill)}</td><td>${esc(String(x.legacy))}</td>
+             <td>${esc(String(x.v2))}</td><td><strong>${x.delta}</strong></td><td class="muted">${esc(x.explanation)}</td></tr>`).join("")}
+         </table></div>`;
+    }
+
+    async function loadTransition() {
+      let t; try { t = await api("/api/admin/v2/transition"); } catch (e) { $("trBody").textContent = "Transition endpoint unavailable."; return; }
+      const c = t.census;
+      $("trBody").innerHTML =
+        `<p style="font-size:13px">${dot(t.active ? "amber" : "green")}${t.active
+          ? "A migration is in progress." : "No learner is mid-migration; this panel has nothing to report."}</p>
+         <p class="muted" style="font-size:12px">legacy ${c.legacy} · preview ${c.preview} · switched ${c.switched} · settled ${c.settled}
+           — ${c.noticeable} would notice the change, ${c.notNoticeable} would not.</p>
+         <div style="font-size:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+           <tr style="text-align:left;color:#64748b"><th>skill</th><th>phase</th><th>legacy</th><th>V2</th><th>delta</th><th>noticeable</th><th>rollback</th></tr>
+           ${t.rows.map(x => `<tr><td>${esc(x.skill)}</td><td>${esc(x.phase)}</td><td>${esc(String(x.legacy))}</td><td>${esc(String(x.v2))}</td>
+             <td>${x.delta == null ? "—" : x.delta}</td><td>${x.noticeable ? "yes" : "no"}</td><td>${x.rollbackPossible ? "possible" : "—"}</td></tr>`).join("")}
+         </table></div>`;
+    }
+
+    async function loadCorpus() {
+      let k; try { k = await api("/api/admin/v2/corpus"); } catch (e) { $("corpusBody").textContent = "Corpus endpoint unavailable."; return; }
+      $("corpusBody").innerHTML = Object.entries(k.pools).map(([name, p]) => `
+        <div style="border-top:1px solid #e2e8f0;padding:10px 0">
+          <strong>${esc(name.replace(/_/g, " "))}</strong> <span class="muted" style="font-size:12px">${p.total} items</span>
+          <div style="font-size:12px;margin-top:4px">
+            <div>levels: ${Object.entries(p.byLevel).map(([l, n]) => `${esc(l)}=${n}`).join(" · ")}
+              ${p.coverage.expectedLevels ? ` — coverage ${p.coverage.complete ? "complete" : "INCOMPLETE"}` : ""}</div>
+            <div>utilisation: ${Math.round(p.utilisation.utilisationPct * 100)}% used · ${p.exposure.neverUsed} never used
+              · ${p.exposure.heavilyUsed} above the 90th percentile (${p.exposure.p90Uses ?? "—"} uses)</div>
+            <div>not used in ${p.ageing.staleDays} days: ${p.ageing.notUsedInAYear}</div>
+            ${p.exposure.note ? `<div class="muted">${esc(p.exposure.note)}</div>` : ""}
+            <div class="muted">discrimination: not available — ${esc(p.discrimination.why)}</div>
+          </div>
+        </div>`).join("");
+    }
+
+    async function runSimulate() {
+      const body = {
+        correct: +$("simC").value, incorrect: +$("simW").value, itemLevel: +$("simL").value,
+        daysSinceLast: +$("simD").value, constructs: +$("simK").value, examItems: +$("simE").value,
+      };
+      let r; try { r = await api("/api/admin/v2/simulate", { method: "POST", body: JSON.stringify(body) }); }
+      catch (e) { $("simBody").textContent = "Simulator endpoint unavailable."; return; }
+      const engineering = (localStorage.getItem("adminViewMode") || "advanced") !== "simple";
+      $("simBody").innerHTML =
+        `<p style="font-size:14px"><strong>Level ${esc(String(r.product.level))}</strong> ·
+          ${esc(r.product.confidence)} <span class="muted">— ${esc(r.product.why)}</span></p>
+         <div style="font-size:12px">${r.product.scale.steps.map(x =>
+           `<div style="opacity:${x.current ? 1 : .45}">${x.current ? "▶" : "&nbsp;"} ${"█".repeat(x.filled)}${"░".repeat(4 - x.filled)} ${esc(x.label)}</div>`).join("")}</div>
+         ${r.product.scale.nextStep ? `<p class="muted" style="font-size:12px">Next: ${esc(r.product.scale.nextStep.to)} — ${esc(r.product.scale.nextStep.how)}</p>` : ""}
+         ${engineering ? `<pre style="font-size:11px;background:#f8fafc;padding:8px;border-radius:6px;overflow-x:auto">${esc(JSON.stringify(r.engineering, null, 1))}</pre>` : ""}`;
+    }
+
+    function setMode(mode) {
+      const isSimple = mode === "simple";
+      $("simpleView").classList.toggle("hidden", !isSimple);
+      $("advancedView").classList.toggle("hidden", isSimple);
+      $("simpleModeBtn").style.opacity = isSimple ? "1" : ".6";
+      $("advancedModeBtn").style.opacity = isSimple ? ".6" : "1";
+      try { localStorage.setItem("adminViewMode", mode); } catch (e) {}
+      renderV2();   // the V2 console follows the same PRODUCT/ENGINEERING switch
+    }
+
+    // ── FASE IPS-007 Incremento 3 — read-only mode + validation status ────────
+    // Reuses GET /api/admin/proficiency/mode-status. Degrades gracefully: if the
+    // endpoint isn't deployed yet, shows an honest note instead of breaking.
+    // No PII (no email/name/UUID). With one user, INSUFFICIENT_DATA-style states
+    // (NOT_TESTED/PARTIAL) are shown as-is, never dressed up as PASS/FAIL.
+    // FASE IPS-009 — containerId param (default "peModeStatus", Reading's
+    // original id) so the same renderer serves any skill's block below.
+    function renderModeStatus(ms, containerId) {
+      const el = $(containerId || "peModeStatus");
+      if (!ms || ms.__msError) {
+        el.innerHTML = `<p class="muted" style="font-size:13px">Mode/validation status not available${
+          ms && ms.__msError ? " (" + esc(ms.__msError) + ")" : ""
+        }. Expected until this backend build is deployed.</p>`;
+        return;
+      }
+      const v = ms.validation || {};
+      const vStatus = v.status || "UNKNOWN";
+      const flagTxt = ms.shadowFlagEnabled ? `ON · ${ms.rolloutPercent ?? 0}%` : "OFF";
+      el.innerHTML =
+        tile(esc(ms.mode || "—"), "Current mode") +
+        tile(ms.proficiencyV2Active ? "ACTIVE" : "inactive", "PROFICIENCY_V2") +
+        tile(flagTxt, "Shadow flag · rollout") +
+        tile(esc(vStatus), "Validation status") +
+        tile(esc(ms.algorithmVersion || "—"), "Algorithm version") +
+        tile(esc(ms.mappingVersion || "—"), "Mapping version") +
+        tile(ms.legacyFallbackAvailable ? "yes" : "no", "Legacy fallback");
+    }
+
+    // ── FASE IPS-003B.4 — Proficiency Engine rendering ──────────────────────
+    // Every function below only FORMATS what GET /api/admin/proficiency/
+    // dashboard already returned — no extra fetches, no client-side
+    // aggregation, no PII (only userHash where a per-user row is shown).
+    function renderProficiencyEngine(pe) {
+      if (!pe || pe.__peError) {
+        $("peUnavailable").innerHTML = `<p class="muted" style="font-size:13px">Proficiency Engine data not available${
+          pe && pe.__peError ? " (" + esc(pe.__peError) + ")" : ""
+        }. This is expected until the IPS-003B migration is applied in this environment.</p>`;
+        $("peBody").classList.add("hidden");
+        return;
+      }
+      $("peUnavailable").innerHTML = "";
+      $("peBody").classList.remove("hidden");
+      $("peSkillNote").textContent = "· reading · shadow_v2";
+
+      peSummary(pe);
+      peReadiness(pe.readiness);
+      peConvergence(pe);
+      peDrift(pe);
+      peRegime(pe);
+      peOutliers(pe);
+      peIntegrity(pe.integrity || []);
+      peTelemetry(pe.summary?.operational);
+      peRecommendations(pe.recommendations || []);
+    }
+
+    function peSummary(pe) {
+      const s = pe.summary || {};
+      const engineState = s.featureFlagState ? `ON · ${s.rolloutPercent ?? 0}%` : "OFF";
+      const convergedPct = s.usuariosAnalizados
+        ? Math.round((100 * (s.usuariosConvergidos || 0)) / s.usuariosAnalizados) + "%" : "—";
+      const integrityPassing = (pe.integrity || []).filter((c) => c.status === "PASS").length;
+      const driftMean = pe.drift?.stats?.mean_abs;
+      $("peSummaryGrid").innerHTML =
+        tile(engineState, "Engine state (flag · rollout)") +
+        tile(pe.readiness?.score ?? "—", "Readiness score") +
+        tile((pe.verdict || "—").replace(/_/g, " "), "Verdict") +
+        tile(s.eventosTotales, "Events total") +
+        tile(s.usuariosAnalizados, "Users analyzed") +
+        tile(convergedPct, "Converged") +
+        tile(driftMean != null ? driftMean : "—", "Drift mean |Δ|") +
+        tile(`${integrityPassing}/${(pe.integrity || []).length}`, "Integrity checks passing") +
+        tile(s.operational ? "ephemeral" : "—", "Operational data") +
+        tile(s.generatedAt ? new Date(s.generatedAt).toLocaleString() : "—", "Last updated");
+    }
+
+    function peReadiness(r) {
+      if (!r) { $("peReadiness").innerHTML = `<p class="muted" style="font-size:13px">No readiness data.</p>`; return; }
+      $("peReadiness").innerHTML = `
+        <div class="row" style="align-items:baseline">
+          <span class="readiness-score">${r.score}</span>
+          <span class="readiness-band band-${r.band}">${r.band.replace(/_/g, " ").toUpperCase()}</span>
+        </div>
+        <table style="margin-top:12px">
+          <tr><th>Points</th><th>Reason</th></tr>
+          ${(r.breakdown || []).map((b) => {
+            const color = b.points > 0 ? "var(--green)" : (b.points < 0 ? "var(--red)" : "var(--muted)");
+            return `<tr><td style="color:${color};font-weight:700">${b.points > 0 ? "+" : ""}${b.points}</td><td>${esc(b.reason)}</td></tr>`;
+          }).join("")}
+        </table>`;
+    }
+
+    function hbar(buckets, labelFn) {
+      if (!buckets || !buckets.length) return `<p class="muted" style="font-size:13px">No data yet.</p>`;
+      const max = Math.max(1, ...buckets.map((b) => b.n || 0));
+      return buckets.map((b) => `<div class="hbar-row">
+          <span class="hbar-label">${esc(labelFn(b))}</span>
+          <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round((100 * (b.n || 0)) / max)}%"></div></div>
+          <span class="hbar-n">${b.n || 0}</span>
+        </div>`).join("");
+    }
+
+    function peConvergence(pe) {
+      const c = pe.convergence || {};
+      $("peConvergenceGrid").innerHTML =
+        tile(c.stability?.users_stable, "Stable users") +
+        tile(c.stability?.users_unstable, "Unstable users") +
+        tile(c.time?.avg_events_to_converge ?? "—", "Avg. events to converge") +
+        tile(c.time?.users_fast_converge, "Fast convergence") +
+        tile(c.time?.users_slow_converge, "Slow convergence") +
+        tile(c.time?.users_without_convergence, "Without convergence");
+      $("peConvergenceHist").innerHTML =
+        `<div class="muted" style="font-size:12px;margin:12px 0 4px">Theta distribution</div>` +
+        hbar(c.thetaHistogram, (b) => Number(b.bucket_lo).toFixed(2)) +
+        `<div class="muted" style="font-size:12px;margin:12px 0 4px">Sigma distribution</div>` +
+        hbar(c.sigmaHistogram, (b) => Number(b.bucket_lo).toFixed(2));
+    }
+
+    function peDrift(pe) {
+      const d = pe.drift?.stats || {};
+      $("peDriftGrid").innerHTML =
+        tile(d.mean_signed ?? "—", "Mean drift (signed)") + tile(d.mean_abs ?? "—", "Mean drift (abs)") +
+        tile(d.abs_p50 ?? "—", "p50 |Δ|") + tile(d.abs_p90 ?? "—", "p90 |Δ|") +
+        tile(d.abs_p95 ?? "—", "p95 |Δ|") + tile(d.abs_p99 ?? "—", "p99 |Δ|");
+      $("peDriftHist").innerHTML =
+        `<div class="muted" style="font-size:12px;margin:12px 0 4px">Drift histogram (signed)</div>` +
+        hbar(pe.drift?.histogram, (b) => Number(b.bucket_lo).toFixed(2));
+      const top = pe.drift?.top || [];
+      $("peDriftTop").innerHTML = top.length
+        ? `<div class="muted" style="font-size:12px;margin:12px 0 4px">Top divergences</div><table>
+            <tr><th>User</th><th>Drift (signed)</th><th>Drift (abs)</th></tr>
+            ${top.map((t) => `<tr><td class="muted"><code>${esc((t.userHash || "—").slice(0, 12))}…</code></td><td>${t.drift_signed}</td><td>${t.drift_abs}</td></tr>`).join("")}
+          </table>`
+        : `<p class="muted" style="font-size:13px">No divergences recorded.</p>`;
+    }
+
+    function peRegime(pe) {
+      const r = pe.regimeShift?.summary || {};
+      $("peRegimeGrid").innerHTML =
+        tile(r.detections_total ?? 0, "Detections") +
+        tile(r.users_with_regime_shift ?? 0, "Users affected") +
+        tile(pe.regimeShift?.apparentFalsePositives ?? 0, "Apparent false positives");
+    }
+
+    function peOutliers(pe) {
+      const o = pe.outliers?.summary || {};
+      $("peOutliersGrid").innerHTML =
+        tile(o.dampened_total ?? 0, "Outliers dampened") +
+        tile(o.users_with_outliers ?? 0, "Users affected") +
+        tile(o.mean_abs_impact ?? "—", "Mean abs impact");
+      const top = pe.outliers?.top || [];
+      $("peOutliersTop").innerHTML = top.length
+        ? `<table><tr><th>User</th><th>Outlier count</th></tr>
+            ${top.map((t) => `<tr><td class="muted"><code>${esc((t.userHash || "—").slice(0, 12))}…</code></td><td>${t.outlier_count}</td></tr>`).join("")}
+          </table>`
+        : `<p class="muted" style="font-size:13px">No outliers recorded.</p>`;
+    }
+
+    function peIntegrity(list) {
+      if (!list.length) { $("peIntegrity").innerHTML = `<p class="muted" style="font-size:13px">No integrity data.</p>`; return; }
+      const glyph = { PASS: "✓", WARNING: "!", FAIL: "✕" };
+      const color = { PASS: "var(--green)", WARNING: "var(--orange)", FAIL: "var(--red)" };
+      $("peIntegrity").innerHTML = `<table>
+        <tr><th>Check</th><th>Status</th><th>Findings</th></tr>
+        ${list.map((c) => `<tr>
+          <td>${esc(c.label)}</td>
+          <td style="color:${color[c.status] || "var(--muted)"};font-weight:700">${glyph[c.status] || "?"} ${c.status}</td>
+          <td>${c.findingCount}</td>
+        </tr>`).join("")}
+      </table>`;
+    }
+
+    function peTelemetry(op) {
+      if (!op) {
+        $("peTelemetryNote").innerHTML = "";
+        $("peTelemetryGrid").innerHTML = `<p class="muted" style="font-size:13px">No operational telemetry yet.</p>`;
+        return;
+      }
+      $("peTelemetryNote").innerHTML = esc(op.note || "");
+      const pct = (v) => (v != null ? (100 * v).toFixed(1) + "%" : "—");
+      const ms = (v) => (v != null ? v.toFixed(1) + "ms" : "—");
+      $("peTelemetryGrid").innerHTML =
+        tile(pct(op.rpcSuccessRate), "RPC success (ephemeral)") +
+        tile(pct(op.rpcErrorRate), "RPC error (ephemeral)") +
+        tile(pct(op.shadowAppliedRate), "Applied (ephemeral)") +
+        tile(pct(op.shadowSkippedRate), "Skipped (ephemeral)") +
+        tile(ms(op.latencyP50), "Latency p50 (ephemeral)") +
+        tile(ms(op.latencyP95), "Latency p95 (ephemeral)") +
+        tile(ms(op.latencyP99), "Latency p99 (ephemeral)");
+    }
+
+    function peRecommendations(list) {
+      if (!list.length) { $("peRecommendations").innerHTML = `<p class="muted" style="font-size:13px">No recommendations.</p>`; return; }
+      $("peRecommendations").innerHTML = list.map((r) =>
+        `<div class="rec-item rec-${r.severity}">${esc(r.message)}</div>`
+      ).join("");
+    }
+
+    function renderFlags(list) {
+      if (!list.length) { $("flagsTable").innerHTML = `<p class="muted" style="font-size:13px">No flags found.</p>`; return; }
+      $("flagsTable").innerHTML = `<table>
+        <tr><th>Flag</th><th>Description</th><th>Updated</th><th>Enabled</th></tr>
+        ${list.map(f => `<tr>
+          <td><code>${esc(f.key)}</code></td>
+          <td class="muted">${esc(f.description || "—")}</td>
+          <td class="muted">${f.updated_at ? new Date(f.updated_at).toLocaleString() : "—"}</td>
+          <td><label class="toggle"><input type="checkbox" ${f.enabled ? "checked" : ""}
+              onchange="toggleFlag('${f.key}', this.checked)"><span class="slider"></span></label></td>
+        </tr>`).join("")}
+      </table>`;
+    }
+
+    async function toggleFlag(key, enabled) {
+      try { await api("/api/admin/feature-flags/" + key, { method: "PATCH", body: JSON.stringify({ enabled }) }); await loadAll(); }
+      catch (e) { alert("Could not update flag: " + e.message); await loadAll(); }
+    }
+    window.toggleFlag = toggleFlag;
+
+    function renderAudit(list) {
+      if (!list.length) { $("auditTable").innerHTML = `<p class="muted" style="font-size:13px">No audit events yet.</p>`; return; }
+      $("auditTable").innerHTML = `<table>
+        <tr><th>When</th><th>Event</th><th>Actor</th><th>Target</th></tr>
+        ${list.map(a => `<tr>
+          <td class="muted">${new Date(a.created_at).toLocaleString()}</td>
+          <td>${esc(a.event_type)}</td>
+          <td class="muted">${a.actor_id ? esc(a.actor_id).slice(0, 8) + "…" : "—"}</td>
+          <td class="muted">${esc(a.target_id || "—")}</td>
+        </tr>`).join("")}
+      </table>`;
+    }
+
+    function renderReports(list) {
+      if (!list.length) { $("reportsTable").innerHTML = `<p class="muted" style="font-size:13px">No reports yet.</p>`; return; }
+      $("reportsTable").innerHTML = `<table>
+        <tr><th>When</th><th>Category</th><th>Description</th><th>App / iOS</th><th>Status</th><th></th></tr>
+        ${list.map(r => `<tr>
+          <td class="muted">${new Date(r.created_at).toLocaleDateString()}</td>
+          <td>${esc(r.category)}</td>
+          <td>${esc(r.description)}</td>
+          <td class="muted">${esc(r.app_version || "—")}<br>${esc(r.ios_version || "—")}</td>
+          <td><span class="pill ${r.status}">${r.status}</span></td>
+          <td>${r.status === "open"
+            ? `<button class="ghost" onclick="resolve('${r.id}')">Resolve</button>`
+            : `<button class="ghost" onclick="reopen('${r.id}')">Reopen</button>`}</td>
+        </tr>`).join("")}
+      </table>`;
+    }
+
+    async function setStatus(id, status) {
+      try { await api("/api/admin/reports/" + id, { method: "PATCH", body: JSON.stringify({ status }) }); await loadAll(); }
+      catch (e) { alert("Could not update: " + e.message); }
+    }
+    window.resolve = (id) => setStatus(id, "resolved");
+    window.reopen = (id) => setStatus(id, "open");
+
+    $("loginBtn").onclick = login;
+    $("logoutBtn").onclick = logout;
+    $("refreshBtn").onclick = () => loadAll().catch(e => alert(e.message));
+    $("password").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+    $("simpleModeBtn").onclick = () => setMode("simple");
+    $("advancedModeBtn").onclick = () => setMode("advanced");
+    // Default to Advanced (today's existing behavior, unchanged) unless the
+    // admin previously chose Simple on this device.
+    let savedMode = "advanced";
+    try { savedMode = localStorage.getItem("adminViewMode") || "advanced"; } catch (e) {}
+    setMode(savedMode);
+  </script>
+</body>
+</html>

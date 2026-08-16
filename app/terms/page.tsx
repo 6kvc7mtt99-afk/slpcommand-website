@@ -1,2 +1,8 @@
-import { PublicStub } from "../_lib/PublicStub";
-export default function Page() { return <PublicStub title="Terms of Service" />; }
+import { LegalPage } from "@/components/marketing/LegalPage";
+import { pageMetadata } from "@/lib/legalMeta";
+import { terms } from "@/content/legal";
+
+export const metadata = pageMetadata("Terms of Service", "/terms");
+export default function Page() {
+  return <LegalPage html={terms} />;
+}

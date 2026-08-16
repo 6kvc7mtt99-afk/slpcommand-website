@@ -1,2 +1,8 @@
-import { PublicStub } from "../_lib/PublicStub";
-export default function Page() { return <PublicStub title="Institutional Disclaimer" />; }
+import { LegalPage } from "@/components/marketing/LegalPage";
+import { pageMetadata } from "@/lib/legalMeta";
+import { disclaimer } from "@/content/legal";
+
+export const metadata = pageMetadata("Institutional Disclaimer", "/disclaimer");
+export default function Page() {
+  return <LegalPage html={disclaimer} />;
+}

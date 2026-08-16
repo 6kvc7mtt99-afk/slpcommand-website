@@ -1,2 +1,8 @@
-import { PublicStub } from "../_lib/PublicStub";
-export default function Page() { return <PublicStub title="Subprocessors and Third Parties" />; }
+import { LegalPage } from "@/components/marketing/LegalPage";
+import { pageMetadata } from "@/lib/legalMeta";
+import { subprocessors } from "@/content/legal";
+
+export const metadata = pageMetadata("Subprocessors and Third Parties", "/subprocessors");
+export default function Page() {
+  return <LegalPage html={subprocessors} />;
+}

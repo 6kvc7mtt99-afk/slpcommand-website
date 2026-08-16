@@ -1,11 +1,15 @@
+import { SiteHeader, SiteFooter } from "@/components/marketing/SiteChrome";
+import { landingHtml } from "@/content/landing";
+
 export default function HomePage() {
+  const inner = landingHtml
+    .replace(/<header class="site-header">[\s\S]*?<\/header>/, "")
+    .replace(/<footer class="site-footer">[\s\S]*?<\/footer>/, "");
   return (
-    <main style={{ padding: "48px 24px", maxWidth: 720, margin: "0 auto" }}>
-      <p style={{ color: "var(--accent)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", fontSize: 13 }}>
-        PR-00 spike
-      </p>
-      <h1 style={{ fontWeight: 800, letterSpacing: "-0.5px" }}>SLP Command</h1>
-      <p>Cloudflare / OpenNext viability probe. Marketing pages land in PR-02.</p>
-    </main>
+    <>
+      <SiteHeader />
+      <div dangerouslySetInnerHTML={{ __html: inner }} />
+      <SiteFooter />
+    </>
   );
 }

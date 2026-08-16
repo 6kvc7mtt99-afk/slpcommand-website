@@ -1,2 +1,8 @@
-import { PublicStub } from "../_lib/PublicStub";
-export default function Page() { return <PublicStub title="Privacy Policy" />; }
+import { LegalPage } from "@/components/marketing/LegalPage";
+import { pageMetadata } from "@/lib/legalMeta";
+import { privacy } from "@/content/legal";
+
+export const metadata = pageMetadata("Privacy Policy", "/privacy");
+export default function Page() {
+  return <LegalPage html={privacy} />;
+}

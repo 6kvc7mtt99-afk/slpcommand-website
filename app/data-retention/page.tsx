@@ -1,2 +1,8 @@
-import { PublicStub } from "../_lib/PublicStub";
-export default function Page() { return <PublicStub title="Data Retention Policy" />; }
+import { LegalPage } from "@/components/marketing/LegalPage";
+import { pageMetadata } from "@/lib/legalMeta";
+import { data_retention } from "@/content/legal";
+
+export const metadata = pageMetadata("Data Retention Policy", "/data-retention");
+export default function Page() {
+  return <LegalPage html={data_retention} />;
+}
