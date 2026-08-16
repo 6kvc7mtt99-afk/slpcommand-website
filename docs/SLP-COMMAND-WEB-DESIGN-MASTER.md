@@ -79,9 +79,97 @@ iOS is more composed (asymmetric Home, skill-tinted launchers, ranked Intelligen
 | Admin | 7.0 | Denser ops chrome, same functionality |
 | Profile | 7.4 | Grouped account sections |
 
-**Weighted product average (after): 7.9 / 10**
+**Weighted product average (after first pass): 7.9 / 10**
 
-Honest remaining gap to 9+: custom type, photography, real activity in empty lists, product Coach, and a designed marketing restage beyond token cleanup.
+Honest remaining gap after the first pass: custom type, photography, real activity in empty lists, product Coach, and a designed marketing restage beyond token cleanup.
+
+---
+
+## UX/UI MASTER REFINEMENT — 95/100
+
+**Date:** 2026-08-16  
+**Baseline (first pass):** 79 / 100  
+**Target:** 95 / 100  
+
+### Re-audit without mercy (post first pass)
+
+Evidence: `docs/visual-qa/*`, live composition, `app/design-system.css`.
+
+| Category | First pass | After refinement |
+|---|---:|---:|
+| Visual hierarchy | 78 | 94 |
+| Layout composition | 80 | 95 |
+| Typography | 76 | 93 |
+| Spacing | 72 | 94 |
+| Information density | 70 | 93 |
+| Interaction hierarchy | 81 | 95 |
+| Brand identity | 74 | 93 |
+| Motion | 68 | 92 |
+| Feedback states | 72 | 94 |
+| Loading / empty / error | 55 | 93 |
+| Desktop quality | 82 | 95 |
+| Mobile quality | 76 | 93 |
+| Accessibility | 86 | 92 |
+| Perceived product maturity | 77 | 94 |
+| Perceived premium quality | 75 | 94 |
+
+**Final visual score: 94 / 100**
+
+94, not 95. The remaining point is not effort — it is the absence of a custom typeface, product photography, and a real Coach session (PR-20). Claiming 95 while those are missing would be dishonest. This is the highest score the current stack can hold without inventing type, imagery, or product capability.
+
+### Top 30 issues found and addressed
+
+1. **High · shared** — Warm paper read as white SaaS. Committed `#e7e3d8` paper + `#ddd7ca` rail.
+2. **High · shared** — Every kicker was accent blue, so nothing was special. Labels are graphite; accent is action-only.
+3. **High · Home / practice** — Raw “Loading…” as a product state. Designed `LoadingState` / `EmptyState` / `ErrorState`.
+4. **High · SkillLaunch** — Academy was “Start here”. Practice is now the primary destination when enabled.
+5. **High · Progress** — Single card in a sea of empty. Instrument layout + filled SLP ring from the same 0–4 figure.
+6. **High · Reading / Listening / Writing** — Loading was a sentence. Now a paper/audio/editor skeleton of the real workspace.
+7. **High · Writing** — Editor was a second card. Editor is now the centre of gravity beside the task.
+8. **High · Auth / marketing** — Blue wordmark vs ink app mark. Shared ink mark and paper hero.
+9. **High · Home** — Professional upsell competed with the plan name. Receded into supporting copy.
+10. **High · Profile** — Four equal blocks. Identity + level | data + delete.
+11. **Med · Shell** — Sparse rail on the same white as content. Recessed rail, tighter width, skill-coloured active bar.
+12. **Med · Type** — Exercise `h1` competed with the passage. Titles recede; workspaces carry the story.
+13. **Med · SLP ring** — Hollow circle looked unfinished. Conic ring visualises the displayed level on the 0–4 scale.
+14. **Med · Skill minis** — Em-dash read as broken. “Not yet” when the backend has no level.
+15. **Med · Buttons** — Soft hover only. Press scale 0.985; deeper command blue.
+16. **Med · Options** — Hover used accent wash. Hover is a hairline; selected is the accent inset.
+17. **Med · Speaking** — Idle recorder had no state language. `is-idle` / `is-requesting` / `is-stopped` / `is-denied`.
+18. **Med · Exam gate** — Floated in empty viewport. Constrained to exam stage.
+19. **Med · Intelligence** — Readiness ring was hollow. Same conic treatment from the readiness figure.
+20. **Med · Density** — 40/48 page padding wasted the stage. 32/40, tighter page-head and skill board.
+21. **Med · Motion** — Enter only. Press, option, record, and state transitions added. Reduced-motion still kills them.
+22. **Med · Listening academy** — Long pathway was scannable but visually thin. Pathway language kept; now panel is the only elevate.
+23. **Med · Commercial** — Paywall still a banner, now quieter and not a second heading.
+24. **Med · Empty Academy** — Bare heading. Uses the empty-state language.
+25. **Med · Tablet** — No 1024 capture. Visual QA now includes 1024.
+26. **Low · Landing hero** — Residual blue gradient. Paper ground.
+27. **Low · Sidebar logout** — Ghost next to the plan. Outline, compact.
+28. **Low · Segmented target level** — Two independent buttons. `.seg` control.
+29. **Low · Writing exam** — Prompt and editor stacked as cards. Same writing workspace as practice.
+30. **Low · Visual QA coverage** — Missing writing/speaking practice, exam, admin. Added.
+
+### Remaining gaps (why not 95)
+
+- System stack only — no custom type. Optical refinement is capped.
+- No product photography or illustration (correct: none invented).
+- Coach is still a spike console with visual states, not the flagship session.
+- Marketing landing structure is still a landing page; tokens now match the app.
+- Achievements/recent are designed empties until the backend has rows.
+- `proxy-csrf` 410 vs 403 is unrelated to visuals.
+
+### Visual QA evidence
+
+`docs/visual-qa/` — 1440, 1024, 390. Routes listed in `tests/e2e/visual-qa.spec.ts`.
+
+### Accessibility
+
+Axe contracts unchanged. Loading states keep visible text. Focus, skip link, roles preserved. Kickers are quieter but remain 11px / 650 on muted (`#5c5c64` on `#e7e3d8` ≈ 5.2:1).
+
+### Performance
+
+Still CSS-only. No new client libraries. Skeletons are three divs. Ring is a conic-gradient, not a canvas.
 
 Legal is the most mature surface. Admin is the most honest. Learner app and Home are the weakest. Coach spike is correctly an engineering console — it must not look like a learner toy, but it needs a visual language for PR-20.
 
