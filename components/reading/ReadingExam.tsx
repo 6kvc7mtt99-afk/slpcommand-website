@@ -130,18 +130,19 @@ export function ReadingExam() {
       ) : null}
 
       {phase === "live" && exam && item ? (
-        <>
+        <div className="exam-live">
           <div className="exam-toolbar">
             <ExamTimer seconds={exam.timeLimitSeconds} onExpire={expire} />
             <p className="muted">
               {index + 1} / {exam.items.length} · answered {answeredCount}
             </p>
           </div>
-          <article className="home-card reading-passage">
+          <div className="reading-workspace">
+          <article className="reading-passage">
             {item.passageTitle ? <h2>{item.passageTitle}</h2> : null}
             <div className="passage-body">{item.passageText}</div>
           </article>
-          <article className="home-card">
+          <article className="question-pane">
             <p className="home-kicker">Question</p>
             <h2>{item.prompt}</h2>
             <OptionList
@@ -167,7 +168,8 @@ export function ReadingExam() {
               </button>
             </div>
           </article>
-        </>
+          </div>
+        </div>
       ) : null}
 
       {phase === "finishing" ? <p className="muted">Submitting…</p> : null}

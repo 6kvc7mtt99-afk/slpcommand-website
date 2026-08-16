@@ -121,16 +121,16 @@ export function ListeningExam() {
         </article>
       ) : null}
       {phase === "live" && exam && item ? (
-        <>
+        <div className="exam-live">
           <div className="exam-toolbar">
             <ExamTimer seconds={exam.timeLimitSeconds} onExpire={expire} />
             <p className="muted">{index + 1} / {exam.items.length}</p>
           </div>
-          <article className="home-card">
+          <article className="audio-stage">
             <p className="home-kicker">Audio</p>
             <AudioPlayer key={`${exam.examSessionId}-${item.position}`} src={item.audioUrl} allowSeek={false} onPlayRequest={authorizePlay} />
           </article>
-          <article className="home-card">
+          <article className="question-pane">
             <h2>{item.prompt || "Choose the best answer."}</h2>
             <OptionList
               options={item.options}
@@ -144,7 +144,7 @@ export function ListeningExam() {
               <button className="btn btn-primary" type="button" onClick={() => void finish(exam)}>Finish exam</button>
             </div>
           </article>
-        </>
+        </div>
       ) : null}
       {phase === "finishing" ? <p className="muted">Submitting…</p> : null}
       {phase === "done" ? (

@@ -25,7 +25,7 @@ export function WritingEditor({
         onChange={(e) => onChange(e.target.value)}
         rows={16}
       />
-      <p className="muted">
+      <p className="writing-meter muted">
         {value.length} / {maxChars} characters · {words} words
         {wordTarget ? ` · target ${wordTarget}` : ""} · minimum {minChars} characters
       </p>

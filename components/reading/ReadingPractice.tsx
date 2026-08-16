@@ -106,8 +106,8 @@ export function ReadingPractice() {
       {phase === "loading" ? <p className="muted">Loading a text…</p> : null}
 
       {passage && question && phase !== "quota" ? (
-        <>
-          <article className="home-card reading-passage">
+        <div className="reading-workspace">
+          <article className="reading-passage">
             <div className="home-block-head">
               {passage.genreDescriptor ? <span className="home-chip">{passage.genreDescriptor}</span> : null}
               {passage.difficulty ? <span className="home-chip">Text difficulty: {passage.difficulty}</span> : null}
@@ -117,7 +117,7 @@ export function ReadingPractice() {
             <p className="muted">Text difficulty is the pool band, not your estimated SLP.</p>
           </article>
 
-          <article className="home-card">
+          <article className="question-pane">
             <p className="home-kicker">
               Question {questionIndex + 1} of {passage.questions.length}
             </p>
@@ -147,7 +147,7 @@ export function ReadingPractice() {
               </button>
             ) : null}
           </article>
-        </>
+        </div>
       ) : null}
     </ExerciseShell>
   );

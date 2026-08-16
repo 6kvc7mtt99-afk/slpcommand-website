@@ -15,16 +15,18 @@ export function WritingToolsHome({
   orchestrator: OrchestratorNext | null;
 }) {
   return (
-    <section className="exercise">
-      <p className="section-eyebrow">Writing Tools</p>
-      <h1>Writing Tools</h1>
-      <p className="muted">
-        {targetLevel === "3"
-          ? "Level 2→3 transformer, examiner vision and exam strategy."
-          : "Examiner vision and exam strategy."}
-      </p>
+    <section className="exercise page-skill skill-writing">
+      <header className="page-head">
+        <p className="section-eyebrow">Writing Tools</p>
+        <h1>Writing Tools</h1>
+        <p className="muted">
+          {targetLevel === "3"
+            ? "Level 2→3 transformer, examiner vision and exam strategy."
+            : "Examiner vision and exam strategy."}
+        </p>
+      </header>
       {orchestrator ? (
-        <article className="home-card">
+        <article className="academy-now">
           <p className="home-kicker">What should I do next</p>
           <h2>{orchestrator.coachHeadline || "Next step"}</h2>
           <p>{orchestrator.coachDetail}</p>
@@ -37,29 +39,29 @@ export function WritingToolsHome({
       ) : (
         <p className="muted">The orchestrator did not return a next step.</p>
       )}
-      <div className="skill-launch">
-        <article className="home-card">
-          <h2>Level 2 → 3 Transformer</h2>
+      <ul className="skill-destinations">
+        <li>
+          <strong>Level 2 → 3 Transformer</strong>
           <p className="muted">Upgrade one sentence. The backend remains the evaluator.</p>
           <Link className="btn btn-primary" href="/writing/tools/transform">
             Open transformer
           </Link>
-        </article>
-        <article className="home-card">
-          <h2>Examiner vision</h2>
+        </li>
+        <li>
+          <strong>Examiner vision</strong>
           <p className="muted">Sentence-level feedback from the current writing evaluator.</p>
-          <Link className="btn btn-primary" href="/writing/tools/examiner">
+          <Link className="btn btn-outline" href="/writing/tools/examiner">
             Open examiner vision
           </Link>
-        </article>
-        <article className="home-card">
-          <h2>Exam strategy</h2>
+        </li>
+        <li>
+          <strong>Exam strategy</strong>
           <p className="muted">Timer, checklist and emergency phrases. No invented scores.</p>
-          <Link className="btn btn-primary" href="/writing/tools/strategy">
+          <Link className="btn btn-outline" href="/writing/tools/strategy">
             Open strategy
           </Link>
-        </article>
-      </div>
+        </li>
+      </ul>
     </section>
   );
 }

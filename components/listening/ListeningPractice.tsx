@@ -82,11 +82,11 @@ export function ListeningPractice({
       {phase === "loading" ? <p className="muted">Loading a clip…</p> : null}
       {item && phase !== "quota" && phase !== "error" ? (
         <>
-          <article className="home-card">
+          <article className="audio-stage">
             <p className="home-kicker">Audio</p>
             <AudioPlayer src={item.audioUrl} allowSeek />
           </article>
-          <article className="home-card">
+          <article className="question-pane">
             <h2>{item.prompt || "Choose the best answer."}</h2>
             <OptionList
               options={item.options}
