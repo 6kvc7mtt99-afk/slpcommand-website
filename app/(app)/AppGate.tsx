@@ -41,8 +41,12 @@ export function AppGate({
 
   if (!ready) {
     return (
-      <main className="wrap">
+      <main className="wrap gate-skel">
+        <p className="section-eyebrow">SLP Command</p>
         <p>Loading your workspace…</p>
+        <div className="skel lg" />
+        <div className="skel" />
+        <div className="skel" />
       </main>
     );
   }
