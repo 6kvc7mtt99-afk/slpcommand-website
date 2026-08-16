@@ -39,10 +39,10 @@ body {
 }
 .site-header .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .site-header .logo-mark {
-  width: 34px; height: 34px; border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--ink);
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 14px; color: #fff; letter-spacing: -0.5px;
+  font-weight: 800; font-size: 10px; color: var(--bg); letter-spacing: 0.06em;
 }
 .site-header .brand-name { font-weight: 700; font-size: 17px; color: var(--ink); }
 .site-header .brand-name span { color: var(--accent); }
