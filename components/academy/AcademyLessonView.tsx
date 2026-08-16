@@ -70,7 +70,9 @@ export function EmptyAcademy({ title, body }: { title: string; body: string }) {
   return (
     <section className="exercise">
       <h1>{title}</h1>
-      <p className="muted">{body}</p>
+      <div className="state-empty">
+        <p className="muted">{body}</p>
+      </div>
     </section>
   );
 }

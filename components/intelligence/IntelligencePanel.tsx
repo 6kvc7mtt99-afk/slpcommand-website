@@ -1,6 +1,12 @@
 import Link from "next/link";
 import type { MissionItem, ReadinessCard, WeaknessItem } from "@/lib/api/intelligence";
 
+function readinessPercent(value: string | number): number {
+  const raw = typeof value === "number" ? value : Number(String(value).replace("%", ""));
+  if (!Number.isFinite(raw)) return 0;
+  return raw <= 1 ? Math.round(raw * 100) : Math.max(0, Math.min(100, raw));
+}
+
 function percentFromAccuracy(value: number | null | undefined): number | null {
   if (value == null || Number.isNaN(value)) return null;
   const n = value <= 1 ? value * 100 : value;
@@ -18,7 +24,11 @@ export function ReadinessCardView({ card }: { card: ReadinessCard }) {
           {card.milestone ? <p>{card.milestone}</p> : null}
           <p className="muted">{card.totalAttempts} attempts recorded by the backend.</p>
         </div>
-        <div className="home-ring" aria-label={`Readiness ${card.readiness}`}>
+        <div
+          className="home-ring"
+          aria-label={`Readiness ${card.readiness}`}
+          style={{ ["--ring" as string]: readinessPercent(card.readiness) }}
+        >
           {card.readiness}
         </div>
       </div>

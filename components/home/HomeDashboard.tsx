@@ -17,6 +17,7 @@ import { ConfidenceScaleCard, EstimatedSlpHero, TransitionBanner } from "./Estim
 import { PlanChip } from "./PlanChip";
 import { StreakCard } from "./StreakCard";
 import { ExpectedOutcomeCard, TodaySessionCard } from "./TodaySessionCard";
+import { EmptyState, LoadingState } from "@/components/ui/ProductState";
 
 function greetingForNow(): string {
   const hour = new Date().getHours();
@@ -171,9 +172,9 @@ export function HomeDashboard({
         <article className="home-card">
           <p className="home-kicker">Achievements</p>
           {achievements == null ? (
-            <p className="muted">Loading…</p>
+            <LoadingState label="Loading…" lines={2} />
           ) : achievements.length === 0 ? (
-            <p className="muted">No achievements to show yet.</p>
+            <EmptyState title="No achievements yet" body="They appear here when the backend records them." />
           ) : (
             <ul className="home-list">
               {achievements.slice(0, 6).map((item) => (
@@ -189,9 +190,9 @@ export function HomeDashboard({
         <article className="home-card">
           <p className="home-kicker">Recent activity</p>
           {recent == null ? (
-            <p className="muted">Loading…</p>
+            <LoadingState label="Loading…" lines={2} />
           ) : recent.length === 0 ? (
-            <p className="muted">No recent activity.</p>
+            <EmptyState title="No recent activity" body="Completed work from the backend will list here." />
           ) : (
             <ul className="home-list">
               {recent.map((item) => (

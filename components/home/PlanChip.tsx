@@ -14,10 +14,9 @@ export function PlanChip({ entitlements }: { entitlements: EntitlementsState }) 
         <p className="muted">Subscriptions are managed in the iOS app.</p>
       ) : (
         <div className="home-pro-banner">
-          <p>
-            <strong>SLP Command Professional</strong>
+          <p className="muted">
+            <strong>SLP Command Professional</strong> — unlimited practice, feedback and exams in the iOS app.
           </p>
-          <p className="muted">Unlimited practice, feedback and exams. Get Professional in the iOS app.</p>
         </div>
       )}
     </article>

@@ -10,6 +10,7 @@ import {
 } from "@/lib/listening/practiceSession";
 import { AudioPlayer } from "@/components/exercise/AudioPlayer";
 import { CommercialCard, ExerciseShell, FeedbackBanner } from "@/components/exercise/ExerciseShell";
+import { ErrorState, LoadingState } from "@/components/ui/ProductState";
 import { OptionList } from "@/components/exercise/OptionList";
 
 type Phase = "loading" | "ready" | "answered" | "quota" | "error";
@@ -71,15 +72,12 @@ export function ListeningPractice({
     <ExerciseShell skill="Listening" mode="Practice" title="One clip, one question">
       <p className="muted">No transcript — just like the real exam.</p>
       {phase === "quota" ? <CommercialCard /> : null}
-      {phase === "error" ? (
-        <article className="home-card">
-          <p>{message}</p>
-          <button className="btn btn-primary" type="button" onClick={() => void load(true)}>
-            Try again
-          </button>
-        </article>
+      {phase === "error" ? <ErrorState message={message} onRetry={() => void load(true)} /> : null}
+      {phase === "loading" ? (
+        <div className="audio-stage">
+          <LoadingState label="Loading a clip…" lines={2} />
+        </div>
       ) : null}
-      {phase === "loading" ? <p className="muted">Loading a clip…</p> : null}
       {item && phase !== "quota" && phase !== "error" ? (
         <>
           <article className="audio-stage">

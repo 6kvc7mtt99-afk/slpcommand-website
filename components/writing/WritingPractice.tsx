@@ -10,6 +10,7 @@ import {
   type WritingPrompt,
 } from "@/lib/api/writing";
 import { CommercialCard, ExerciseShell } from "@/components/exercise/ExerciseShell";
+import { ErrorState, LoadingState } from "@/components/ui/ProductState";
 import { WritingEditor } from "./WritingEditor";
 
 const MIN = 80;
@@ -89,16 +90,11 @@ export function WritingPractice() {
   return (
     <ExerciseShell skill="Writing" mode="Practice" title="Draft and evaluation">
       {phase === "quota" ? <CommercialCard /> : null}
-      {phase === "loading" ? <p className="muted">Loading a prompt…</p> : null}
-      {phase === "error" ? (
-        <article className="home-card">
-          <p>{message}</p>
-          <button className="btn btn-primary" type="button" onClick={() => void loadPrompt()}>Try again</button>
-        </article>
-      ) : null}
+      {phase === "loading" ? <LoadingState label="Loading a prompt…" lines={4} /> : null}
+      {phase === "error" ? <ErrorState message={message} onRetry={() => void loadPrompt()} /> : null}
       {prompt && phase !== "quota" && phase !== "error" ? (
-        <>
-          <article className="home-card">
+        <div className="writing-workspace">
+          <aside className="writing-task">
             {prompt.title ? <h2>{prompt.title}</h2> : null}
             <div className="passage-body">{prompt.prompt}</div>
             {prompt.guidance.suggestedStructure.length ? (
@@ -113,8 +109,8 @@ export function WritingPractice() {
                 <ul>{prompt.guidance.practiceTips.map((item) => <li key={item}>{item}</li>)}</ul>
               </div>
             ) : null}
-          </article>
-          <article className="home-card">
+          </aside>
+          <div>
             <WritingEditor value={draft} onChange={setDraft} wordTarget={prompt.wordTarget || undefined} disabled={phase === "evaluating"} />
             {message ? <p className="err" role="status">{message}</p> : null}
             {phase === "evaluating" ? <p className="muted">Evaluating on the server…</p> : null}
@@ -126,8 +122,8 @@ export function WritingPractice() {
             >
               Submit for evaluation
             </button>
-          </article>
-        </>
+          </div>
+        </div>
       ) : null}
       {phase === "result" && result ? (
         <article className="home-card">

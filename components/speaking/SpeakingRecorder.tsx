@@ -104,7 +104,7 @@ export function SpeakingRecorder({
   const canSubmit = seconds >= minSubmitSeconds;
 
   return (
-    <div className={`recorder${state === "recording" ? " is-recording" : ""}${state === "denied" ? " is-denied" : ""}`}>
+    <div className={`recorder is-${state}${state === "recording" ? " is-recording" : ""}`}>
       <p className="home-kicker">Microphone</p>
       <div className="recorder-face">
         <div className="recorder-ring" aria-hidden="true">

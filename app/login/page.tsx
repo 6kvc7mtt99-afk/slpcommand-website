@@ -53,7 +53,7 @@ export default function LoginPage() {
       />
       <main className="auth-stage">
         <div className="auth-card">
-          <p className="section-eyebrow">Workspace</p>
+          <p className="home-kicker">Workspace</p>
           <h1>Log in</h1>
           <p className="updated">Use the same email and password as the iOS app.</p>
           <form onSubmit={onSubmit}>

@@ -9,6 +9,7 @@ import {
   submitReadingAnswer,
 } from "@/lib/reading/practiceSession";
 import { CommercialCard, ExerciseShell, FeedbackBanner } from "@/components/exercise/ExerciseShell";
+import { ErrorState, LoadingState } from "@/components/ui/ProductState";
 import { OptionList } from "@/components/exercise/OptionList";
 
 type Phase = "loading" | "ready" | "answered" | "quota" | "error";
@@ -95,15 +96,14 @@ export function ReadingPractice() {
   return (
     <ExerciseShell skill="Reading" mode="Practice" title="One passage, one question">
       {phase === "quota" ? <CommercialCard /> : null}
-      {phase === "error" ? (
-        <article className="home-card">
-          <p>{message}</p>
-          <button className="btn btn-primary" type="button" onClick={() => void load(true)}>
-            Try again
-          </button>
-        </article>
+      {phase === "error" ? <ErrorState message={message} onRetry={() => void load(true)} /> : null}
+      {phase === "loading" ? (
+        <div className="reading-workspace">
+          <div className="reading-passage">
+            <LoadingState label="Loading a text…" lines={4} />
+          </div>
+        </div>
       ) : null}
-      {phase === "loading" ? <p className="muted">Loading a text…</p> : null}
 
       {passage && question && phase !== "quota" ? (
         <div className="reading-workspace">

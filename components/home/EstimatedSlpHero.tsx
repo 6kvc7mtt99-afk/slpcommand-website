@@ -12,6 +12,13 @@ function formatLevel(level: string | number | null): string | null {
   return String(level);
 }
 
+/** Visualise the same overall figure on the 0–4 SLP scale. Not a new metric. */
+function ringPercent(overall: string): number {
+  const n = Number(overall);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(100, (n / 4) * 100));
+}
+
 export function EstimatedSlpHero({ progress }: { progress: ProgressResponse | null }) {
   if (!progress) return null;
 
@@ -32,7 +39,11 @@ export function EstimatedSlpHero({ progress }: { progress: ProgressResponse | nu
           <p className="muted">Overall · all skills</p>
         </div>
         {showRing && overall ? (
-          <div className="home-ring" aria-label={`Estimated SLP ${overall}`}>
+          <div
+            className="home-ring"
+            aria-label={`Estimated SLP ${overall}`}
+            style={{ ["--ring" as string]: ringPercent(overall) }}
+          >
             <span>SLP {overall}</span>
           </div>
         ) : null}
@@ -50,7 +61,7 @@ export function EstimatedSlpHero({ progress }: { progress: ProgressResponse | nu
           return (
             <div key={skill} className="home-skill-mini">
               <span className="home-skill-name">{skill}</span>
-              <strong>{row.available && level ? `SLP ${level}` : "—"}</strong>
+              <strong>{row.available && level ? `SLP ${level}` : "Not yet"}</strong>
             </div>
           );
         })}

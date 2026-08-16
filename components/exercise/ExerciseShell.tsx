@@ -40,7 +40,14 @@ export function SkillLaunch({
   lead: string;
   actions: Array<{ href: string; label: string; detail: string; disabled?: boolean; disabledReason?: string }>;
 }) {
-  const primary = actions.find((action) => !action.disabled) ?? actions[0];
+  const rank = (label: string) => {
+    const key = label.toLowerCase();
+    if (key === "practice") return 0;
+    if (key === "exam") return 1;
+    return 2;
+  };
+  const enabled = actions.filter((action) => !action.disabled);
+  const primary = [...enabled].sort((a, b) => rank(a.label) - rank(b.label))[0] ?? actions[0];
   const rest = actions.filter((action) => action !== primary);
 
   return (

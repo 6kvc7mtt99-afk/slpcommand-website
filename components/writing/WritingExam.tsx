@@ -157,17 +157,20 @@ export function WritingExam() {
         </article>
       ) : null}
       {phase === "live" && prompt ? (
-        <>
-          <ExamTimer seconds={WRITING_EXAM_MINUTES * 60} onExpire={() => void submit(true)} />
+        <div className="exam-live">
+          <div className="exam-toolbar">
+            <ExamTimer seconds={WRITING_EXAM_MINUTES * 60} onExpire={() => void submit(true)} />
+          </div>
           {examMode === "formative_exam" ? (
             <p className="home-banner">This is an indicative simulation. The result is not an SLP level.</p>
           ) : null}
-          <article className="home-card">
+          <div className="writing-workspace">
+          <aside className="writing-task">
             {prompt.title ? <h2>{prompt.title}</h2> : null}
             <div className="passage-body">{prompt.prompt}</div>
             <p className="muted">Word target {prompt.wordTarget || WRITING_EXAM_WORD_TARGET}. Mode follows the item band, not your profile picker.</p>
-          </article>
-          <article className="home-card">
+          </aside>
+          <div>
             <WritingEditor
               value={draft}
               onChange={setDraft}
@@ -176,8 +179,9 @@ export function WritingExam() {
             {lowWord ? <p className="err" role="status">Fewer than 180 words and under five minutes remain.</p> : null}
             {message ? <p className="err" role="status">{message}</p> : null}
             <button className="btn btn-primary" type="button" onClick={() => void submit(false)}>Submit exam</button>
-          </article>
-        </>
+          </div>
+          </div>
+        </div>
       ) : null}
       {phase === "evaluating" ? <p className="muted">Submitting to the evaluator…</p> : null}
       {phase === "done" ? (

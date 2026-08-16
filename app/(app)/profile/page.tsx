@@ -115,7 +115,10 @@ export default function ProfilePage() {
         <p className="section-eyebrow">Account</p>
         <h1>Profile</h1>
       </header>
+      <div className="profile-grid">
+      <div>
       <article className="home-card">
+        <p className="home-kicker">Identity</p>
         <p><strong>Email</strong><br />{email ?? "—"}</p>
         <p><strong>Plan</strong><br />{plan}</p>
         <p className="muted">Subscriptions are managed in the iOS app until web billing exists.</p>
@@ -123,11 +126,13 @@ export default function ProfilePage() {
       <article className="home-card">
         <h2>Target level</h2>
         <p className="muted">Picker is SLP 2 or SLP 3 only.</p>
-        <div className="cta-row">
+        <div className="seg" role="group" aria-label="Target level">
           <button className={level === "2" ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={() => saveLevel("2")}>SLP 2</button>
           <button className={level === "3" ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={() => saveLevel("3")}>SLP 3</button>
         </div>
       </article>
+      </div>
+      <div>
       <article className="home-card">
         <h2>Your data</h2>
         <div className="cta-row">
@@ -142,6 +147,8 @@ export default function ProfilePage() {
         <input id="delete-confirm" value={confirmDelete} onChange={(e) => setConfirmDelete(e.target.value)} />
         <button className="btn btn-outline" type="button" onClick={() => void deleteAccount()}>Delete account</button>
       </article>
+      </div>
+      </div>
       {note ? <p role="status">{note}</p> : null}
       <CommercialDialog open={commercial} onClose={() => setCommercial(false)} />
     </section>

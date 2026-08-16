@@ -8,7 +8,7 @@ export function ExamDisclaimerGate({
   onCancel: () => void;
 }) {
   return (
-    <article className="skill-primary">
+    <article className="skill-primary exam-live">
       <p className="home-kicker">Before you start</p>
       <h2>Educational simulation only</h2>
       <p>

@@ -5,7 +5,7 @@ export default async function ProgressPage() {
   const progress = await loadProgress();
 
   return (
-    <section className="exercise">
+    <section className="exercise instrument">
       <header className="page-head">
         <p className="section-eyebrow">Progress</p>
         <h1>Estimated SLP</h1>
@@ -19,7 +19,9 @@ export default async function ProgressPage() {
         <EstimatedSlpHero progress={progress} />
         <ConfidenceScaleCard progress={progress} />
       </div>
-      {!progress ? <p className="muted">Estimated SLP is unavailable right now. The rest of the workspace still works.</p> : null}
+      {!progress ? (
+        <p className="muted">Estimated SLP is unavailable right now. The rest of the workspace still works.</p>
+      ) : null}
     </section>
   );
 }
