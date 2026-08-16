@@ -17,3 +17,34 @@ export function examIntentKey(userId: string, skill: "reading" | "listening", da
   const d = String(day.getUTCDate()).padStart(2, "0");
   return `exam-idemp:${userId}:${skill}:${y}-${m}-${d}`;
 }
+
+const memoryKeys = new Map<string, string>();
+
+export function persistentClientKey(storageKey: string): string {
+  try {
+    const existing = sessionStorage.getItem(storageKey) ?? memoryKeys.get(storageKey);
+    if (existing) {
+      memoryKeys.set(storageKey, existing);
+      return existing;
+    }
+    const created = newIdempotencyKey();
+    memoryKeys.set(storageKey, created);
+    sessionStorage.setItem(storageKey, created);
+    return created;
+  } catch {
+    const existing = memoryKeys.get(storageKey);
+    if (existing) return existing;
+    const created = newIdempotencyKey();
+    memoryKeys.set(storageKey, created);
+    return created;
+  }
+}
+
+export function clearPersistentClientKey(storageKey: string): void {
+  memoryKeys.delete(storageKey);
+  try {
+    sessionStorage.removeItem(storageKey);
+  } catch {
+    /* ignore */
+  }
+}

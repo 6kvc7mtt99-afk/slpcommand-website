@@ -1,5 +1,5 @@
 import { apiRequest } from "@/lib/api/client";
-import { examIntentKey, newIdempotencyKey } from "@/lib/api/idempotency";
+import { clearPersistentClientKey, examIntentKey, persistentClientKey } from "@/lib/api/idempotency";
 import {
   buildFinishPayload,
   decodeReadingExamStart,
@@ -15,24 +15,11 @@ export function readingExamStorageKey(userId: string, day?: Date): string {
 }
 
 export function getReadingExamIdempotencyKey(userId: string): string {
-  const storageKey = readingExamStorageKey(userId);
-  try {
-    const existing = sessionStorage.getItem(storageKey);
-    if (existing) return existing;
-    const created = newIdempotencyKey();
-    sessionStorage.setItem(storageKey, created);
-    return created;
-  } catch {
-    return cached?.key ?? newIdempotencyKey();
-  }
+  return persistentClientKey(readingExamStorageKey(userId));
 }
 
 export function clearReadingExamIntent(userId: string): void {
-  try {
-    sessionStorage.removeItem(readingExamStorageKey(userId));
-  } catch {
-    /* ignore */
-  }
+  clearPersistentClientKey(readingExamStorageKey(userId));
   inflight = null;
   cached = null;
 }

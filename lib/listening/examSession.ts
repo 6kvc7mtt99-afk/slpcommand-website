@@ -1,5 +1,5 @@
 import { apiRequest } from "@/lib/api/client";
-import { examIntentKey, newIdempotencyKey } from "@/lib/api/idempotency";
+import { clearPersistentClientKey, examIntentKey, persistentClientKey } from "@/lib/api/idempotency";
 import {
   decodeExamState,
   decodeListeningExamStart,
@@ -16,24 +16,11 @@ export function listeningExamStorageKey(userId: string, day?: Date): string {
 }
 
 export function getListeningExamIdempotencyKey(userId: string): string {
-  const storageKey = listeningExamStorageKey(userId);
-  try {
-    const existing = sessionStorage.getItem(storageKey);
-    if (existing) return existing;
-    const created = newIdempotencyKey();
-    sessionStorage.setItem(storageKey, created);
-    return created;
-  } catch {
-    return newIdempotencyKey();
-  }
+  return persistentClientKey(listeningExamStorageKey(userId));
 }
 
 export function clearListeningExamIntent(userId: string): void {
-  try {
-    sessionStorage.removeItem(listeningExamStorageKey(userId));
-  } catch {
-    /* ignore */
-  }
+  clearPersistentClientKey(listeningExamStorageKey(userId));
   inflight = null;
   cached = null;
 }
