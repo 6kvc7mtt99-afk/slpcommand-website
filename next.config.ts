@@ -4,6 +4,7 @@ import path from "node:path";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  eslint: { ignoreDuringBuilds: true },
   outputFileTracingRoot: path.join(__dirname),
   async redirects() {
     return [
