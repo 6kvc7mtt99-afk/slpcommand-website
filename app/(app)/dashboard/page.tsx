@@ -1,11 +1,34 @@
-export default function DashboardPage() {
-  return (
-    <section>
-      <p className="section-eyebrow">Today</p>
-      <h1>Command centre</h1>
-      <p className="muted">
-        Your mission card, estimated SLP and streak land in the next train (PR-07). Navigation and entitlements are live.
-      </p>
-    </section>
-  );
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { HomeDashboard } from "@/components/home/HomeDashboard";
+import { loadHomeV2 } from "@/lib/server/home";
+import { readAuthCookies } from "@/lib/server/authCookies";
+
+export const dynamic = "force-dynamic";
+
+function greetingNameFromEmail(email: string | undefined): string | null {
+  if (!email) return null;
+  const local = email.split("@")[0] ?? "";
+  const cleaned = local.replace(/[._-]+/g, " ").trim();
+  if (!cleaned) return null;
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+export default async function DashboardPage() {
+  const hdrs = await headers();
+  const timezone =
+    hdrs.get("x-vercel-ip-timezone") ||
+    hdrs.get("cf-timezone") ||
+    hdrs.get("x-timezone") ||
+    "UTC";
+  const auth = await readAuthCookies();
+  if (!auth.accessToken && !auth.refreshToken) {
+    redirect("/login");
+  }
+  const initial = await loadHomeV2({
+    timezone,
+    greetingName: greetingNameFromEmail(auth.email),
+  });
+
+  return <HomeDashboard initial={initial} userId={auth.userId ?? null} />;
 }

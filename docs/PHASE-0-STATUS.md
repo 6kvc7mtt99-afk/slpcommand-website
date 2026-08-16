@@ -21,6 +21,22 @@ Verified 2026-08-16 against local Workers runtime (`opennextjs-cloudflare previe
 | Secrets in git | none (`.env.local` / `.dev.vars` gitignored) |
 | Host switch to Vercel | **not taken** |
 
+## PR-07 — Home v2 dashboard — implemented
+
+Verified 2026-08-16 locally (`next dev` :3000 + Vitest + Playwright). No production deploy. No push.
+
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| Vitest (23) | PASS — DTO decode, `passProbability` null, progress ring hide, 5+0+2 budget, HomeDashboard render |
+| Playwright dashboard gate | PASS — document GET `/dashboard` is 307 `/login`, not 400 |
+| Anonymous `/dashboard` | PASS — 307 in ~80ms (page-level cookie guard, no Express fan-out) |
+| Login credential copy | PASS |
+| Home v3 / `coach/mission` | not called |
+| Logged-in Free/Pro / one endpoint 500 | **not run** — no learner session in this environment |
+
+`/dashboard` is Home v2: 5 SSR payloads (`feature-flags`, `entitlements`, `progress`, `session/today`, `activity/streak`) + 0 hydrate echo of those five + lazy `achievements` / `recent`. `passProbability` is always treated as null. AppGate no longer refetches entitlements on mount.
+
 ## Remaining PRs in this train
 
 - PR-01 scaffold + tokens + tests — implemented
@@ -29,5 +45,6 @@ Verified 2026-08-16 against local Workers runtime (`opennextjs-cloudflare previe
 - PR-04 Cookie Policy — implemented
 - PR-05 auth + onboarding — implemented
 - PR-06 app shell + entitlements — implemented
+- PR-07 Home v2 dashboard — implemented
 
 See the implementation report in the final session note. No production deploy. No push.

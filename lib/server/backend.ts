@@ -21,6 +21,8 @@ export type BackendFetchInit = {
   clientIp?: string;
   timeoutMs?: number;
   allowRefresh?: boolean;
+  cache?: RequestCache;
+  revalidate?: number;
 };
 
 export type BackendFetchResult = {
@@ -68,13 +70,18 @@ async function callExpress(opts: {
   headers: Headers;
   body?: string | null;
   timeoutMs: number;
+  cache?: RequestCache;
+  revalidate?: number;
 }): Promise<{ status: number; headers: Headers; bodyText: string }> {
-  const res = await fetch(opts.url, {
+  const init: RequestInit & { next?: { revalidate: number } } = {
     method: opts.method,
     headers: opts.headers,
     body: opts.method === "GET" || opts.method === "DELETE" ? undefined : opts.body,
     signal: AbortSignal.timeout(opts.timeoutMs),
-  });
+  };
+  if (opts.cache) init.cache = opts.cache;
+  if (opts.revalidate != null) init.next = { revalidate: opts.revalidate };
+  const res = await fetch(opts.url, init);
   const bodyText = await res.text();
   return { status: res.status, headers: res.headers, bodyText };
 }
@@ -139,6 +146,8 @@ export async function backendFetch(init: BackendFetchInit): Promise<BackendFetch
     headers,
     body: init.body,
     timeoutMs,
+    cache: init.cache,
+    revalidate: init.revalidate,
   });
 
   if (result.status === 401 && auth.refreshToken && init.allowRefresh !== false && !refreshed) {
@@ -166,6 +175,8 @@ export async function backendFetch(init: BackendFetchInit): Promise<BackendFetch
         headers: replayHeaders,
         body: init.body,
         timeoutMs,
+        cache: init.cache,
+        revalidate: init.revalidate,
       });
       refreshed = true;
     } else {
