@@ -14,6 +14,9 @@ const CLIENT_GLOBS = [
   "app/admin/page.tsx",
   "components/writing/WritingTools.tsx",
   "lib/api/writingTools.ts",
+  "lib/api/speaking.ts",
+  "components/speaking/SpeakingPractice.tsx",
+  "components/speaking/SpeakingExam.tsx",
 ];
 
 describe("security regressions", () => {

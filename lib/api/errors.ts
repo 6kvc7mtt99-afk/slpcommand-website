@@ -83,7 +83,14 @@ export function userMessageFor(error: FrontendError): string {
     case "rate_limit":
       return error.reason === "writing_daily_cap"
         ? "Daily technical limit (20), not your plan quota."
-        : "Too many requests. Please wait a moment and try again.";
+        : error.reason === "speaking_daily_cap"
+          ? "Daily technical limit (10 evaluations). This is not your plan quota."
+          : "Too many requests. Please wait a moment and try again.";
+    case "audio":
+      if (error.status === 413) return "That recording is too large (10 MB max).";
+      if (/too short/i.test(error.message)) return "Recording is too short.";
+      if (/usable/i.test(error.message)) return "We couldn’t evaluate that recording.";
+      return error.message || "We couldn’t evaluate that recording.";
     case "missing_client_header":
     case "missing_idempotency_key":
       return "This request could not be completed safely. Refresh the page and try again.";
@@ -189,13 +196,24 @@ export function normalizeBackendError(input: {
 
   if (input.status === 429) {
     const writingCap = input.path?.includes("/writing/");
+    const speakingCap = input.path?.includes("/speaking/");
     return new FrontendError({
       code: "rate_limit",
       message: "rate_limited",
       status: 429,
-      reason: writingCap ? "writing_daily_cap" : "ip_limit",
+      reason: writingCap ? "writing_daily_cap" : speakingCap ? "speaking_daily_cap" : "ip_limit",
       correlationId,
       retryable: true,
+    });
+  }
+
+  if (input.status === 413 || input.status === 422 || input.status === 415) {
+    return new FrontendError({
+      code: "audio",
+      message: rawError || "audio_error",
+      status: input.status,
+      reason,
+      correlationId,
     });
   }
 

@@ -36,6 +36,7 @@ export function AppShell({
       localStorage.removeItem(`weekly_goal_days:${me.userId}`);
       localStorage.removeItem(`target_exam_date:${me.userId}`);
       localStorage.removeItem(`writing_exam_autosave:${me.userId}`);
+      localStorage.removeItem(`speaking_ai_consent_given:${me.userId}`);
       try {
         const today = new Date();
         const ymd = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, "0")}-${String(today.getUTCDate()).padStart(2, "0")}`;

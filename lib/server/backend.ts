@@ -14,7 +14,7 @@ export type BackendFetchInit = {
   method?: string;
   path: string;
   search?: string;
-  body?: string | null;
+  body?: string | ArrayBuffer | Uint8Array | null;
   contentType?: string;
   idempotencyKey?: string;
   correlationId?: string;
@@ -48,7 +48,7 @@ function timeoutFor(path: string): number {
   ) {
     return AI_TIMEOUT;
   }
-  if (path.includes("/speaking/evaluate")) return 90_000;
+  if (path.includes("/speaking/evaluate") || path.includes("/speaking/attempts/")) return 90_000;
   return DEFAULT_TIMEOUT;
 }
 
@@ -72,7 +72,7 @@ async function callExpress(opts: {
   method: string;
   url: string;
   headers: Headers;
-  body?: string | null;
+  body?: string | ArrayBuffer | Uint8Array | null;
   timeoutMs: number;
   cache?: RequestCache;
   revalidate?: number;
@@ -80,7 +80,12 @@ async function callExpress(opts: {
   const init: RequestInit & { next?: { revalidate: number } } = {
     method: opts.method,
     headers: opts.headers,
-    body: opts.method === "GET" || opts.method === "DELETE" ? undefined : opts.body,
+    body:
+      opts.method === "GET" || opts.method === "DELETE"
+        ? undefined
+        : opts.body instanceof Uint8Array
+          ? Buffer.from(opts.body)
+          : opts.body,
     signal: AbortSignal.timeout(opts.timeoutMs),
   };
   if (opts.cache) init.cache = opts.cache;

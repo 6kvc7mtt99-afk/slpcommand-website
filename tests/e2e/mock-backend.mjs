@@ -16,7 +16,20 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === "/api/entitlements") {
-    res.end(JSON.stringify({ ok: true, plan: { key: "free", name: "Free" }, features: [{ key: "reading_practice", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } }] }));
+    res.end(JSON.stringify({
+      ok: true,
+      plan: { key: "free", name: "Free" },
+      features: [
+        { key: "reading_practice", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } },
+        { key: "listening_practice", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } },
+        { key: "writing_ai_feedback", enabled: true, quota: { period: "monthly", limit: 3, remaining: 2 } },
+        { key: "speaking_ai_feedback", enabled: true, quota: { period: "monthly", limit: 3, remaining: 2 } },
+        { key: "reading_exam_simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
+        { key: "listening_exam_simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
+        { key: "academy_access", enabled: true },
+        { key: "intelligence_dashboard", enabled: true },
+      ],
+    }));
     return;
   }
   if (url.pathname === "/api/progress") {
@@ -109,6 +122,36 @@ const server = http.createServer((req, res) => {
   }
   if (url.pathname === "/api/writing/orchestrator/next" && req.method === "POST") {
     res.end(JSON.stringify({ coach: { headline: "Fix the opening", detail: "The orchestrator chose this." }, academy: { lesson: { id: "wl-1", title: "Openings" }, reason: "coverage" } }));
+    return;
+  }
+  if (url.pathname === "/api/speaking/evaluate" && req.method === "POST") {
+    res.end(JSON.stringify({
+      attempt_id: "spk-1",
+      created_at: "2026-08-16T00:00:00Z",
+      transcript: "Unit ready.",
+      target_level: "3",
+      prompt_title: "Readiness Status Report",
+      mode: "practice",
+      rating: {
+        credited: true,
+        level_attempted: "3",
+        limiting_criterion: null,
+        failed_on: [],
+        criteria: {
+          content: { met: true, evidence: "ready", note: "" },
+          tasks: { met: true, evidence: "", note: "" },
+          accuracy: { met: true, evidence: "", note: "" },
+          textProduced: { met: true, evidence: "", note: "" },
+        },
+        band: null,
+        confidence: null,
+        ratable: true,
+      },
+    }));
+    return;
+  }
+  if (url.pathname === "/api/speaking/history") {
+    res.end(JSON.stringify({ items: [{ id: "spk-1", prompt_title: "Readiness Status Report", mode: "practice", created_at: "2026-08-16T00:00:00Z", stanag_band: null }] }));
     return;
   }
   if (url.pathname === "/api/writing/intelligence/transform" && req.method === "POST") {

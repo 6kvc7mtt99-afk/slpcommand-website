@@ -35,6 +35,8 @@ test("app skill routes are gated and login stays usable on a phone viewport", as
   expect((await page.request.get("/listening/exam", { maxRedirects: 0 })).status()).toBe(307);
   expect((await page.request.get("/writing/practice", { maxRedirects: 0 })).status()).toBe(307);
   expect((await page.request.get("/writing/history", { maxRedirects: 0 })).status()).toBe(307);
+  expect((await page.request.get("/speaking/practice", { maxRedirects: 0 })).status()).toBe(307);
+  expect((await page.request.get("/speaking/exam", { maxRedirects: 0 })).status()).toBe(307);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/login");
   await expect(page.getByRole("heading", { name: "Log in" })).toBeVisible();

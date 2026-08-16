@@ -82,6 +82,10 @@ const ALLOW: Rule[] = [
   { method: "GET", pattern: /^\/api\/writing\/intelligence\/weakness-profile$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/writing\/learning-state$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/writing\/competencies$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/speaking\/evaluate$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/speaking\/attempts\/[0-9a-f-]{36}\/save-audio$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/speaking\/history$/, reason: "ok" },
+  { method: "DELETE", pattern: /^\/api\/speaking\/attempts\/[0-9a-f-]{36}\/audio$/, reason: "ok" },
   // requireAdminUser console. DENY is evaluated first, so shared-secret
   // POST /api/admin/billing/reconcile stays 410.
   { method: "GET", pattern: /^\/api\/admin\//, reason: "ok" },
