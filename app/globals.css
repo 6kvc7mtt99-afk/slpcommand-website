@@ -248,6 +248,17 @@ input, select {
   overflow: hidden;
 }
 .audio-progress span { display: block; height: 100%; background: var(--accent); }
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 15, 18, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 50;
+}
+.dialog-card { max-width: 440px; width: 100%; }
 .writing-editor textarea {
   width: 100%;
   margin-top: 6px;

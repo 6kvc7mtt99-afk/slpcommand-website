@@ -52,6 +52,7 @@ Verified 2026-08-16 locally (`next dev` :3000 + Vitest + Playwright). No product
 - PR-11 Listening exam — implemented
 - PR-12 Writing practice + history — implemented
 - PR-13 Writing exam — implemented
+- PR-14 Progress + Profile + export/delete — implemented
 
 ## PR-08 — Reading practice — implemented
 
