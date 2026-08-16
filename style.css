@@ -44,8 +44,8 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 10px; color: var(--bg); letter-spacing: 0.06em;
 }
-.site-header .brand-name { font-weight: 700; font-size: 17px; color: var(--ink); }
-.site-header .brand-name span { color: var(--accent); }
+.site-header .brand-name { font-weight: 700; font-size: 16px; color: var(--ink); }
+.site-header .brand-name span { color: var(--ink); font-weight: 500; }
 .site-header nav a {
   color: var(--muted); font-size: 14px; text-decoration: none; margin-left: 20px;
 }
@@ -53,7 +53,7 @@ body {
 
 /* ─── HERO ─── */
 .hero {
-  background: linear-gradient(160deg, #f0f4ff 0%, #ffffff 60%);
+  background: var(--bg);
   padding: 80px 24px 72px;
   text-align: center;
 }
@@ -113,7 +113,7 @@ body {
 .features { padding: 72px 24px; background: var(--bg); }
 .features-inner { max-width: var(--hero-max); margin: 0 auto; }
 .section-eyebrow {
-  text-align: center; color: var(--accent); font-size: 13px;
+  text-align: center; color: var(--muted); font-size: 13px;
   font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px;
 }
 .section-title { text-align: center; font-size: 30px; font-weight: 800; margin-bottom: 14px; letter-spacing: -.5px; }
@@ -309,7 +309,7 @@ table.legal-table tr:last-child td { border-bottom: none; }
     --note-bg: #231e0a; --note-border: #52430d;
   }
   .note { color: #e0cc80; }
-  .hero { background: linear-gradient(160deg, #111525 0%, var(--bg) 60%); }
+  .hero { background: var(--bg); }
   .site-footer { background: #000; }
   .disclaimer-strip { background: #1e1a08; border-color: #52430d; color: #c8a83a; }
   .site-header { background: var(--bg); }
