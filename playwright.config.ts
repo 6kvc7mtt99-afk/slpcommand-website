@@ -14,6 +14,12 @@ export default defineConfig({
     url: "http://127.0.0.1:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      ...process.env,
+      ...(process.env.CI || process.env.MOCK_BACKEND === "1"
+        ? { BACKEND_URL: "http://127.0.0.1:3999", MOCK_BACKEND: "1" }
+        : {}),
+    },
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 });

@@ -36,6 +36,10 @@ export type BackendFetchResult = {
 const DEFAULT_TIMEOUT = 30_000;
 const AI_TIMEOUT = 180_000;
 
+export function shouldRetryTransientGet(method: string, status: number): boolean {
+  return method === "GET" && (status === 429 || status === 502 || status === 503 || status === 504);
+}
+
 function timeoutFor(path: string): number {
   if (
     path.includes("/writing/submit") ||
@@ -149,6 +153,19 @@ export async function backendFetch(init: BackendFetchInit): Promise<BackendFetch
     cache: init.cache,
     revalidate: init.revalidate,
   });
+
+  if (shouldRetryTransientGet(method, result.status)) {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    result = await callExpress({
+      method,
+      url,
+      headers,
+      body: init.body,
+      timeoutMs,
+      cache: init.cache,
+      revalidate: init.revalidate,
+    });
+  }
 
   if (result.status === 401 && auth.refreshToken && init.allowRefresh !== false && !refreshed) {
     const inboundHash = hashToken(auth.refreshToken);
