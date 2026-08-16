@@ -26,12 +26,14 @@ export default async function ReadingAcademyPage() {
   const curriculum = Array.isArray(data.curriculum) ? data.curriculum : [];
 
   return (
-    <section className="exercise">
-      <p className="section-eyebrow">Reading Academy</p>
-      <h1>{asString(reason.headline, "Start here")}</h1>
-      <p className="muted">{asString(reason.detail, "The backend chose this next class from your evidence.")}</p>
+    <section className="exercise page-skill skill-reading">
+      <header className="page-head">
+        <p className="section-eyebrow">Reading Academy</p>
+        <h1>{asString(reason.headline, "Start here")}</h1>
+        <p className="muted">{asString(reason.detail, "The backend chose this next class from your evidence.")}</p>
+      </header>
       {asString(lesson.id) ? (
-        <article className="home-card">
+        <article className="academy-now">
           <p className="home-kicker">Today</p>
           <h2>{asString(lesson.title)}</h2>
           <p className="muted">{asString(lesson.learningObjective)}</p>
@@ -42,17 +44,21 @@ export default async function ReadingAcademyPage() {
       ) : null}
       <article className="home-card">
         <p className="home-kicker">Coverage</p>
-        <p>
-          Sustained {asString(summary.mastered, "0")} · Developing {asString(summary.emerging, "0")} · Needs work {asString(summary.weak, "0")} · Not asked {asString(summary.untested, "0")} · Waiting {asString(summary.blocked, "0")}
+        <p className="coverage-row">
+          <span>Sustained {asString(summary.mastered, "0")}</span>
+          <span>Developing {asString(summary.emerging, "0")}</span>
+          <span>Needs work {asString(summary.weak, "0")}</span>
+          <span>Not asked {asString(summary.untested, "0")}</span>
+          <span>Waiting {asString(summary.blocked, "0")}</span>
         </p>
       </article>
       {curriculum.map((unit) => {
         const rec = isRecord(unit) ? unit : {};
         const lessons = Array.isArray(rec.lessons) ? rec.lessons : [];
         return (
-          <article key={asString(rec.id, asString(rec.title))} className="home-card">
+          <article key={asString(rec.id, asString(rec.title))} className="academy-unit">
             <h2>{asString(rec.title)}</h2>
-            <ul>
+            <ul className="academy-path">
               {lessons.filter(isRecord).map((item) => (
                 <li key={asString(item.id)}>
                   <Link href={`/reading/academy/lesson/${encodeURIComponent(asString(item.id))}`}>{asString(item.title)}</Link>

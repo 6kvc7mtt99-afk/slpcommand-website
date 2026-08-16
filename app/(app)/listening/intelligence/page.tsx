@@ -19,11 +19,15 @@ export default async function ListeningIntelligencePage() {
   const locked = missions.status === 403;
 
   return (
-    <section className="exercise">
-      <p className="section-eyebrow">Listening Intelligence</p>
-      <h1>Listening Intelligence</h1>
-      {readiness.status >= 400 ? <IntelligenceError message="Readiness could not be loaded." /> : <ReadinessCardView card={card} />}
-      <WeaknessSection
+    <section className="exercise page-skill skill-listening">
+      <header className="page-head">
+        <p className="section-eyebrow">Listening Intelligence</p>
+        <h1>Listening Intelligence</h1>
+      </header>
+      <div className="intel-layout">
+        <div>
+          {readiness.status >= 400 ? <IntelligenceError message="Readiness could not be loaded." /> : <ReadinessCardView card={card} />}
+          <WeaknessSection
         items={weaknesses}
         hrefFor={(item) => {
           const topic = topicForSkillOrSubSkill(item.key);
@@ -32,6 +36,8 @@ export default async function ListeningIntelligencePage() {
           return `/listening/academy/topic/${topic.id}`;
         }}
       />
+        </div>
+        <div>
       <MissionsSection
         missions={locked ? [] : decodeMissions(missions.data)}
         locked={locked}
@@ -46,6 +52,8 @@ export default async function ListeningIntelligencePage() {
         {" · "}
         <Link href="/listening/academy">Academy</Link>
       </p>
+        </div>
+      </div>
     </section>
   );
 }

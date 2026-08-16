@@ -11,7 +11,7 @@ export function AcademyLessonView({
   practiceHref?: string;
 }) {
   return (
-    <section className="exercise">
+    <section className={`exercise page-skill skill-${skill.trim().toLowerCase()}`}>
       <p className="section-eyebrow">{skill} Academy</p>
       <p className="home-kicker">{lesson.module || lesson.unit || "Lesson"}</p>
       <h1>{lesson.title}</h1>

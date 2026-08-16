@@ -1,9 +1,15 @@
 import Link from "next/link";
 import type { MissionItem, ReadinessCard, WeaknessItem } from "@/lib/api/intelligence";
 
+function percentFromAccuracy(value: number | null | undefined): number | null {
+  if (value == null || Number.isNaN(value)) return null;
+  const n = value <= 1 ? value * 100 : value;
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
 export function ReadinessCardView({ card }: { card: ReadinessCard }) {
   return (
-    <article className="home-card">
+    <article className="home-card intel-hero">
       <p className="home-kicker">Where you are</p>
       <div className="home-slp-top">
         <div>
@@ -67,20 +73,28 @@ export function WeaknessSection({ items, hrefFor }: { items: WeaknessItem[]; hre
       <p className="home-kicker">What you are weak at</p>
       {items.length ? (
         <ul className="home-blocks">
-          {items.map((item) => (
-            <li key={item.key || item.label}>
-              <strong>{item.label || item.key}</strong>
-              <p className="muted">
-                {item.reportable && item.accuracy != null
-                  ? `${Math.round(item.accuracy * (item.accuracy <= 1 ? 100 : 1))}% on ${item.attempts} attempts`
-                  : `Measured on ${item.attempts} attempts — too few to state a level yet.`}
-                {item.trend ? ` · ${item.trend}` : ""}
-              </p>
-              {hrefFor ? (
-                <Link href={hrefFor(item)}>Study this</Link>
-              ) : null}
-            </li>
-          ))}
+          {items.map((item) => {
+            const pct = item.reportable ? percentFromAccuracy(item.accuracy) : null;
+            return (
+              <li key={item.key || item.label}>
+                <strong>{item.label || item.key}</strong>
+                <p className="muted">
+                  {item.reportable && pct != null
+                    ? `${pct}% on ${item.attempts} attempts`
+                    : `Measured on ${item.attempts} attempts — too few to state a level yet.`}
+                  {item.trend ? ` · ${item.trend}` : ""}
+                </p>
+                {pct != null ? (
+                  <div className="weakness-bar" aria-hidden="true">
+                    <span style={{ width: `${pct}%` }} />
+                  </div>
+                ) : null}
+                {hrefFor ? (
+                  <Link href={hrefFor(item)}>Study this</Link>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <p className="muted">No weakness profile yet.</p>

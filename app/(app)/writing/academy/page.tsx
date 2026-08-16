@@ -25,12 +25,14 @@ export default async function WritingAcademyPage() {
   const lessonId = asString(lesson.id, asString(isRecord(lesson.lesson) ? lesson.lesson.id : ""));
 
   return (
-    <section className="exercise">
-      <p className="section-eyebrow">Writing Academy</p>
-      <h1>{asString(focus.title, asString(coach.headline, "Writing Academy"))}</h1>
-      <p>{asString(coach.detail, asString(focus.reasons ? "" : "The backend composed today’s materials."))}</p>
+    <section className="exercise page-skill skill-writing">
+      <header className="page-head">
+        <p className="section-eyebrow">Writing Academy</p>
+        <h1>{asString(focus.title, asString(coach.headline, "Writing Academy"))}</h1>
+        <p>{asString(coach.detail, asString(focus.reasons ? "" : "The backend composed today’s materials."))}</p>
+      </header>
       {lessonId ? (
-        <article className="home-card">
+        <article className="academy-now">
           <p className="home-kicker">Today’s class</p>
           <h2>{asString(lesson.title, asString(isRecord(lesson.lesson) ? lesson.lesson.title : "Lesson"))}</h2>
           <p className="muted">{asString(lesson.reason)}</p>
@@ -41,12 +43,15 @@ export default async function WritingAcademyPage() {
       ) : null}
       <article className="home-card">
         <p className="home-kicker">Coverage</p>
-        <p>
-          Sustained {asString(readiness.mastered, "0")} · Developing {asString(readiness.emerging, "0")} · Needs work {asString(readiness.weak, "0")} · Not asked {asString(readiness.untested, "0")}
+        <p className="coverage-row">
+          <span>Sustained {asString(readiness.mastered, "0")}</span>
+          <span>Developing {asString(readiness.emerging, "0")}</span>
+          <span>Needs work {asString(readiness.weak, "0")}</span>
+          <span>Not asked {asString(readiness.untested, "0")}</span>
         </p>
       </article>
       {sessions.filter(isRecord).map((session) => (
-        <article key={asString(session.id, asString(session.title))} className="home-card">
+        <article key={asString(session.id, asString(session.title))} className="academy-unit">
           <h2>{asString(session.title)}</h2>
           <p className="muted">
             {asString(session.subtitle)} {session.minutes != null ? `· ${asString(session.minutes)} min` : ""}

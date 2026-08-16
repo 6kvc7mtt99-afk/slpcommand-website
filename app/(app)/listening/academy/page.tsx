@@ -25,28 +25,34 @@ export default async function ListeningAcademyPage() {
       : `/listening/practice${asString(isRecord(decision.target) ? decision.target.key : "") ? `?focusSkill=${encodeURIComponent(asString(isRecord(decision.target) ? decision.target.key : ""))}` : ""}`;
 
   return (
-    <section className="exercise">
-      <p className="section-eyebrow">Listening Academy</p>
-      <h1>{asString(reason.headline, "Listening Academy")}</h1>
-      <p className="muted">{asString(reason.detail, "Cloud standing plus the iOS catalog. A 200 does not unlock every topic.")}</p>
+    <section className="exercise page-skill skill-listening">
+      <header className="page-head">
+        <p className="section-eyebrow">Listening Academy</p>
+        <h1>{asString(reason.headline, "Listening Academy")}</h1>
+        <p className="muted">{asString(reason.detail, "Cloud standing plus the iOS catalog. A 200 does not unlock every topic.")}</p>
+      </header>
       {result.status >= 400 ? <EmptyAcademy title="Cloud standing" body="Cloud Academy standing is unavailable. The local catalog below still follows the free-set rule." /> : null}
-      <article className="home-card">
+      <article className="academy-now">
         <p className="home-kicker">Coverage</p>
-        <p>
-          Sustained {asString(counts.mastered, "0")} · Developing {asString(counts.emerging, "0")} · Needs work {asString(counts.weak, "0")} · Not asked {asString(counts.untested, "0")} · Waiting {asString(counts.blocked, "0")}
+        <p className="coverage-row">
+          <span>Sustained {asString(counts.mastered, "0")}</span>
+          <span>Developing {asString(counts.emerging, "0")}</span>
+          <span>Needs work {asString(counts.weak, "0")}</span>
+          <span>Not asked {asString(counts.untested, "0")}</span>
+          <span>Waiting {asString(counts.blocked, "0")}</span>
         </p>
         <Link className="btn btn-primary" href={practiceHref}>
           {nextStep === "exam" ? "Take the exam" : nextStep === "prerequisite" ? "Train the prerequisite" : decision.hasEvidence ? "Start training" : "Record a baseline"}
         </Link>
       </article>
       {LISTENING_ACADEMY_CATEGORIES.map((category) => (
-        <article key={category.key} className="home-card">
+        <article key={category.key} className="academy-unit">
           <h2>{category.label}</h2>
-          <ul>
+          <ul className="academy-path">
             {topicsFor(category.key).map((topic) => {
               const locked = isListeningTopicLocked(topic.id, isPro);
               return (
-                <li key={topic.id}>
+                <li key={topic.id} className={locked ? "is-locked" : ""}>
                   {locked ? (
                     <span>
                       {topic.title} <span className="muted">Pro</span>
