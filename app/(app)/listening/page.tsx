@@ -1,9 +1,33 @@
-export default function ListeningHome() {
+import { SkillLaunch } from "@/components/exercise/ExerciseShell";
+import { featureAccess } from "@/lib/entitlements";
+import { loadEntitlements } from "@/lib/server/home";
+
+export default async function ListeningHome() {
+  const entitlements = await loadEntitlements();
+  const practice = featureAccess(entitlements, "listening_practice");
+  const exam = featureAccess(entitlements, "listening_exam_simulation");
+
   return (
-    <section>
-      <p className="section-eyebrow">Listening</p>
-      <h1>Listening</h1>
-      <p className="muted">No transcripts — just like the real exam. Practice and exam land in the next train.</p>
-    </section>
+    <SkillLaunch
+      skill="Listening"
+      title="Listening"
+      lead="No transcript — just like the real exam. Academy and Intelligence stay hidden until Phase 8."
+      actions={[
+        {
+          href: "/listening/practice",
+          label: "Practice",
+          detail: "One clip, one question. Sustained target 70%.",
+          disabled: !practice.usable,
+          disabledReason: "Listening practice is not available on your current plan. Manage subscriptions in the iOS app.",
+        },
+        {
+          href: "/listening/exam",
+          label: "Exam",
+          detail: "REDS-style simulation. Educational only — not an official result.",
+          disabled: !exam.usable,
+          disabledReason: "Listening exam simulation is not available on your current plan. Manage subscriptions in the iOS app.",
+        },
+      ]}
+    />
   );
 }

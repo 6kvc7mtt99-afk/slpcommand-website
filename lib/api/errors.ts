@@ -91,6 +91,10 @@ export function userMessageFor(error: FrontendError): string {
       return "That action is no longer available.";
     case "ai":
       return "Evaluation is temporarily unavailable. You were not charged if this failed.";
+    case "backend":
+      if (error.reason === "empty_pool") return "No listening items available right now.";
+      if (error.reason === "exam_not_found") return "This exam session is no longer available.";
+      return "Something went wrong. Your progress was not changed.";
     default:
       return "Something went wrong. Your progress was not changed.";
   }
@@ -124,6 +128,16 @@ export function normalizeBackendError(input: {
       message: "No active plan found for this account.",
       status: 404,
       reason: "no_active_plan",
+      correlationId,
+    });
+  }
+
+  if (input.status === 404 && /exam session not found/i.test(rawError)) {
+    return new FrontendError({
+      code: "backend",
+      message: "This exam session is no longer available.",
+      status: 404,
+      reason: "exam_not_found",
       correlationId,
     });
   }

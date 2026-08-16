@@ -237,6 +237,17 @@ input, select {
 .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
 .exam-toolbar { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .exam-timer { font-weight: 800; letter-spacing: -0.3px; margin: 0; }
+.audio-player { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.audio-player input[type="range"] { flex: 1; min-width: 140px; }
+.audio-progress {
+  flex: 1;
+  min-width: 140px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.audio-progress span { display: block; height: 100%; background: var(--accent); }
 .visually-hidden {
   position: absolute;
   width: 1px;
