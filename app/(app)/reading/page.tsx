@@ -11,8 +11,13 @@ export default async function ReadingHome() {
     <SkillLaunch
       skill="Reading"
       title="Reading"
-      lead="One passage, one question. Academy and Intelligence stay hidden until Phase 8."
+      lead="One passage, one question. Academy and Intelligence use the same backend evidence."
       actions={[
+        {
+          href: "/reading/academy",
+          label: "Academy",
+          detail: "Structured classes from the live curriculum. No second syllabus.",
+        },
         {
           href: "/reading/practice",
           label: "Practice",
@@ -26,6 +31,11 @@ export default async function ReadingHome() {
           detail: "STANAG-style simulation. Educational only — not an official result.",
           disabled: !exam.usable,
           disabledReason: "Reading exam simulation is not available on your current plan. Manage subscriptions in the iOS app.",
+        },
+        {
+          href: "/reading/intelligence",
+          label: "Intelligence",
+          detail: "Where you are, and what the backend says to do next.",
         },
       ]}
     />

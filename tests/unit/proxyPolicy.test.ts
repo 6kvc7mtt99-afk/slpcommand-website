@@ -11,6 +11,10 @@ describe("proxyPolicy", () => {
     expect(decidePolicy("GET", "/entitlements")).toEqual({ action: "forward" });
     expect(decidePolicy("GET", "/api/reading/passage")).toEqual({ action: "forward" });
     expect(decidePolicy("DELETE", "/api/account")).toEqual({ action: "forward" });
+    expect(decidePolicy("POST", "/api/reading/academy/home")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/listening/intelligence/readiness")).toEqual({ action: "forward" });
+    expect(decidePolicy("POST", "/api/writing/orchestrator/next")).toEqual({ action: "forward" });
+    expect(decidePolicy("POST", "/api/writing/intelligence/transform")).toEqual({ action: "forward" });
   });
 
   it("returns 410 for legacy and internal paths", () => {

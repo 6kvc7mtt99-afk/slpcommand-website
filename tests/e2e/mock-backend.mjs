@@ -51,6 +51,70 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({ target_level: "3" }));
     return;
   }
+  if (url.pathname === "/api/reading/academy/home" && req.method === "POST") {
+    res.end(JSON.stringify({ focus: { reason: { headline: "Recover inference", detail: "Evidence slipped." }, lesson: { id: "rl-1", title: "Inference in orders", learningObjective: "Spot implied meaning." } }, state: { summary: { mastered: 1, emerging: 1, weak: 1, untested: 2, blocked: 0 } }, curriculum: [{ id: "u1", title: "Core", lessons: [{ id: "rl-1", title: "Inference in orders" }] }] }));
+    return;
+  }
+  if (url.pathname === "/api/reading/academy/map" && req.method === "POST") {
+    res.end(JSON.stringify({ branches: [{ id: "b1", name: "Inference", competencies: [{ id: "c1", name: "Implication", state: "emerging", lessonId: "rl-1" }] }] }));
+    return;
+  }
+  if (url.pathname === "/api/reading/academy/lesson/rl-1") {
+    res.end(JSON.stringify({ lesson: { id: "rl-1", title: "Inference in orders", learningObjective: "Spot implied meaning.", conceptExplanation: "The answer is what follows.", strategy: "Ask so what.", successCriteria: ["Name the implication"] } }));
+    return;
+  }
+  if (url.pathname === "/api/reading/intelligence/readiness") {
+    res.end(JSON.stringify({ readiness: 42, label: "Building foundation", milestone: "Keep going", totalAttempts: 8, status: "building_profile", scoreBars: [] }));
+    return;
+  }
+  if (url.pathname === "/api/reading/intelligence/missions") {
+    res.end(JSON.stringify({ missions: [{ title: "Read one more order", description: "The Academy will pick the class.", reason: "thin evidence" }] }));
+    return;
+  }
+  if (url.pathname === "/api/listening/academy/home") {
+    res.end(JSON.stringify({ decision: { hasEvidence: true, nextStep: "train", target: { key: "factual_detail" }, reason: { headline: "Start with details", detail: "Literal facts first." } }, counts: { mastered: 0, emerging: 1, weak: 0, untested: 4, blocked: 0 } }));
+    return;
+  }
+  if (url.pathname.startsWith("/api/listening/academy/skill/")) {
+    res.end(JSON.stringify({ skill: { key: "factual_detail", label: "Specific Details", state: "emerging", description: "Exact values." }, reason: "thin evidence" }));
+    return;
+  }
+  if (url.pathname === "/api/listening/academy/map") {
+    res.end(JSON.stringify({ skills: [{ key: "factual_detail", label: "Specific Details", state: "emerging" }] }));
+    return;
+  }
+  if (url.pathname === "/api/listening/intelligence/readiness") {
+    res.end(JSON.stringify({ readiness: 38, label: "Building foundation", totalAttempts: 6, status: "building_profile" }));
+    return;
+  }
+  if (url.pathname === "/api/listening/intelligence/weakness-profile") {
+    res.end(JSON.stringify({ weaknessProfile: [{ key: "inference", label: "Inference", attempts: 3, reportable: false, severity: "high" }] }));
+    return;
+  }
+  if (url.pathname === "/api/listening/intelligence/missions") {
+    res.end(JSON.stringify({ missions: [{ title: "Train inference", targetSkill: "inference", reason: "weak" }] }));
+    return;
+  }
+  if (url.pathname === "/api/listening/intelligence/mastery") {
+    res.end(JSON.stringify({ summary: { mastered: 0, developing: 1, needsWork: 1 }, skills: [{ key: "inference", label: "Inference", status: "developing", trend: "improving", reportable: false }] }));
+    return;
+  }
+  if (url.pathname === "/api/writing/academy/home" && req.method === "POST") {
+    res.end(JSON.stringify({ coach: { headline: "Rewrite the opening", detail: "Task coverage first." }, todaysFocus: { title: "Openings" }, lesson: { id: "wl-1", title: "Openings", reason: "weak openings" }, readiness: { mastered: 0, emerging: 1, weak: 1, untested: 4 }, sessions: [] }));
+    return;
+  }
+  if (url.pathname === "/api/writing/academy/lesson/wl-1") {
+    res.end(JSON.stringify({ lesson: { id: "wl-1", title: "Openings", learningObjective: "State the issue first.", conceptExplanation: "Do not delay the claim." } }));
+    return;
+  }
+  if (url.pathname === "/api/writing/orchestrator/next" && req.method === "POST") {
+    res.end(JSON.stringify({ coach: { headline: "Fix the opening", detail: "The orchestrator chose this." }, academy: { lesson: { id: "wl-1", title: "Openings" }, reason: "coverage" } }));
+    return;
+  }
+  if (url.pathname === "/api/writing/intelligence/transform" && req.method === "POST") {
+    res.end(JSON.stringify({ original: "The unit moved.", upgraded: "The unit was redirected after the bridge failed.", explanation: "Passive + cause.", featuresAdded: ["passive"], memorisePhrases: ["was redirected"] }));
+    return;
+  }
   if (url.pathname.startsWith("/api/admin/")) {
     const auth = req.headers.authorization ?? "";
     if (!auth.includes("admin-access")) {

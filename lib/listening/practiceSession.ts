@@ -19,11 +19,14 @@ export function resetListeningPracticeSession(): void {
   slot = { key: "", inflight: null, item: null };
 }
 
-export function loadListeningNext(): Promise<ListeningItem> {
+export function loadListeningNext(focus?: { focusSkill?: string; focusSubSkill?: string }): Promise<ListeningItem> {
   const key = currentListeningPracticeKey();
   if (slot.item) return Promise.resolve(slot.item);
   if (slot.inflight) return slot.inflight;
-  slot.inflight = apiRequest<unknown>("/listening/slp/next?mode=training", { idempotencyKey: key })
+  const params = new URLSearchParams({ mode: "training" });
+  if (focus?.focusSkill) params.set("focusSkill", focus.focusSkill);
+  else if (focus?.focusSubSkill) params.set("focusSubSkill", focus.focusSubSkill);
+  slot.inflight = apiRequest<unknown>(`/listening/slp/next?${params.toString()}`, { idempotencyKey: key })
     .then((raw) => {
       const item = decodeListeningItem(raw);
       if (!item) throw new Error("invalid_listening");

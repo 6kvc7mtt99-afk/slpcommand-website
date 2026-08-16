@@ -10,8 +10,13 @@ export default async function WritingHome() {
     <SkillLaunch
       skill="Writing"
       title="Writing"
-      lead="Evaluation stays on the server. Tools and Academy stay hidden until Phase 8."
+      lead="Evaluation stays on the server. Tools use the current orchestrator, not the deprecated dashboards."
       actions={[
+        {
+          href: "/writing/academy",
+          label: "Academy",
+          detail: "One server-composed home. Recommend-null is left empty.",
+        },
         {
           href: "/writing/practice",
           label: "Practice",
@@ -25,6 +30,11 @@ export default async function WritingHome() {
           detail: "70-minute simulation. Formative below SLP 3 — not a level.",
           disabled: !access.usable,
           disabledReason: "Writing AI feedback is not available on your current plan. Manage subscriptions in the iOS app.",
+        },
+        {
+          href: "/writing/tools",
+          label: "Writing Tools",
+          detail: "Transformer, examiner vision and exam strategy.",
         },
         {
           href: "/writing/history",

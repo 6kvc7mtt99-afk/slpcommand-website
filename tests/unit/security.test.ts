@@ -12,6 +12,8 @@ const CLIENT_GLOBS = [
   "components/writing/WritingPractice.tsx",
   "app/(app)/profile/page.tsx",
   "app/admin/page.tsx",
+  "components/writing/WritingTools.tsx",
+  "lib/api/writingTools.ts",
 ];
 
 describe("security regressions", () => {
@@ -36,6 +38,10 @@ describe("security regressions", () => {
   it("keeps quota GETs on the allowlist and legacy starts denied", () => {
     expect(decidePolicy("GET", "/api/reading/passage")).toEqual({ action: "forward" });
     expect(decidePolicy("POST", "/api/reading/exam/start")).toMatchObject({ status: 410 });
+    expect(decidePolicy("GET", "/api/writing/intelligence/readiness")).toMatchObject({ status: 410 });
+    expect(decidePolicy("GET", "/api/writing/intelligence/missions")).toMatchObject({ status: 410 });
+    expect(decidePolicy("GET", "/api/writing/intelligence/brain-profile")).toMatchObject({ status: 410 });
+    expect(decidePolicy("GET", "/api/writing/intelligence/mastery")).toMatchObject({ status: 410 });
   });
 
   it("does not ship the leftover Render-calling admin SPA", () => {

@@ -14,7 +14,13 @@ import { OptionList } from "@/components/exercise/OptionList";
 
 type Phase = "loading" | "ready" | "answered" | "quota" | "error";
 
-export function ListeningPractice() {
+export function ListeningPractice({
+  focusSkill,
+  focusSubSkill,
+}: {
+  focusSkill?: string;
+  focusSubSkill?: string;
+}) {
   const [phase, setPhase] = useState<Phase>("loading");
   const [item, setItem] = useState<ListeningItem | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
@@ -26,7 +32,7 @@ export function ListeningPractice() {
     setMessage("");
     if (rotate) rotateListeningPracticeKey();
     try {
-      const next = await loadListeningNext();
+      const next = await loadListeningNext({ focusSkill, focusSubSkill });
       setItem(next);
       setPhase("ready");
     } catch (err) {
@@ -37,7 +43,7 @@ export function ListeningPractice() {
       setMessage(err instanceof FrontendError ? err.message : "Couldn't load a clip. You were not charged.");
       setPhase("error");
     }
-  }, []);
+  }, [focusSkill, focusSubSkill]);
 
   useEffect(() => {
     void load(false);
