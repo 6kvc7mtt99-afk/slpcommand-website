@@ -185,7 +185,7 @@ input, select {
 .exercise { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
 .exercise h1 { margin-bottom: 0; }
 .exercise .section-eyebrow { text-align: left; margin-bottom: 0; }
-.skill-launch { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.skill-launch { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
 .skill-launch .btn { margin-top: 8px; }
 .reading-passage .passage-body {
   font-size: 18px;
@@ -248,6 +248,18 @@ input, select {
   overflow: hidden;
 }
 .audio-progress span { display: block; height: 100%; background: var(--accent); }
+.writing-editor textarea {
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.55;
+  resize: vertical;
+}
 .visually-hidden {
   position: absolute;
   width: 1px;

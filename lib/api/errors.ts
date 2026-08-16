@@ -90,7 +90,29 @@ export function userMessageFor(error: FrontendError): string {
     case "gone":
       return "That action is no longer available.";
     case "ai":
-      return "Evaluation is temporarily unavailable. You were not charged if this failed.";
+      switch (error.reason) {
+        case "prompt_unavailable":
+          return "No writing prompt is available right now.";
+        case "ai_timeout":
+          return "The evaluator timed out. You were not charged. Try again.";
+        case "ai_upstream_error":
+          return "The evaluator is unavailable. You were not charged.";
+        case "ai_parse_failed":
+          return "We couldn’t read the evaluation. You were not charged.";
+        case "database_read_failed":
+        case "database_write_failed":
+          return "We couldn’t save that just now. You were not charged.";
+        case "service_unavailable":
+          return "Writing evaluation is temporarily unavailable.";
+        case "invalid_submission":
+          return "That text couldn’t be submitted. Check the length and try again.";
+        case "unknown_processing_error":
+          return error.correlationId
+            ? `Something went wrong evaluating that text. Reference ${error.correlationId}.`
+            : "Something went wrong evaluating that text.";
+        default:
+          return "Evaluation is temporarily unavailable. You were not charged if this failed.";
+      }
     case "backend":
       if (error.reason === "empty_pool") return "No listening items available right now.";
       if (error.reason === "exam_not_found") return "This exam session is no longer available.";
