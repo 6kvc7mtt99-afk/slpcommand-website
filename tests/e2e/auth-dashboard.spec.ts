@@ -1,16 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-const mock = process.env.MOCK_BACKEND === "1";
-
 test.describe("authenticated dashboard", () => {
-  test.skip(!mock, "Requires MOCK_BACKEND=1 and the local mock Express.");
-
   test.beforeEach(async ({ context }) => {
     await context.addCookies([
-      { name: "slp_at", value: "test-access", url: "http://127.0.0.1:3000" },
-      { name: "slp_rt", value: "test-refresh", url: "http://127.0.0.1:3000" },
-      { name: "slp_uid", value: "user-1", url: "http://127.0.0.1:3000" },
-      { name: "slp_em", value: "learner@example.com", url: "http://127.0.0.1:3000" },
+      { name: "slp_at", value: "test-access", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
+      { name: "slp_rt", value: "test-refresh", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
+      { name: "slp_uid", value: "user-1", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
+      { name: "slp_em", value: "learner@example.com", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
     ]);
   });
 

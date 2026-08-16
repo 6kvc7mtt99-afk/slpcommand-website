@@ -23,8 +23,17 @@ describe("proxyPolicy", () => {
     });
   });
 
+  it("forwards requireAdminUser console routes and keeps shared-secret routes gone", () => {
+    expect(decidePolicy("GET", "/api/admin/v2/overview")).toEqual({ action: "forward" });
+    expect(decidePolicy("PATCH", "/api/admin/feature-flags/home_v3_enabled")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/admin/metrics/users")).toEqual({ action: "forward" });
+    expect(decidePolicy("POST", "/api/admin/v2/simulate")).toEqual({ action: "forward" });
+    expect(decidePolicy("POST", "/api/admin/billing/reconcile")).toMatchObject({ action: "deny", status: 410, reason: "admin_secret" });
+    expect(decidePolicy("POST", "/api/reading/generate")).toMatchObject({ action: "deny", status: 410, reason: "admin_secret" });
+  });
+
   it("returns 404 for unknown paths and disallowed methods", () => {
-    expect(decidePolicy("GET", "/api/admin/v2/overview")).toMatchObject({ action: "deny", status: 404 });
+    expect(decidePolicy("GET", "/api/unknown/thing")).toMatchObject({ action: "deny", status: 404 });
     expect(decidePolicy("PUT", "/api/profile")).toMatchObject({ action: "deny", status: 404 });
   });
 

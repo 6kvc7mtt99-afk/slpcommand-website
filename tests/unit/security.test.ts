@@ -1,14 +1,17 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { shouldRetryTransientGet } from "../../lib/server/backend";
 import { decidePolicy } from "../../lib/server/proxyPolicy";
 
 const CLIENT_GLOBS = [
   "lib/api/client.ts",
+  "lib/api/admin.ts",
+  "components/admin/AdminConsole.tsx",
   "components/reading/ReadingPractice.tsx",
   "components/listening/ListeningPractice.tsx",
   "components/writing/WritingPractice.tsx",
   "app/(app)/profile/page.tsx",
+  "app/admin/page.tsx",
 ];
 
 describe("security regressions", () => {
@@ -19,6 +22,8 @@ describe("security regressions", () => {
       expect(source).not.toContain("BACKEND_URL");
       expect(source).not.toContain("localStorage.setItem(\"accessToken\"");
       expect(source).not.toContain("localStorage.setItem('jwt'");
+      expect(source).not.toContain("X-Admin-Secret");
+      expect(source).not.toMatch(/isAdmin\s*=/);
     }
   });
 
@@ -31,5 +36,12 @@ describe("security regressions", () => {
   it("keeps quota GETs on the allowlist and legacy starts denied", () => {
     expect(decidePolicy("GET", "/api/reading/passage")).toEqual({ action: "forward" });
     expect(decidePolicy("POST", "/api/reading/exam/start")).toMatchObject({ status: 410 });
+  });
+
+  it("does not ship the leftover Render-calling admin SPA", () => {
+    expect(existsSync("public/admin/index.html")).toBe(false);
+    const cookies = readFileSync("cookies.html", "utf8");
+    expect(cookies).not.toContain("Authenticates administrative dashboard sessions until that console is migrated");
+    expect(cookies).toContain("administrative console");
   });
 });

@@ -15,7 +15,7 @@
   <p>Cookies are small text files stored on your device when you visit a website. They can be used for technical, analytical, or advertising purposes.</p>
 
   <h2>3. Cookies used on this website</h2>
-  <p>As of the date of this Policy, slpcommand.com uses <strong>only</strong> strictly necessary technical cookies or equivalent local storage mechanisms required for the basic functioning of the website (authentication of the learner application, and in-memory session state in the administrative panel). We do <strong>not</strong> use:</p>
+  <p>As of the date of this Policy, slpcommand.com uses <strong>only</strong> strictly necessary technical cookies or equivalent local storage mechanisms required for the basic functioning of the website (authentication of the learner application and of the administrative console). We do <strong>not</strong> use:</p>
   <ul>
     <li>advertising or marketing cookies;</li>
     <li>behavioural tracking or cross-site profiling cookies;</li>
@@ -27,9 +27,8 @@
   <div class="legal-table-wrap">
   <table class="legal-table">
     <tr><th>Name</th><th>Type</th><th>Purpose</th><th>Duration</th><th>Party</th><th>Legal basis</th></tr>
-    <tr><td>Admin session token</td><td>Strictly necessary (in-memory, not persisted to disk)</td><td>Authenticates administrative dashboard sessions until that console is migrated</td><td>Session only</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
     <tr><td>adminViewMode</td><td>Strictly necessary preference (local storage)</td><td>Remembers Simple vs Advanced on the administrative dashboard</td><td>Until cleared</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
-    <tr><td>slp_at</td><td>Strictly necessary authentication cookie (HttpOnly, Secure, SameSite=Lax, Path=/)</td><td>Short-lived access token so the website can call the SLP Command API on your behalf. Never readable by page JavaScript</td><td>Approximately 1 hour</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
+    <tr><td>slp_at</td><td>Strictly necessary authentication cookie (HttpOnly, Secure, SameSite=Lax, Path=/)</td><td>Short-lived access token so the website can call the SLP Command API on your behalf, including the administrative console. Never readable by page JavaScript</td><td>Approximately 1 hour</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
     <tr><td>slp_rt</td><td>Strictly necessary authentication cookie (HttpOnly, Secure, SameSite=Lax, Path=/api)</td><td>Refresh token used only by our own /api routes to renew slp_at. Never readable by page JavaScript</td><td>Approximately 14 days</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
     <tr><td>slp_uid, slp_em</td><td>Strictly necessary authentication cookies (HttpOnly, Secure, SameSite=Lax)</td><td>Account identifier and email so the website can restore your session after reload without exposing tokens</td><td>Approximately 14 days</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
   </table>

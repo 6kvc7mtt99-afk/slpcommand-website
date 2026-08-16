@@ -60,6 +60,11 @@ const ALLOW: Rule[] = [
   { method: "POST", pattern: /^\/api\/writing\/submit$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/writing\/attempts$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/health$/, reason: "ok" },
+  // requireAdminUser console. DENY is evaluated first, so shared-secret
+  // POST /api/admin/billing/reconcile stays 410.
+  { method: "GET", pattern: /^\/api\/admin\//, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/admin\//, reason: "ok" },
+  { method: "PATCH", pattern: /^\/api\/admin\//, reason: "ok" },
 ];
 
 export type PolicyDecision =

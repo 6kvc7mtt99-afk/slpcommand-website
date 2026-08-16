@@ -9,4 +9,8 @@ test("login and a legal page have no serious axe violations", async ({ page }) =
   await page.goto("/privacy");
   const privacy = await new AxeBuilder({ page }).disableRules(["color-contrast", "link-in-text-block"]).analyze();
   expect(privacy.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+
+  await page.goto("/admin");
+  const admin = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  expect(admin.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
 });

@@ -12,3 +12,11 @@ test("legacy reading/next is gone", async ({ request }) => {
   });
   expect(res.status()).toBe(410);
 });
+
+test("shared-secret admin generate routes stay gone", async ({ request }) => {
+  const res = await request.post("/api/backend/admin/billing/reconcile", {
+    headers: { "X-SLP-Client": "web", Origin: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
+  });
+  expect(res.status()).toBe(410);
+  expect(await res.json()).toMatchObject({ reason: "admin_secret" });
+});
