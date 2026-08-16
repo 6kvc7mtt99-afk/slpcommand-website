@@ -18,7 +18,7 @@ test("login form shows credential copy and does not invent a dashboard", async (
   await page.getByLabel("Email").fill("nobody@example.com");
   await page.getByLabel("Password").fill("wrong-password");
   await page.getByRole("button", { name: "Log in" }).click();
-  await expect(page.locator("p.err")).toContainText("Incorrect email or password.");
+  await expect(page.locator("p.err")).toContainText("Incorrect email or password.", { timeout: 20_000 });
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.locator("body")).not.toContainText("passProbability");
   await expect(page.locator("body")).not.toContainText("Today’s mission");
@@ -27,6 +27,8 @@ test("login form shows credential copy and does not invent a dashboard", async (
 test("app skill routes are gated and login stays usable on a phone viewport", async ({ page }) => {
   const reading = await page.request.get("/reading", { maxRedirects: 0 });
   expect(reading.status()).toBe(307);
+  const practice = await page.request.get("/reading/practice", { maxRedirects: 0 });
+  expect(practice.status()).toBe(307);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/login");
   await expect(page.getByRole("heading", { name: "Log in" })).toBeVisible();

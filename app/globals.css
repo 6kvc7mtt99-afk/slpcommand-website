@@ -170,3 +170,70 @@ input, select {
 @media (max-width: 800px) {
   .home-skill-minis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -40px;
+  z-index: 200;
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.skip-link:focus { top: 12px; }
+.exercise { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
+.exercise h1 { margin-bottom: 0; }
+.exercise .section-eyebrow { text-align: left; margin-bottom: 0; }
+.skill-launch { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.skill-launch .btn { margin-top: 8px; }
+.reading-passage .passage-body {
+  font-size: 18px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  margin: 12px 0;
+}
+.option-list { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+.option-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.option-btn:hover:not(:disabled), .option-btn.selected { border-color: var(--accent); background: var(--accent-light); }
+.option-btn.correct { border-color: #1b7f4e; }
+.option-btn.wrong { border-color: #b42318; }
+.option-key {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+.option-mark { margin-left: auto; font-size: 12px; font-weight: 700; }
+.feedback-banner { margin: 16px 0; padding: 12px 14px; border-radius: 12px; }
+.feedback-banner.ok { background: #e8f6ee; }
+.feedback-banner.bad { background: #fdecea; }
+@media (prefers-color-scheme: dark) {
+  .feedback-banner.ok { background: #143022; }
+  .feedback-banner.bad { background: #3a1614; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn:hover { transform: none; }
+}
+@media (max-width: 800px) {
+  .skill-launch { grid-template-columns: 1fr; }
+}

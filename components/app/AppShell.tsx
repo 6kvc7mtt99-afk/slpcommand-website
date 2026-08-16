@@ -43,6 +43,9 @@ export function AppShell({
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
       <button className="app-menu-btn" type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
         Menu
       </button>
@@ -65,7 +68,9 @@ export function AppShell({
           Log out
         </button>
       </aside>
-      <div className="app-main">{children}</div>
+      <div className="app-main" id="main">
+        {children}
+      </div>
     </div>
   );
 }

@@ -26,3 +26,26 @@ export function planLabel(state: EntitlementsState): string {
   if (state.status === "ready" && state.isPro) return "SLP Command Pro";
   return "SLP Command Free";
 }
+
+export function featureAccess(
+  state: EntitlementsState,
+  key: string,
+): { usable: boolean; remaining: number | null; limit: number | null; period: string | null } {
+  if (state.status !== "ready") {
+    return { usable: false, remaining: null, limit: null, period: null };
+  }
+  const feature = state.snapshot.features?.find((item) => item.key === key);
+  if (!feature || feature.enabled === false) {
+    return { usable: false, remaining: null, limit: null, period: null };
+  }
+  const quota = feature.quota;
+  if (quota && quota.period !== "unlimited" && typeof quota.remaining === "number" && quota.remaining <= 0) {
+    return { usable: false, remaining: 0, limit: quota.limit ?? null, period: quota.period ?? null };
+  }
+  return {
+    usable: true,
+    remaining: quota?.remaining ?? null,
+    limit: quota?.limit ?? null,
+    period: quota?.period ?? null,
+  };
+}

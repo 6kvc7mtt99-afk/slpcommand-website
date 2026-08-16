@@ -46,5 +46,12 @@ Verified 2026-08-16 locally (`next dev` :3000 + Vitest + Playwright). No product
 - PR-05 auth + onboarding — implemented
 - PR-06 app shell + entitlements — implemented
 - PR-07 Home v2 dashboard — implemented
+- PR-08 Reading practice — implemented
+
+## PR-08 — Reading practice — implemented
+
+Verified 2026-08-16. `tsc` + `next build` PASS. Vitest 32. Playwright gate 4/4 including `/reading` and `/reading/practice` 307.
+
+One GET `/api/reading/passage` per intent, client UUID reused across Strict Mode remounts, one question (N accepted, 4 not assumed). `/reading/next` remains 410. Exam is a stub only.
 
 See the implementation report in the final session note. No production deploy. No push.

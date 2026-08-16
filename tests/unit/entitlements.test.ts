@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { interpretEntitlements, planLabel } from "../../lib/entitlements";
+import { featureAccess, interpretEntitlements, planLabel } from "../../lib/entitlements";
 
 describe("entitlements", () => {
   it("treats 404 as noPlan, not logout", () => {
@@ -17,5 +17,14 @@ describe("entitlements", () => {
   it("fail-closes unknown keys as Free", () => {
     const state = interpretEntitlements(200, { plan: { key: "team" }, features: [] });
     if (state.status === "ready") expect(state.isPro).toBe(false);
+  });
+
+  it("does not treat remaining as locally computed when the snapshot says zero", () => {
+    const state = interpretEntitlements(200, {
+      plan: { key: "free" },
+      features: [{ key: "reading_practice", enabled: true, quota: { period: "weekly", remaining: 0, limit: 10 } }],
+    });
+    expect(featureAccess(state, "reading_practice")).toMatchObject({ usable: false, remaining: 0 });
+    expect(featureAccess({ status: "noPlan" }, "reading_practice").usable).toBe(false);
   });
 });
