@@ -47,6 +47,7 @@ Verified 2026-08-16 locally (`next dev` :3000 + Vitest + Playwright). No product
 - PR-06 app shell + entitlements — implemented
 - PR-07 Home v2 dashboard — implemented
 - PR-08 Reading practice — implemented
+- PR-09 Reading exam v2 — implemented
 
 ## PR-08 — Reading practice — implemented
 

@@ -5,6 +5,7 @@ import { loadEntitlements } from "@/lib/server/home";
 export default async function ReadingHome() {
   const entitlements = await loadEntitlements();
   const practice = featureAccess(entitlements, "reading_practice");
+  const exam = featureAccess(entitlements, "reading_exam_simulation");
 
   return (
     <SkillLaunch
@@ -23,6 +24,8 @@ export default async function ReadingHome() {
           href: "/reading/exam",
           label: "Exam",
           detail: "STANAG-style simulation. Educational only — not an official result.",
+          disabled: !exam.usable,
+          disabledReason: "Reading exam simulation is not available on your current plan. Manage subscriptions in the iOS app.",
         },
       ]}
     />
