@@ -44,6 +44,43 @@ describe("reading passage contract", () => {
   it("rejects an empty payload instead of inventing items", () => {
     expect(decodeReadingPassage({ questions: [] })).toBeNull();
   });
+
+  it("decodes the live Express cluster contract used by iOS", () => {
+    const live = decodeReadingPassage({
+      source: "level_match_cache",
+      text: {
+        id: "live-rt-1",
+        title: "Convoy order",
+        content: "Report to the briefing room at 0600.",
+        levelBand: "level_2",
+        difficulty: 2.1,
+        domain: "military_ops",
+        textType: "situation_report",
+        wordCount: 8,
+      },
+      questions: [
+        {
+          id: "live-q1",
+          questionText: "Where should they report?",
+          options: ["Mess", "Briefing room", "Gate", "Hangar"],
+          correctIndex: 1,
+          explanation: "The text names the briefing room.",
+          level: "L2",
+          skill: "literal",
+          questionType: "literal",
+        },
+      ],
+      cluster: { questionCount: 1, rotationVersion: "1" },
+      userProfile: { currentLevel: 2.1 },
+    });
+    expect(live).toMatchObject({
+      readingTextId: "live-rt-1",
+      title: "Convoy order",
+      text: "Report to the briefing room at 0600.",
+      questions: [{ questionId: "live-q1", prompt: "Where should they report?" }],
+    });
+    expect(live?.questions).toHaveLength(1);
+  });
 });
 
 describe("reading practice session", () => {

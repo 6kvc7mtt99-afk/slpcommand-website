@@ -31,6 +31,27 @@ describe("reading exam v2 contract", () => {
     expect(JSON.stringify(start)).not.toContain("correctIndex");
   });
 
+  it("decodes the live Express start-v2 passages[].text.content contract", () => {
+    const start = decodeReadingExamStart({
+      examSessionId: "exam-live",
+      mode: "v2",
+      timeLimitSeconds: 1800,
+      passages: [
+        {
+          text: { id: "rt-live", title: "Orders", content: "Report at 0600.", textType: "notice" },
+          questions: [{ id: "q-live", questionText: "When?", options: ["Now", "0600", "Never", "Noon"] }],
+        },
+      ],
+    });
+    expect(start?.examSessionId).toBe("exam-live");
+    expect(start?.items[0]).toMatchObject({
+      readingTextId: "rt-live",
+      questionId: "q-live",
+      prompt: "When?",
+      passageText: "Report at 0600.",
+    });
+  });
+
   it("sends examSessionId as examId on finish", () => {
     expect(buildFinishPayload("exam-99", [{ readingTextId: "rt-1", questionId: "q1", selectedIndex: -1 }])).toEqual({
       examId: "exam-99",
