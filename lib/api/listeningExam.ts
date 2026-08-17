@@ -33,10 +33,36 @@ export function decodeListeningExamStart(raw: unknown): ListeningExamStart | nul
   const items = Array.isArray(list)
     ? list.filter(isRecord).map((item, index) => ({
         position: asNumber(pickAlias(item, "position", "index"), index),
-        audioUrl: asString(pickAlias(item, "audioUrl", "url", "src", "audio")),
-        prompt: asString(pickAlias(item, "prompt", "question", "stem")),
-        options: Array.isArray(item.options || item.choices)
-          ? ((item.options || item.choices) as unknown[]).map((opt) => asString(opt)).filter(Boolean)
+        audioUrl: asString(
+          pickAlias(
+            isRecord(item.listening) ? item.listening : item,
+            "audioUrl",
+            "audio_url",
+            "url",
+            "src",
+            "audio",
+          ),
+        ),
+        prompt: asString(
+          pickAlias(
+            isRecord(item.question) ? item.question : item,
+            "question",
+            "prompt",
+            "stem",
+          ),
+        ),
+        options: Array.isArray(
+          (isRecord(item.question) ? item.question.options || item.question.choices : null) ||
+            item.options ||
+            item.choices,
+        )
+          ? (
+              ((isRecord(item.question) ? item.question.options || item.question.choices : null) ||
+                item.options ||
+                item.choices) as unknown[]
+            )
+              .map((opt) => asString(opt))
+              .filter(Boolean)
           : [],
       })).filter((item) => item.audioUrl && item.options.length > 0)
     : [];

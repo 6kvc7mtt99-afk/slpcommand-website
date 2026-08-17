@@ -26,6 +26,54 @@ describe("listening practice contract", () => {
     expect(JSON.stringify(item)).not.toContain("SECRET TEXT");
   });
 
+  it("decodes the live Express SLP next contract used by iOS", () => {
+    const item = decodeListeningItem({
+      source: "slp_real_audio_selection",
+      mode: "training",
+      adaptive: { focusSkill: null, applied: false, servedSkill: "inference" },
+      examStyle: { questionPerAudio: 1, showTranscriptToStudent: false, optionsPerQuestion: 4, targetLevel: 3 },
+      listening: {
+        id: "lis-1",
+        title: "Convoy update",
+        audioUrl: "https://cdn.example.com/listening/a.mp3",
+        topic: "operations",
+      },
+      question: {
+        id: "q-1",
+        level: 3,
+        skill: "inference",
+        difficulty: 3,
+        question: "What did the speaker ask for?",
+        options: ["Map", "Water", "Radio", "Light"],
+      },
+    });
+    expect(item).toMatchObject({
+      listeningId: "lis-1",
+      questionId: "q-1",
+      audioUrl: "https://cdn.example.com/listening/a.mp3",
+      prompt: "What did the speaker ask for?",
+    });
+    expect(item?.options).toHaveLength(4);
+    expect(JSON.stringify(item)).not.toMatch(/transcript/i);
+  });
+
+  it("decodes the live iOS /slp/next envelope (listening + question)", () => {
+    const item = decodeListeningItem({
+      source: "cloud",
+      mode: "training",
+      listening: { id: "abc", title: "Sitrep", audioUrl: "https://cdn.example.com/a.mp3" },
+      question: { id: "q9", question: "What was requested?", options: ["Map", "Water", "Radio", "Light"] },
+    });
+    expect(item).toEqual({
+      listeningId: "abc",
+      questionId: "q9",
+      audioUrl: "https://cdn.example.com/a.mp3",
+      prompt: "What was requested?",
+      options: ["Map", "Water", "Radio", "Light"],
+      correctIndex: null,
+    });
+  });
+
   it("never uses the dead recommendation route", () => {
     expect(decidePolicy("GET", "/api/listening/recommendation")).toMatchObject({ action: "deny", status: 410 });
     expect(decidePolicy("GET", "/api/listening/slp/next")).toEqual({ action: "forward" });

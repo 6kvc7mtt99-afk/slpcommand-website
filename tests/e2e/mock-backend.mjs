@@ -60,6 +60,46 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({ ok: true }));
     return;
   }
+  if (url.pathname === "/api/listening/slp/next") {
+    res.end(JSON.stringify({
+      source: "cloud",
+      mode: "training",
+      examStyle: { questionPerAudio: 1, showTranscriptToStudent: false, optionsPerQuestion: 4, targetLevel: 3 },
+      listening: {
+        id: "L1",
+        title: "Sitrep",
+        audioUrl: "https://example.com/clip.mp3",
+        topic: "operations",
+        speechType: "briefing",
+        difficulty: 3,
+        estimatedLevel: 3,
+        accent: "standard",
+        hasBackgroundNoise: false,
+      },
+      question: {
+        id: "q1",
+        level: 3,
+        skill: "gist",
+        question: "What did the speaker ask for?",
+        options: ["Map", "Water", "Radio", "Light"],
+      },
+    }));
+    return;
+  }
+  if (url.pathname === "/api/listening/slp/answer" && req.method === "POST") {
+    res.end(JSON.stringify({ ok: true, isCorrect: true, correctIndex: 1, explanation: "The speaker asked for water." }));
+    return;
+  }
+  if (url.pathname === "/api/writing/prompts/next") {
+    res.end(JSON.stringify({
+      writingPromptId: "wp-1",
+      title: "Orders",
+      prompt: "Write a short sitrep.",
+      wordTarget: 120,
+      guidance: { suggestedStructure: ["Issue", "Action"], practiceTips: ["Be specific."] },
+    }));
+    return;
+  }
   if (url.pathname === "/api/profile") {
     res.end(JSON.stringify({ target_level: "3" }));
     return;

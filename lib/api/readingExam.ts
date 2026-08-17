@@ -27,14 +27,15 @@ function decodeOptions(value: unknown): string[] {
 }
 
 function itemsFromPassage(passage: Record<string, unknown>): ReadingExamItem[] {
-  const readingTextId = asString(pickAlias(passage, "readingTextId", "id", "reading_text_id"));
-  const passageTitle = asString(pickAlias(passage, "title", "headline"));
-  const passageText = asString(pickAlias(passage, "text", "body", "content", "passage"));
+  const block = isRecord(passage.text) ? passage.text : passage;
+  const readingTextId = asString(pickAlias(block, "id", "readingTextId", "reading_text_id"));
+  const passageTitle = asString(pickAlias(block, "title", "headline"));
+  const passageText = asString(pickAlias(block, "content", "text", "body", "passage"));
   const questions = Array.isArray(passage.questions) ? passage.questions : [];
   return questions.filter(isRecord).map((question, index) => ({
     readingTextId,
     questionId: asString(pickAlias(question, "questionId", "id"), `q-${index}`),
-    prompt: asString(pickAlias(question, "prompt", "question", "stem", "text")),
+    prompt: asString(pickAlias(question, "questionText", "prompt", "question", "stem", "text")),
     options: decodeOptions(pickAlias(question, "options", "choices")),
     passageTitle,
     passageText,
