@@ -30,7 +30,7 @@ export function SpeakingPractice({ userId, level }: { userId: string; level: "2"
 
   if (!consent) {
     return (
-      <ExerciseShell skill="Speaking" mode="Practice" title="Speaking AI consent">
+      <ExerciseShell skill="Speaking" mode="Practice" title="Speaking AI consent" layout="stage">
         <p>Audio is sent to the backend for transcription and evaluation. This consent is separate from Coach.</p>
         <button
           className="btn btn-primary"
@@ -81,7 +81,8 @@ export function SpeakingPractice({ userId, level }: { userId: string; level: "2"
   }
 
   return (
-    <ExerciseShell skill="Speaking" mode="Practice" title={prompt?.title ?? "Speaking practice"}>
+    <ExerciseShell skill="Speaking" mode="Practice" title={prompt?.title ?? "Speaking practice"} layout="stage">
+      <div className="speak-stage">
       <p>{prompt?.instruction}</p>
       <p className="muted">No local score is computed. A single task never shows a decimal band.</p>
       <div className="admin-row" style={{ margin: "12px 0" }}>
@@ -115,6 +116,7 @@ export function SpeakingPractice({ userId, level }: { userId: string; level: "2"
           </button>
         )
       ) : null}
+      </div>
     </ExerciseShell>
   );
 }

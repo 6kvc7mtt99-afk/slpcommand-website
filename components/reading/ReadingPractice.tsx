@@ -94,30 +94,30 @@ export function ReadingPractice() {
   }
 
   return (
-    <ExerciseShell skill="Reading" mode="Practice" title="One passage, one question">
+    <ExerciseShell skill="Reading" mode="Practice" title="One passage, one question" layout="stage">
       {phase === "quota" ? <CommercialCard /> : null}
       {phase === "error" ? <ErrorState message={message} onRetry={() => void load(true)} /> : null}
       {phase === "loading" ? (
-        <div className="reading-workspace">
-          <div className="reading-passage">
+        <div className="doc-stage">
+          <div className="doc-paper">
             <LoadingState label="Loading a text…" lines={4} />
           </div>
         </div>
       ) : null}
 
       {passage && question && phase !== "quota" ? (
-        <div className="reading-workspace">
-          <article className="reading-passage">
+        <div className="doc-stage">
+          <article className="doc-paper">
             <div className="home-block-head">
               {passage.genreDescriptor ? <span className="home-chip">{passage.genreDescriptor}</span> : null}
               {passage.difficulty ? <span className="home-chip">Text difficulty: {passage.difficulty}</span> : null}
             </div>
-            {passage.title ? <h2>{passage.title}</h2> : null}
+            {passage.title ? <h2 className="doc-title">{passage.title}</h2> : null}
             <div className="passage-body">{passage.text}</div>
             <p className="muted">Text difficulty is the pool band, not your estimated SLP.</p>
           </article>
 
-          <article className="question-pane">
+          <aside className="doc-rail">
             <p className="home-kicker">
               Question {questionIndex + 1} of {passage.questions.length}
             </p>
@@ -146,7 +146,7 @@ export function ReadingPractice() {
                 Next passage
               </button>
             ) : null}
-          </article>
+          </aside>
         </div>
       ) : null}
     </ExerciseShell>

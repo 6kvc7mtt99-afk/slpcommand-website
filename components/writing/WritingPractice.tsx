@@ -88,13 +88,13 @@ export function WritingPractice() {
   }
 
   return (
-    <ExerciseShell skill="Writing" mode="Practice" title="Draft and evaluation">
+    <ExerciseShell skill="Writing" mode="Practice" title="Draft and evaluation" layout="stage">
       {phase === "quota" ? <CommercialCard /> : null}
       {phase === "loading" ? <LoadingState label="Loading a prompt…" lines={4} /> : null}
       {phase === "error" ? <ErrorState message={message} onRetry={() => void loadPrompt()} /> : null}
       {prompt && phase !== "quota" && phase !== "error" ? (
-        <div className="writing-workspace">
-          <aside className="writing-task">
+        <div className="write-stage">
+          <aside className="write-task">
             {prompt.title ? <h2>{prompt.title}</h2> : null}
             <div className="passage-body">{prompt.prompt}</div>
             {prompt.guidance.suggestedStructure.length ? (

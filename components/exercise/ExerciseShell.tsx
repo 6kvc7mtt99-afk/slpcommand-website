@@ -13,12 +13,26 @@ export function ExerciseShell({
   mode,
   title,
   children,
+  layout = "page",
 }: {
   skill: string;
   mode: string;
   title: string;
   children: React.ReactNode;
+  layout?: "page" | "stage";
 }) {
+  if (layout === "stage") {
+    return (
+      <section className={`exercise page-skill ${skillClass(skill)}`}>
+        <div className="stage-meta">
+          <span>{skill}</span>
+          <span>{mode}</span>
+        </div>
+        <h1 className="visually-hidden">{title}</h1>
+        {children}
+      </section>
+    );
+  }
   return (
     <section className={`exercise page-skill ${skillClass(skill)}`}>
       <p className="section-eyebrow">{skill}</p>
@@ -51,43 +65,37 @@ export function SkillLaunch({
   const rest = actions.filter((action) => action !== primary);
 
   return (
-    <section className={`exercise page-skill ${skillClass(skill)}`}>
-      <header className="page-head">
+    <section className={`exercise page-skill skill-brief ${skillClass(skill)}`}>
+      <header>
         <p className="section-eyebrow">{skill}</p>
         <h1>{title}</h1>
         <p className="muted lead">{lead}</p>
-      </header>
-      <div className="skill-board">
-        {primary ? (
-          <article className="skill-primary">
-            <p className="home-kicker">Start here</p>
-            <h2>{primary.label}</h2>
-            <p className="muted">{primary.detail}</p>
-            {primary.disabled ? (
-              <p className="muted">{primary.disabledReason ?? "Not available on your current plan."}</p>
-            ) : (
-              <Link className="btn btn-primary" href={primary.href}>
-                {primary.label}
-              </Link>
-            )}
-          </article>
+        {primary && !primary.disabled ? (
+          <Link className="btn btn-primary btn-command" href={primary.href}>
+            {primary.label}
+          </Link>
+        ) : primary?.disabled ? (
+          <p className="muted">{primary.disabledReason ?? "Not available on your current plan."}</p>
         ) : null}
-        <ul className="skill-destinations">
-          {rest.map((action) => (
-            <li key={action.href}>
-              <strong>{action.label}</strong>
-              <p className="muted">{action.detail}</p>
-              {action.disabled ? (
+      </header>
+      <ul className="skill-index">
+        {rest.map((action) => (
+          <li key={action.href}>
+            {action.disabled ? (
+              <>
+                <strong>{action.label}</strong>
+                <p className="muted">{action.detail}</p>
                 <p className="muted">{action.disabledReason ?? "Not available on your current plan."}</p>
-              ) : (
-                <Link className="btn btn-outline" href={action.href}>
-                  {action.label}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
+              </>
+            ) : (
+              <>
+                <Link href={action.href}>{action.label}</Link>
+                <p className="muted">{action.detail}</p>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

@@ -20,13 +20,12 @@ export default async function ListeningIntelligencePage() {
 
   return (
     <section className="exercise page-skill skill-listening">
-      <header className="page-head">
+      <header className="page-head intel-decision">
         <p className="section-eyebrow">Listening Intelligence</p>
-        <h1>Listening Intelligence</h1>
+        <h1>What is weak, and what to do next</h1>
       </header>
       <div className="intel-layout">
         <div>
-          {readiness.status >= 400 ? <IntelligenceError message="Readiness could not be loaded." /> : <ReadinessCardView card={card} />}
           <WeaknessSection
         items={weaknesses}
         hrefFor={(item) => {
@@ -38,6 +37,7 @@ export default async function ListeningIntelligencePage() {
       />
         </div>
         <div>
+          {readiness.status >= 400 ? <IntelligenceError message="Readiness could not be loaded." /> : <ReadinessCardView card={card} />}
       <MissionsSection
         missions={locked ? [] : decodeMissions(missions.data)}
         locked={locked}

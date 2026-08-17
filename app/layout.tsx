@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "../style.css";
 import "./design-system.css";
+import "./experience.css";
 import { SentryInit } from "./sentry-init";
 
 export const metadata: Metadata = {

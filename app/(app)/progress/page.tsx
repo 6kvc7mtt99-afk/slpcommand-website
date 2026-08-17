@@ -8,7 +8,10 @@ export default async function ProgressPage() {
     <section className="exercise instrument">
       <header className="page-head">
         <p className="section-eyebrow">Progress</p>
-        <h1>Estimated SLP</h1>
+        <p className="progress-figure" aria-hidden={progress ? undefined : true}>
+          {progress ? `SLP ${progress.overall.level ?? "—"}` : "Estimated SLP"}
+        </p>
+        <h1 className="visually-hidden">Estimated SLP</h1>
         <p className="muted">
           Levels come from GET /api/progress. Nothing here is derived in the browser. Confidence labels:
           Reliable, Fairly reliable, Limited evidence, Out of date.

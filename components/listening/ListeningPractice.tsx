@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { FrontendError } from "@/lib/api/client";
-import type { ListeningItem } from "@/lib/api/listening";
+import { decodeListeningAnswer, type ListeningItem } from "@/lib/api/listening";
 import {
   loadListeningNext,
   rotateListeningPracticeKey,
@@ -26,11 +26,15 @@ export function ListeningPractice({
   const [item, setItem] = useState<ListeningItem | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [message, setMessage] = useState("");
+  const [correctIndex, setCorrectIndex] = useState<number | null>(null);
+  const [explanation, setExplanation] = useState("");
 
   const load = useCallback(async (rotate: boolean) => {
     setPhase("loading");
     setSelected(null);
     setMessage("");
+    setCorrectIndex(null);
+    setExplanation("");
     if (rotate) rotateListeningPracticeKey();
     try {
       const next = await loadListeningNext({ focusSkill, focusSubSkill });
@@ -54,11 +58,14 @@ export function ListeningPractice({
     if (!item || selected == null || phase !== "ready") return;
     setPhase("answered");
     try {
-      await submitListeningAnswer({
+      const raw = await submitListeningAnswer({
         listeningId: item.listeningId,
         questionId: item.questionId,
         selectedIndex: selected,
       });
+      const result = decodeListeningAnswer(raw);
+      setCorrectIndex(result.correctIndex ?? item.correctIndex);
+      setExplanation(result.explanation);
     } catch (err) {
       if (err instanceof FrontendError && (err.code === "quota" || err.code === "entitlement")) {
         setPhase("quota");
@@ -68,29 +75,24 @@ export function ListeningPractice({
     }
   }
 
+  const marked = correctIndex ?? item?.correctIndex ?? null;
+
   return (
-    <ExerciseShell skill="Listening" mode="Practice" title="One clip, one question">
+    <ExerciseShell skill="Listening" mode="Practice" title="One clip, one question" layout="stage">
       <p className="muted">No transcript — just like the real exam.</p>
       {phase === "quota" ? <CommercialCard /> : null}
       {phase === "error" ? <ErrorState message={message} onRetry={() => void load(true)} /> : null}
-      {phase === "loading" ? (
-        <div className="audio-stage">
-          <LoadingState label="Loading a clip…" lines={2} />
-        </div>
-      ) : null}
+      {phase === "loading" ? <LoadingState label="Loading a clip…" lines={2} /> : null}
       {item && phase !== "quota" && phase !== "error" ? (
         <>
-          <article className="audio-stage">
-            <p className="home-kicker">Audio</p>
-            <AudioPlayer src={item.audioUrl} allowSeek />
-          </article>
-          <article className="question-pane">
+          <AudioPlayer src={item.audioUrl} allowSeek variant="stage" />
+          <div className="listen-question">
             <h2>{item.prompt || "Choose the best answer."}</h2>
             <OptionList
               options={item.options}
               selected={selected}
               locked={phase === "answered"}
-              correctIndex={phase === "answered" ? item.correctIndex : null}
+              correctIndex={phase === "answered" ? marked : null}
               onSelect={setSelected}
             />
             {phase === "ready" ? (
@@ -100,8 +102,8 @@ export function ListeningPractice({
             ) : null}
             {phase === "answered" && selected != null ? (
               <FeedbackBanner
-                correct={item.correctIndex != null && selected === item.correctIndex}
-                explanation=""
+                correct={marked != null && selected === marked}
+                explanation={explanation}
               />
             ) : null}
             {message && phase === "answered" ? <p className="muted">{message}</p> : null}
@@ -110,7 +112,7 @@ export function ListeningPractice({
                 Next clip
               </button>
             ) : null}
-          </article>
+          </div>
         </>
       ) : null}
     </ExerciseShell>

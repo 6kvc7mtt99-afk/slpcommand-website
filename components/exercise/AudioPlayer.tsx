@@ -6,10 +6,12 @@ export function AudioPlayer({
   src,
   allowSeek,
   onPlayRequest,
+  variant = "bar",
 }: {
   src: string;
   allowSeek: boolean;
   onPlayRequest?: () => Promise<boolean> | boolean;
+  variant?: "bar" | "stage";
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastTime = useRef(0);
@@ -75,6 +77,34 @@ export function AudioPlayer({
   }
 
   const label = `${format(current)} / ${format(duration)}`;
+  if (variant === "stage") {
+    return (
+      <div className="listen-stage">
+        <audio ref={audioRef} src={src} preload="metadata" controls={false} />
+        <button className="listen-play" type="button" onClick={() => void toggle()} aria-pressed={playing}>
+          {playing ? "Pause" : "Play"}
+        </button>
+        <p className="listen-clock">{label}</p>
+        {allowSeek ? (
+          <input
+            type="range"
+            min={0}
+            max={duration || 0}
+            step={0.1}
+            value={current}
+            aria-label="Seek"
+            style={{ width: "min(420px, 80vw)" }}
+            onChange={(e) => seek(Number(e.target.value))}
+          />
+        ) : (
+          <div className="listen-track" aria-hidden="true">
+            <span style={{ width: duration ? `${(current / duration) * 100}%` : "0%" }} />
+          </div>
+        )}
+        {blocked ? <p className="muted">{blocked}</p> : null}
+      </div>
+    );
+  }
   return (
     <div className="audio-player">
       <audio ref={audioRef} src={src} preload="metadata" controls={false} />
