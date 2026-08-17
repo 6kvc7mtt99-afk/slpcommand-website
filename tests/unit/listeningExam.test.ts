@@ -22,6 +22,27 @@ describe("listening exam contract", () => {
     expect(JSON.stringify(start)).not.toContain("nope");
   });
 
+  it("decodes live Express items[].listening.audioUrl + question.options", () => {
+    const start = decodeListeningExamStart({
+      examSessionId: "lex-live",
+      timeLimitSeconds: 1200,
+      items: [
+        {
+          position: 1,
+          listening: { id: "lis-1", title: "Update", audioUrl: "https://cdn.example.com/a.mp3" },
+          question: { id: "q-1", question: "A?", options: ["1", "2", "3", "4"] },
+        },
+      ],
+    });
+    expect(start?.examSessionId).toBe("lex-live");
+    expect(start?.items[0]).toMatchObject({
+      position: 1,
+      audioUrl: "https://cdn.example.com/a.mp3",
+      prompt: "A?",
+    });
+    expect(start?.items[0]?.options).toHaveLength(4);
+  });
+
   it("does not start playback unless play is allowed", () => {
     expect(decodePlayResult({ allowed: false, allowSeek: true }).allowed).toBe(false);
     expect(decodePlayResult({ allowed: true, allowSeek: true }).allowSeek).toBe(false);
