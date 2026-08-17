@@ -53,7 +53,7 @@ test.describe("visual QA — workspace", () => {
       { path: "/reading/academy", name: "reading-academy", text: "Recover inference" },
       { path: "/reading/intelligence", name: "reading-intelligence", text: "This is a readiness score, not Estimated SLP." },
       { path: "/listening", name: "listening-home", text: "Listening" },
-      { path: "/listening/practice", name: "listening-practice", text: "No transcript" },
+      { path: "/listening/practice", name: "listening-practice", text: "What did the speaker ask for?" },
       { path: "/listening/academy", name: "listening-academy", text: "Specific Details" },
       { path: "/listening/intelligence", name: "listening-intelligence", text: "Listening Intelligence" },
       { path: "/writing", name: "writing-home", text: "Writing" },

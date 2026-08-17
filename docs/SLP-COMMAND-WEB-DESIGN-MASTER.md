@@ -113,7 +113,9 @@ Evidence: `docs/visual-qa/*`, live composition, `app/design-system.css`.
 | Perceived product maturity | 77 | 94 |
 | Perceived premium quality | 75 | 94 |
 
-**Final visual score: 94 / 100**
+**Final visual score (superseded): 94 / 100 — rejected as a product-experience score.**
+
+See **Product Experience Rebuild** below.
 
 94, not 95. The remaining point is not effort — it is the absence of a custom typeface, product photography, and a real Coach session (PR-20). Claiming 95 while those are missing would be dishonest. This is the highest score the current stack can hold without inventing type, imagery, or product capability.
 
@@ -550,3 +552,49 @@ Not separate GitHub PRs — coherent commits on `feature/slpcommand-web-platform
 6. `feat(web): redesign speaking and admin experiences`
 7. `test(web): add visual regression coverage`
 8. `refactor(web): unify premium design system`
+
+---
+
+## Product Experience Rebuild (2026-08-17)
+
+The 94/100 score is rejected as a measure of product experience. The preview still read as a competent SaaS dashboard: bordered modules, title + description + button, two-column information layouts.
+
+### Structural change
+
+New compositional language in `app/experience.css`:
+
+| Primitive | Replaces | Used on |
+|---|---|---|
+| Briefing | Home card stack | Home |
+| Skill brief | SkillLaunch card pair | Skill homes |
+| Document stage | Passage card | Reading practice |
+| Listen stage | Audio card + form | Listening practice |
+| Write stage | Prompt card + editor card | Writing practice |
+| Speak stage | Form + recorder | Speaking practice |
+| Decision desk | Equal intelligence cards | Intelligence |
+| Progress figure | Isolated SLP card | Progress |
+
+### Listening root cause
+
+Preview copy **“Couldn't load a clip. You were not charged.”** is thrown only when `decodeListeningItem` returns null after a **successful** HTTP response (`throw new Error("invalid_listening")`). It is not a quota, 404, or network message.
+
+Live iOS contract (`SLPListeningNextResponse`):
+
+```
+{ listening: { id, audioUrl, … }, question: { id, question, options } }
+```
+
+The web decoder treated `raw.question` as the clip, never read `listening.audioUrl`, and failed closed. The backend was serving a valid item. **Frontend decode bug.** Fixed to match iOS. Exam items now also read `item.listening.audioUrl` / `item.question`. Practice feedback now uses `POST /slp/answer` (`isCorrect`, `correctIndex`, `explanation`) because the GET question has no `correctIndex`.
+
+Mock backend was also missing `/api/listening/slp/next` and `/api/writing/prompts/next`, so local visual QA could not exercise those contracts.
+
+### Other routes
+
+| Route | Preview / mock finding |
+|---|---|
+| Reading practice | Live contract already decoded; mock has `/passage`. |
+| Writing practice | Decoder expects `writingPromptId`; mock lacked `/prompts/next` (now added). Live backend shape is the same iOS envelope. |
+| Speaking practice | Local prompts; evaluate is POST multipart. No clip-load path. |
+| Academy / Intelligence | SSR via proxy; copy comes from backend. No invented metrics. |
+
+### Do not claim a numeric quality score for this pass.
