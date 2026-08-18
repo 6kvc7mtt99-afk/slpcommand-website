@@ -1,0 +1,34 @@
+keyword,lang,intent,volume,volume_status,competition,relevance,opportunity,priority,recommended_url,notes
+STANAG 6001,en,informational,UNKNOWN,NEEDS_DATA,medium,high,high,P0,/stanag-6001,Always use 6001 — bare STANAG is magazines
+STANAG 6001 exam,en,info/commercial,UNKNOWN,NEEDS_DATA,medium,high,high,P0,/stanag-6001,
+STANAG 6001 preparation,en,commercial,UNKNOWN,NEEDS_DATA,low-med,high,high,P0,/guides,
+SLP STANAG,en,informational,UNKNOWN,NEEDS_DATA,low,high,high,P0,/slp,Disambiguation
+SLP 2,en,informational,UNKNOWN,NEEDS_DATA,low*,high,high,P0,/slp-2,*polluted by speech pathology
+SLP 3,en,informational,UNKNOWN,NEEDS_DATA,low*,high,high,P0,/slp-3,
+SLP 2222,es,commercial,UNKNOWN,NEEDS_DATA,low,very high,very high,P0,/es/slp-2,Spain money term
+SLP 3333,es,commercial,UNKNOWN,NEEDS_DATA,low,very high,very high,P0,/es/slp-3,
+examen SLP,es,commercial,UNKNOWN,NEEDS_DATA,medium,very high,very high,P0,/es/examen-slp,
+examen SLP inglés,es,commercial,UNKNOWN,NEEDS_DATA,medium,very high,very high,P0,/es/examen-slp,
+preparar SLP 2,es,commercial,UNKNOWN,NEEDS_DATA,low,high,high,P0,/es/slp-2,
+preparar SLP 3,es,commercial,UNKNOWN,NEEDS_DATA,low,high,high,P0,/es/slp-3,
+STANAG 6001 writing level 3,en,informational,UNKNOWN,NEEDS_DATA,low,very high,very high,P0,/guides/writing,
+SLP writing task achievement,en,informational,UNKNOWN,NEEDS_DATA,low,very high,very high,P0,/guides/writing,
+STANAG 6001 listening,en,informational,UNKNOWN,NEEDS_DATA,low,high,high,P0,/guides/listening,
+listening SLP difícil,es,problem,UNKNOWN,NEEDS_DATA,low,high,high,P0,/guides/listening,
+simulacro SLP,es,commercial,UNKNOWN,NEEDS_DATA,low,high,high,P0,/exam,
+mock STANAG exam,en,commercial,UNKNOWN,NEEDS_DATA,low,high,high,P0,/exam,
+best app for STANAG 6001,en,commercial,UNKNOWN,NEEDS_DATA,low,high,medium,P1,/about,Do not title page 'best app'
+mejor app para preparar SLP,es,commercial,UNKNOWN,NEEDS_DATA,low,high,medium,P1,/es/examen-slp,
+military English,en,informational,UNKNOWN,NEEDS_DATA,high,medium,low,P2,not built,Do not make homepage
+NATO English,en,informational,UNKNOWN,NEEDS_DATA,medium,medium,low,P2,not built,
+JFLT,it,informational,UNKNOWN,NEEDS_DATA,medium,medium,medium,P2,later IT page,Italy national test
+préparer STANAG 6001,fr,commercial,UNKNOWN,NEEDS_DATA,unknown,medium,unknown,P3,do not translate yet,FR demand looks thinner than ES/EN
+STANAG 6001 Vorbereitung,de,commercial,UNKNOWN,NEEDS_DATA,unknown,medium,medium,P2,later DE,DE App Store competitor exists
+esame JFLT,it,commercial,UNKNOWN,NEEDS_DATA,medium,medium,medium,P2,later IT,
+SLP,en,hazard,UNKNOWN,NEEDS_DATA,very high,low,none,NEVER,none,Speech-language pathology
+STANAG,en,hazard,UNKNOWN,NEEDS_DATA,very high,low,none,NEVER,none,Magazines/ammo
+SLP Command,brand,transactional,UNKNOWN,NEEDS_DATA,none,high,high,P0,/,
+how to prepare for STANAG 6001,en,informational,UNKNOWN,NEEDS_DATA,medium,high,high,P1,future article,
+cómo aprobar el SLP 3333,es,commercial,UNKNOWN,NEEDS_DATA,low,high,high,P1,future article,
+STANAG 6001 vs CEFR,en,comparison,UNKNOWN,NEEDS_DATA,low,medium,medium,P2,future article,
+convalidar SLP EOI,es,informational,UNKNOWN,NEEDS_DATA,low,medium,medium,P2,admin — link official

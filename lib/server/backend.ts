@@ -49,6 +49,7 @@ function timeoutFor(path: string): number {
     return AI_TIMEOUT;
   }
   if (path.includes("/speaking/evaluate") || path.includes("/speaking/attempts/")) return 90_000;
+  if (path.includes("/support/conversations") && path.includes("/messages")) return 90_000;
   return DEFAULT_TIMEOUT;
 }
 

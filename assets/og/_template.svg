@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- SLP Command Open Graph card. Source of truth: edit here, then run scripts/build-og.sh -->
+  <rect width="1200" height="630" fill="#e7e3d8"/>
+
+  <!-- ruled paper hairlines -->
+  <g stroke="#c8c2b5" stroke-width="1" opacity="0.55">
+    <line x1="0" y1="112" x2="1200" y2="112"/>
+    <line x1="0" y1="518" x2="1200" y2="518"/>
+  </g>
+
+  <!-- accent spine -->
+  <rect x="0" y="0" width="10" height="630" fill="#1638a6"/>
+
+  <!-- logomark -->
+  <rect x="72" y="52" width="44" height="44" rx="8" fill="#121214"/>
+  <text x="94" y="80" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15"
+        font-weight="800" letter-spacing="0.9" fill="#e7e3d8" text-anchor="middle">SLP</text>
+
+  <!-- wordmark -->
+  <text x="132" y="82" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="25"
+        font-weight="600" fill="#121214">SLP <tspan font-weight="400" fill="#3a3a40">Command</tspan></text>
+
+  <!-- kicker -->
+  <text x="72" y="188" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15"
+        font-weight="700" letter-spacing="2.6" fill="#8a6818">__KICKER__</text>
+
+  <!-- headline -->
+  <text x="72" y="266" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="60"
+        font-weight="700" fill="#121214">__LINE1__</text>
+  <text x="72" y="338" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="60"
+        font-weight="700" fill="#121214">__LINE2__</text>
+
+  <!-- rule -->
+  <rect x="72" y="382" width="88" height="4" fill="#1638a6"/>
+
+  <!-- subline -->
+  <text x="72" y="438" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="25"
+        font-weight="400" fill="#3a3a40">__SUB__</text>
+
+  <!-- footer disclaimer -->
+  <text x="72" y="570" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18"
+        font-weight="400" fill="#5c5c64">__FOOT__</text>
+  <text x="1128" y="570" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18"
+        font-weight="600" fill="#5c5c64" text-anchor="end">slpcommand.com</text>
+</svg>

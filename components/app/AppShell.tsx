@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { SupportAssistant } from "./SupportAssistant";
 
 const NAV = [
   { href: "/dashboard", label: "Home", skill: null },
@@ -84,6 +85,7 @@ export function AppShell({
         })}
       </nav>
       <div className="app-plan">{planLabel}</div>
+      <SupportAssistant />
       <button type="button" className="btn btn-outline" onClick={logout}>
         Log out
       </button>

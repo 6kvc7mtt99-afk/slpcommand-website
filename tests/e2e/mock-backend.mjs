@@ -237,6 +237,22 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({ ok: true, session: { id: "sess-spike-1", status: "completed", evaluation_status: "completed", consumed_secs: 12, result: null } }));
     return;
   }
+  if (url.pathname === "/api/support/conversations" && req.method === "POST") {
+    res.statusCode = 201;
+    res.end(JSON.stringify({ ok: true, conversation: { id: "conv-support-1", client: "web", status: "open" } }));
+    return;
+  }
+  if (url.pathname === "/api/support/conversations/conv-support-1/messages" && req.method === "POST") {
+    res.end(JSON.stringify({
+      ok: true,
+      conversationId: "conv-support-1",
+      message: { id: "m1", role: "assistant", content: "Listening Practice serves one live item at a time.", phase: "answered" },
+      phase: "answered",
+      toolsUsed: ["search_knowledge"],
+      case: null,
+    }));
+    return;
+  }
   if (url.pathname === "/api/writing/intelligence/transform" && req.method === "POST") {
     res.end(JSON.stringify({ original: "The unit moved.", upgraded: "The unit was redirected after the bridge failed.", explanation: "Passive + cause.", featuresAdded: ["passive"], memorisePhrases: ["was redirected"] }));
     return;

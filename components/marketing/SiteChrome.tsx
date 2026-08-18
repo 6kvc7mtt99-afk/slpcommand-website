@@ -13,13 +13,10 @@ export function LogoMark() {
 
 export function SiteHeader({ links }: { links?: { href: string; label: string }[] }) {
   const nav = links ?? [
+    { href: "/guides", label: "Learn" },
     { href: "/#features", label: "Features" },
-    { href: "/#method", label: "Method" },
     { href: "/#pricing", label: "Pricing" },
-    { href: "/#how", label: "How it works" },
-    { href: "/#roadmap", label: "Roadmap" },
-    { href: "/#faq", label: "FAQ" },
-    { href: "/trust-center", label: "Trust Center" },
+    { href: "/trust-center", label: "Trust" },
     { href: "/support", label: "Support" },
     { href: "/login", label: "Log in" },
   ];
@@ -41,7 +38,18 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="footer-brand">SLP Command</div>
+      <p>Independent STANAG 6001 / SLP preparation. Not NATO. Not an official exam.</p>
       <div className="footer-links">
+        <Link href="/guides">Guides</Link>
+        <Link href="/stanag-6001">STANAG 6001</Link>
+        <Link href="/slp">What is SLP</Link>
+        <Link href="/slp-2">SLP 2</Link>
+        <Link href="/slp-3">SLP 3</Link>
+        <Link href="/es/examen-slp">Examen SLP</Link>
+        <Link href="/guides/writing">Writing</Link>
+        <Link href="/guides/listening">Listening</Link>
+        <Link href="/exam">Exam</Link>
+        <Link href="/about">About</Link>
         <Link href="/trust-center">Trust Center</Link>
         <Link href="/privacy">Privacy</Link>
         <Link href="/terms">Terms</Link>

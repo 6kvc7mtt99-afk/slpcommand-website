@@ -1,0 +1,26 @@
+id,platform,funnel,difficulty,impact,topic,format,title_or_hook,url_or_status,keyword,cta,kpi
+C001,web,awareness,3,5,stanag,pillar,What is STANAG 6001,/stanag-6001,STANAG 6001,See SLP 2/3,indexed
+C002,web,awareness,2,5,slp,pillar,SLP is not speech therapy,/slp,SLP STANAG,Open SLP 2,indexed
+C003,web,interest,2,5,slp2,level,SLP 2 functional,/slp-2,SLP 2,Pricing,indexed
+C004,web,interest,2,5,slp3,level,SLP 3 professional,/slp-3,SLP 3,Writing guide,indexed
+C005,web,interest,3,5,spain,pillar,Examen SLP España,/es/examen-slp,examen SLP,Producto,indexed
+C006,web,interest,2,4,slp2,level,SLP 2222 ES,/es/slp-2,SLP 2222,Precios,indexed
+C007,web,interest,2,4,slp3,level,SLP 3333 ES,/es/slp-3,SLP 3333,Simulacro,indexed
+C008,web,consideration,3,5,writing,guide,Good English wrong task,/guides/writing,STANAG writing level 3,Trainer,indexed
+C009,web,consideration,3,5,listening,guide,Listening is not vocabulary,/guides/listening,STANAG listening,Trainer,indexed
+C010,web,consideration,2,4,exam,commercial,Sit it before the board,/exam,STANAG mock exam,Pricing,indexed
+C011,web,awareness,1,4,entity,about,About SLP Command,/about,SLP Command,Disclaimer,indexed
+C012,web,awareness,1,3,hub,index,Guides hub,/guides,STANAG 6001 preparation,Start here,indexed
+C013,web,awareness,2,4,machine,txt,llms.txt,/llms.txt,SLP Command,n/a,citable
+C014,yt,awareness,4,5,stanag,long,What STANAG 6001 actually is,NOT SHOT,STANAG 6001,Site,watch time
+C015,yt,consideration,4,5,writing,long,Why good English fails SLP writing,NOT SHOT,SLP writing,App,avg duration
+C016,yt,consideration,4,5,listening,long,Where SLP listening is lost,NOT SHOT,SLP listening,App,avg duration
+C017,x,awareness,1,3,myth,thread,There is no official NATO English exam,NOT POSTED,official NATO exam,Pillar,saves
+C018,x,interest,1,4,writing,before_after,This paragraph failed the task,NOT POSTED,task achievement,/guides/writing,reposts
+C019,ig,interest,2,4,levels,carousel,2222 vs 3333,NOT POSTED,SLP 2222,Bio,saves
+C020,reel,interest,2,4,reading,microtest,Could you pass this SLP 3 inference item,NOT POSTED,SLP 3 reading,Comment,completion
+C021,web,interest,3,4,reading,guide,/guides/reading P1,NOT BUILT,STANAG reading,Practice,n/a
+C022,web,interest,3,4,speaking,guide,/guides/speaking P1,NOT BUILT,SLP speaking,Practice,n/a
+C023,web,awareness,3,3,compare,article,STANAG vs CEFR caveats,NOT BUILT,STANAG vs CEFR,Levels,n/a
+C024,web,interest,3,4,plan,article,30-day SLP 3 plan,NOT BUILT,how to prepare STANAG,App,n/a
+C025,reddit,awareness,2,2,answer,comment,Only if a real thread exists,DO NOT SCHEDULE,STANAG 6001,Explain,no removal

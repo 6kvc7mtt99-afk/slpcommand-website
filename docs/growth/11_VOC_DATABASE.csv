@@ -1,0 +1,23 @@
+id,problem,need,representative_language,source,source_type,lang,intent,content_use,product_use,marketing_use,status
+V01,Career blocked by SLP,Apto 2222/3333,"El examen SLP de inglés está parando la carrera de muchos.",milcom.es historic,web,es,career,What SLP unlocks,Exam-date onboarding,Lead with stakes,READY
+V02,Wasted money on generic academies,Exam-specific prep,"Temario poco práctico… poca conexión con los ejercicios reales del examen",Ready GO site,competitor-copy,es,commercial,Why general B2 fails SLP,Mocks that look like the sitting,Anti-generic,READY
+V03,Listening is the wall,Comprehension under speed/noise,"Es la habilidad más compleja",Ready GO,competitor-copy,es,skill,/guides/listening,Listening Intelligence,Hook 11,SHIPPED_PAGE
+V04,Good English bad writing score,Task achievement,Product FAQ already names this,slpcommand.com,product,en,skill,/guides/writing,Writing task gate,Hero marketing,SHIPPED_PAGE
+V05,No time,20-30 min/day,"30 minutos al día"; busy military schedule,Ready GO + Magda,web,es/en,habit,21/30-day plans,Today's session,A plan not a menu,READY
+V06,Don't know if ready,Honest readiness,Will you tell me my chance of passing? No.,slpcommand.com FAQ,product,en,trust,/exam,Confidence ladder,Differentiation,SHIPPED_PAGE
+V07,Fear of speaking examiner,Rehearsal,"Olvida tus miedos a enfrentarte a esta parte",Ready GO,competitor-copy,es,skill,Speaking guide P1,AI eval,Demo video,P1
+V08,Skill decay,Maintenance,Out of date evidence ~6 weeks,slpcommand.com,product,en,retention,Decay article,Out-of-date state,Re-engagement,READY
+V09,Confusion 2222 vs 3333,Level choice,¿SLP 2 o SLP 3?,market,inferred,es,info,Level pages,Onboarding target,Two landings,SHIPPED_PAGE
+V10,Admin friction Spain,How to register,SIPERDEF / SOLIDI / uniforme / convocatorias,online-speaking.com Jul 2026,web,es,info,/es/examen-slp,Exam countdown,Seasonal SEO,SHIPPED_PAGE
+V11,Self-study isolation,Structure,How do I self-study L3,Magda,youtube,en,info,Self-study OS article,Adaptive Coach,Without an academy,P1
+V12,Native speech,Listening transfer,I don't understand native English speakers,Magda YT,youtube,en,skill,Connected speech,Accent corpus,Clips,READY
+V13,Report formats,Models,STANAG report writing L2/L3 ~25K views,YouTube listing,youtube,en,skill,Writing cluster,Writing Academy,YT+cluster,READY
+V14,Want mocks not theory,Exam conditions,simulacros / como el examen oficial,Ready GO FAQ,competitor-copy,es,comm,/exam,1 free mock/month,Screenshot 3,SHIPPED_PAGE
+V15,Distrust of AI scores,Transparent criteria,Is the AI making up its feedback?,slpcommand.com FAQ,product,en,trust,Show rubric,Always show rationale,Never AI magic,READY
+V16,Name collision,Disambiguation,SLP = speech therapy in EN search,SERP,search,en,info,/slp,Subtitle STANAG 6001,ASO+FAQ,SHIPPED_PAGE
+V17,National format differences,Local truth,Exam format in your country since they differ,militaryenglishcourse.com,web,en,trust,/stanag-6001,Constructs not cloned papers,GEO honesty,SHIPPED_PAGE
+V18,Association discounts expected,Price fairness,AUGC and other association deals,historic AUGC/MilCom,web,es,comm,Not a discount war,Later B2B,Partner,LATER
+V19,Failed once,Recovery,"Te quedaste a poco de aprobarlo",Ready GO,competitor-copy,es,emotion,After a fail guide,Weakness-first plan,Autumn retake,P1
+V20,Need proof it's serious,Professional tone,Military users punish childish UX,inferred,inference,en,brand,Method pages,Current UI,Keep olive out of clown,READY
+V21,Czech STANAG as a service benefit,Certificate + free exam,STANAG 6001 NATO certificate corresponds to C1 in civilian life,X @JanHermanek 2026-01-21,x,cs,career,National pages later,n/a,Do not fake testimonials,MONITOR
+V22,Italy uses JFLT not 'SLP paper',Named national test,JFLT Joint Forces Language Test,jfltenglishacademy.com + Magda,web,it,info,JFLT vs STANAG later,Do not clone JFLT,Italy P2,MONITOR

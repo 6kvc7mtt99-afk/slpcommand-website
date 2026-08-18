@@ -16,6 +16,18 @@ const PAGES = [
   "/support",
   "/contact",
   "/trust-center",
+  "/stanag-6001",
+  "/slp",
+  "/slp-2",
+  "/slp-3",
+  "/es/examen-slp",
+  "/es/slp-2",
+  "/es/slp-3",
+  "/guides",
+  "/guides/writing",
+  "/guides/listening",
+  "/exam",
+  "/about",
 ];
 
 test("public pages return 200 and keep legal titles", async ({ page }) => {

@@ -223,6 +223,33 @@ body {
   color: #6a5000; font-size: 14px; line-height: 1.6;
 }
 
+/* ─── AUTHORITY / GUIDE PAGES ─── */
+.authority-kicker {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.authority-crumbs {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+.authority-crumbs a { color: var(--muted); }
+.authority-cta {
+  margin: 40px 0 28px;
+  padding: 22px 24px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.authority-cta h2 { margin-top: 0; }
+.authority-cta .btn { margin-top: 8px; text-decoration: none; }
+.authority-related ul { list-style: none; padding-left: 0; }
+.authority-related li { margin: 8px 0; }
+
 /* ─── LEGAL PAGES ─── */
 .wrap { max-width: var(--max); margin: 0 auto; padding: 40px 24px 80px; }
 .page-header {
