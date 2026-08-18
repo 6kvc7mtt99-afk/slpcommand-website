@@ -1,12 +1,13 @@
 import { expect, test } from "@playwright/test";
+import { E2E_BASE_URL } from "./baseUrl";
 
 test.describe("authenticated dashboard", () => {
   test.beforeEach(async ({ context }) => {
     await context.addCookies([
-      { name: "slp_at", value: "test-access", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
-      { name: "slp_rt", value: "test-refresh", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
-      { name: "slp_uid", value: "user-1", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
-      { name: "slp_em", value: "learner@example.com", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
+      { name: "slp_at", value: "test-access", url: E2E_BASE_URL },
+      { name: "slp_rt", value: "test-refresh", url: E2E_BASE_URL },
+      { name: "slp_uid", value: "user-1", url: E2E_BASE_URL },
+      { name: "slp_em", value: "learner@example.com", url: E2E_BASE_URL },
     ]);
   });
 

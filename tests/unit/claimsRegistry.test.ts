@@ -158,6 +158,57 @@ describe("claims registry (docs/growth/03_CLAIMS_REGISTRY.md)", () => {
     });
   }
 
+
+  /**
+   * The guard has to tell a forbidden assertion apart from an honest denial of
+   * it. The site says "there is no official NATO exam" and "Not available on
+   * Android" deliberately; if those ever start failing, the guard is broken and
+   * someone will "fix" it by deleting the disclaimer.
+   */
+  describe("negation handling", () => {
+    const MUST_PASS = [
+      "SLP Command is not an official NATO examination.",
+      "There is no official NATO English exam.",
+      "It is not affiliated with NATO, BILC, or any Ministry of Defence.",
+      "AI feedback is indicative guidance, not an official SLP assessment.",
+      "Not available on Android at the time of this page.",
+      "We will never give you a pass probability.",
+      "This is not the best app; we do not make that claim.",
+      "No pass is guaranteed.",
+      "SLP Command no está afiliado a la OTAN ni a ningún organismo oficial.",
+      "No es un examen oficial.",
+    ];
+
+    for (const sentence of MUST_PASS) {
+      it(`allows the honest denial: "${sentence.slice(0, 48)}..."`, () => {
+        for (const rule of FORBIDDEN) {
+          expect(
+            assertiveHits(sentence, rule.pattern),
+            `${rule.id} (${rule.label}) wrongly flagged a denial`,
+          ).toEqual([]);
+        }
+      });
+    }
+
+    const MUST_FAIL = [
+      "SLP Command is the official NATO app.",
+      "This trainer is NATO-approved.",
+      "It is used by NATO and the armed forces.",
+      "The best SLP trainer available.",
+      "Pass guaranteed.",
+      "You have a 94% chance of passing.",
+      "Available on Android.",
+      "Es la app oficial del examen.",
+    ];
+
+    for (const sentence of MUST_FAIL) {
+      it(`still catches the assertion: "${sentence.slice(0, 48)}"`, () => {
+        const caught = FORBIDDEN.some((rule) => assertiveHits(sentence, rule.pattern).length > 0);
+        expect(caught, `no rule caught: ${sentence}`).toBe(true);
+      });
+    }
+  });
+
   it("keeps the machine-readable prohibitions in llms.txt", () => {
     const { prohibitions } = llmsTxt();
     expect(prohibitions, "llms.txt must keep its 'Do not say' block").toContain("Do not say");

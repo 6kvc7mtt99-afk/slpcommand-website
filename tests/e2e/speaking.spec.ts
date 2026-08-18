@@ -1,8 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { E2E_BASE_URL } from "./baseUrl";
 
 test.beforeEach(async ({ context }) => {
-  const url = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+  const url = E2E_BASE_URL;
   await context.addCookies([
     { name: "slp_at", value: "test-access", url },
     { name: "slp_rt", value: "test-refresh", url },

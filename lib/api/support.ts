@@ -37,7 +37,7 @@ export type SupportTurn = {
 
 export function contextFromPath(path: string): SupportContext {
   const parts = path.split("/").filter(Boolean);
-  const module = ["reading", "listening", "writing", "speaking", "progress", "profile", "dashboard"].includes(parts[0] ?? "")
+  const moduleName = ["reading", "listening", "writing", "speaking", "progress", "profile", "dashboard"].includes(parts[0] ?? "")
     ? parts[0] === "dashboard"
       ? "home"
       : parts[0] === "profile"
@@ -46,7 +46,7 @@ export function contextFromPath(path: string): SupportContext {
     : "home";
   return {
     client: "web",
-    module,
+    module: moduleName,
     screen: parts[1] || parts[0] || "home",
     appVersion: "web",
   };

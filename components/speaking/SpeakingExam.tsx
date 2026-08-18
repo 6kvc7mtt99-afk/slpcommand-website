@@ -41,6 +41,15 @@ export function SpeakingExam({ userId, level }: { userId: string; level: "2" | "
     return () => window.clearInterval(id);
   }, [phase, index]);
 
+  useEffect(() => {
+    if (phase !== "consent") return;
+    try {
+      if (localStorage.getItem(CONSENT(userId)) === "1") setPhase("intro");
+    } catch {
+      /* ignore */
+    }
+  }, [phase, userId]);
+
   if (phase === "gate") {
     return (
       <ExamDisclaimerGate
@@ -52,15 +61,6 @@ export function SpeakingExam({ userId, level }: { userId: string; level: "2" | "
       />
     );
   }
-
-  useEffect(() => {
-    if (phase !== "consent") return;
-    try {
-      if (localStorage.getItem(CONSENT(userId)) === "1") setPhase("intro");
-    } catch {
-      /* ignore */
-    }
-  }, [phase, userId]);
 
   if (phase === "consent") {
     return (

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { E2E_BASE_URL } from "./baseUrl";
 
 test("unauthenticated spike redirects to login", async ({ browser }) => {
   const context = await browser.newContext();
@@ -9,7 +10,7 @@ test("unauthenticated spike redirects to login", async ({ browser }) => {
 });
 
 test("authenticated spike is noindex, has no product nav, and never shows a raw token", async ({ page, context }) => {
-  const url = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+  const url = E2E_BASE_URL;
   await context.addCookies([
     { name: "slp_at", value: "test-access", url },
     { name: "slp_rt", value: "test-refresh", url },
@@ -27,7 +28,7 @@ test("authenticated spike is noindex, has no product nav, and never shows a raw 
 });
 
 test("coach webhook stays gone and session is allowlisted", async ({ request }) => {
-  const origin = (process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000").replace(
+  const origin = (E2E_BASE_URL).replace(
     "127.0.0.1",
     "localhost",
   );

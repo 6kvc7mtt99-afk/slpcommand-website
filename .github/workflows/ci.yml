@@ -17,15 +17,18 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx tsc --noEmit
+      - run: npx eslint .
       - run: npx vitest run
       - run: npx playwright install --with-deps chromium
-      - name: Mock backend
-        run: node tests/e2e/mock-backend.mjs &
+      # Playwright builds and serves a production server itself (see
+      # playwright.config.ts). It must not be pointed at 127.0.0.1: the CSRF
+      # middleware compares against nextUrl.origin, which Next normalises to
+      # localhost, so a 127.0.0.1 Origin is rejected with 403.
       - name: Playwright
         env:
           MOCK_BACKEND: "1"
           BACKEND_URL: http://127.0.0.1:3999
-          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
         run: npx playwright test --reporter=line
       - name: Production build
         run: npx next build

@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { E2E_BASE_URL } from "./baseUrl";
 
 test("unauthorized visitors see admin login and stay off the console", async ({ page }) => {
   const requests: string[] = [];
@@ -22,10 +23,10 @@ test("admin login form has no serious axe violations", async ({ page }) => {
 test.describe("admin session via proxy", () => {
   test("authenticated non-admin cannot open the console", async ({ page, context }) => {
     await context.addCookies([
-      { name: "slp_at", value: "test-access", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
-      { name: "slp_rt", value: "test-refresh", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
-      { name: "slp_uid", value: "user-1", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
-      { name: "slp_em", value: "learner@example.com", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
+      { name: "slp_at", value: "test-access", url: E2E_BASE_URL },
+      { name: "slp_rt", value: "test-refresh", url: E2E_BASE_URL },
+      { name: "slp_uid", value: "user-1", url: E2E_BASE_URL },
+      { name: "slp_em", value: "learner@example.com", url: E2E_BASE_URL },
     ]);
     const requests: string[] = [];
     page.on("request", (req) => requests.push(req.url()));
@@ -38,10 +39,10 @@ test.describe("admin session via proxy", () => {
 
   test("admin access works through the same-origin proxy", async ({ page, context }) => {
     await context.addCookies([
-      { name: "slp_at", value: "admin-access", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
-      { name: "slp_rt", value: "admin-refresh", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
-      { name: "slp_uid", value: "admin-1", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
-      { name: "slp_em", value: "admin@example.com", url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000" },
+      { name: "slp_at", value: "admin-access", url: E2E_BASE_URL },
+      { name: "slp_rt", value: "admin-refresh", url: E2E_BASE_URL },
+      { name: "slp_uid", value: "admin-1", url: E2E_BASE_URL },
+      { name: "slp_em", value: "admin@example.com", url: E2E_BASE_URL },
     ]);
     const requests: string[] = [];
     page.on("request", (req) => requests.push(req.url()));
