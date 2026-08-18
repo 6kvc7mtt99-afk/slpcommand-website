@@ -61,6 +61,22 @@ export function AuthorityPage({ id }: { id: AuthorityId }) {
           </section>
         ) : null}
 
+        {page.sources?.length ? (
+          <section className="authority-sources">
+            <h2>{page.lang === "es" ? "Fuentes" : "Sources"}</h2>
+            <ol>
+              {page.sources.map((source) => (
+                <li key={source.url}>
+                  <a href={source.url} rel="noopener noreferrer nofollow" target="_blank">
+                    {source.label}
+                  </a>
+                  {source.note ? <span className="source-note">{source.note}</span> : null}
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
+
         <aside className="authority-cta">
           <h2>{convert.heading}</h2>
           <p>{convert.body}</p>

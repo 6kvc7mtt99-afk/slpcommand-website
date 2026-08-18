@@ -280,6 +280,21 @@ body {
   .authority-cta-actions { flex-direction: column; align-items: stretch; }
   .authority-cta-actions .btn { text-align: center; }
 }
+/* Sources read as a reference apparatus, not as marketing links: numbered,
+   quiet, with the supporting quotation under each entry. */
+.authority-sources ol {
+  padding-left: 1.2em;
+  font-size: 0.92rem;
+}
+.authority-sources li { margin: 12px 0; }
+.authority-sources a { color: var(--accent); }
+.authority-sources .source-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
 .authority-related ul { list-style: none; padding-left: 0; }
 .authority-related li { margin: 8px 0; }
 

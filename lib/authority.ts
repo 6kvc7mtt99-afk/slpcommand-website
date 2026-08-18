@@ -119,6 +119,15 @@ export function articleJsonLd(id: AuthorityId) {
       name: "SLP Command",
       url: `${SITE_ORIGIN}/`,
     },
+    ...(page.sources?.length
+      ? {
+          citation: page.sources.map((source) => ({
+            "@type": "CreativeWork",
+            name: source.label,
+            url: source.url,
+          })),
+        }
+      : {}),
     ...(page.schemaType === "CollectionPage"
       ? {
           hasPart: page.related.map((item) => ({
