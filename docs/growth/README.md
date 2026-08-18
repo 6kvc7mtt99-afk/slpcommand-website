@@ -27,5 +27,17 @@ Parent strategy (do not replace):
 | [20_CEO_DASHBOARD.md](20_CEO_DASHBOARD.md) | Friday 15 numbers |
 | [21_90_DAY_EXECUTION_PLAN.md](21_90_DAY_EXECUTION_PLAN.md) | D1–90 with KPIs |
 | [22_IMPLEMENTATION_LOG.md](22_IMPLEMENTATION_LOG.md) | What changed |
+| [23_MARKETING_OS_DECISION.md](23_MARKETING_OS_DECISION.md) | External Marketing OS: audit + reject-with-reasons |
+| [24_CHAIRMAN_AUDIT_2026-08-18.md](24_CHAIRMAN_AUDIT_2026-08-18.md) | Chairman audit of Grok v1: scores, findings, risks |
+| [25_TECHNICAL_CLOSURE_2026-08-18.md](25_TECHNICAL_CLOSURE_2026-08-18.md) | Lint, E2E determinism, CSRF origin, closure verification |
+| [os/README.md](os/README.md) | Roles + handoff format |
+| [os/QUALITY_GATE.md](os/QUALITY_GATE.md) | Pre-publish scorecard (≥80 to ship) |
+| [os/EXPERIMENTS.md](os/EXPERIMENTS.md) | Experiment ledger |
+| [os/LEARNINGS.md](os/LEARNINGS.md) | Durable findings |
+| [os/GRAFT.md](os/GRAFT.md) | Graft tooling evaluation — PILOT, with measured evidence |
 
 Live public pages implemented in this pass are listed in `01` and `04`.
+
+**Pass 2 (18 Aug 2026):** `01`–`21` are Grok v1 and stand as written. `22` carries both
+passes. `23`, `24` and `os/` are the Chairman review layer. Claims safety is now enforced
+by `tests/unit/claimsRegistry.test.ts`, not by this documentation alone.
