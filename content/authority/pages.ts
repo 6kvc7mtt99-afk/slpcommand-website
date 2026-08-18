@@ -15,6 +15,12 @@ export type AuthorityPageDef = {
   intent: string;
   funnel: "awareness" | "interest" | "consideration" | "conversion";
   hreflang?: { en?: string; es?: string };
+  /**
+   * Schema.org type for the page itself. `/guides` lists other pages rather
+   * than carrying an argument of its own, and typing an index as an Article
+   * misdescribes it. Defaults to Article.
+   */
+  schemaType?: "Article" | "CollectionPage";
   related: AuthorityRelated[];
   faq: AuthorityFaq[];
   sections: AuthoritySection[];
@@ -33,7 +39,7 @@ export const AUTHORITY_PAGES = {
   "stanag-6001": {
     path: "/stanag-6001",
     lang: "en",
-    title: "What is STANAG 6001? NATO language proficiency explained",
+    title: "What is STANAG 6001? NATO’s language standard",
     description:
       "STANAG 6001 is NATO’s language-proficiency standard, not a single official exam. How SLP profiles, levels 0–5, and national tests actually work.",
     h1: "STANAG 6001: the NATO language proficiency standard",
@@ -128,7 +134,7 @@ export const AUTHORITY_PAGES = {
   slp: {
     path: "/slp",
     lang: "en",
-    title: "What SLP means in STANAG 6001 (not speech-language pathology)",
+    title: "SLP meaning in STANAG 6001 (not speech therapy)",
     description:
       "In military language testing, SLP is a Standardized Language Profile: four digits for Listening, Speaking, Reading and Writing. It is not a therapy qualification.",
     h1: "SLP means Standardized Language Profile — not speech therapy",
@@ -479,6 +485,7 @@ export const AUTHORITY_PAGES = {
   guides: {
     path: "/guides",
     lang: "en",
+    schemaType: "CollectionPage" as const,
     title: "STANAG 6001 / SLP guides",
     description:
       "Independent guides to STANAG 6001 and SLP preparation: levels, writing, listening, and exam simulation. Not an official NATO resource.",
