@@ -14,6 +14,23 @@ export const metadata: Metadata = {
   description:
     "Independent military English training for STANAG 6001 / SLP Levels 2 and 3. Reading, Listening, Writing and Speaking — measured against the constructs the exam rates. Not an official assessment.",
   robots: { index: true, follow: true },
+  /**
+   * Search Console site verification.
+   *
+   * A verification meta tag sets no cookie, loads no script and collects
+   * nothing, so it does not touch the Art. 22.2 LSSI-CE exemption the Cookie
+   * Policy relies on. It is read from the environment and simply absent until
+   * GOOGLE_SITE_VERIFICATION is set, so the property can be verified at deploy
+   * time without another code change — and without shipping a token to the repo.
+   *
+   * Analytics is a separate decision and deliberately NOT implemented here:
+   * GA4 would set non-essential cookies, which contradicts the Cookie Policy's
+   * enumerated table and would require a consent banner, a Privacy Policy
+   * update and a new subprocessor entry. See docs/growth/19_ANALYTICS_SPEC.md.
+   */
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
   alternates: { canonical: "https://slpcommand.com/" },
   openGraph: {
     type: "website",

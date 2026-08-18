@@ -27,5 +27,18 @@ Parent strategy (do not replace):
 | [20_CEO_DASHBOARD.md](20_CEO_DASHBOARD.md) | Friday 15 numbers |
 | [21_90_DAY_EXECUTION_PLAN.md](21_90_DAY_EXECUTION_PLAN.md) | D1–90 with KPIs |
 | [22_IMPLEMENTATION_LOG.md](22_IMPLEMENTATION_LOG.md) | What changed |
+| [23_KEYWORD_PAGE_INTENT_MAP.md](23_KEYWORD_PAGE_INTENT_MAP.md) | Keyword → page → intent, cannibalisation, gaps |
+| [24_CHAIRMAN_AUDIT.md](24_CHAIRMAN_AUDIT.md) | Executive audit, scores, approvals required |
 
 Live public pages implemented in this pass are listed in `01` and `04`.
+
+**Executable documents.** Three of these files are enforced by tests, so they
+cannot silently stop describing the site:
+
+| Document | Test |
+|---|---|
+| `03_CLAIMS_REGISTRY.md` | `tests/unit/claimsRegistry.test.ts` |
+| `23_KEYWORD_PAGE_INTENT_MAP.md` | `tests/unit/keywordMap.test.ts` |
+| Free-plan quotas quoted in CTAs | `tests/unit/conversion.test.ts` |
+
+Reviewed at Chairman level on 18 August 2026 — see `24`.
