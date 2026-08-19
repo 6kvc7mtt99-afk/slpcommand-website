@@ -469,6 +469,30 @@ input:focus, select:focus, textarea:focus {
   font-size: 14px;
   margin: 16px 0;
 }
+/*
+  The transition notice used to be a raw string dumped in one line — before
+  the decode fix it was invisible entirely. It's a real message a learner
+  needs to read carefully (their level moved and it isn't about their
+  English), so it gets a real heading, then the coach breakdown as three
+  short labelled answers rather than another paragraph to parse.
+*/
+.transition-banner-title { font-weight: 650; margin: 0 0 6px; }
+.transition-coach {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--note-border);
+}
+.transition-coach div { margin: 0 0 10px; }
+.transition-coach div:last-child { margin-bottom: 0; }
+.transition-coach dt {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.transition-coach dd { margin: 0; }
 .home-pro-banner {
   margin-top: 12px;
   padding: 14px 0 0;

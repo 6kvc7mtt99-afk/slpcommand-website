@@ -12,6 +12,7 @@ import {
 import { CommercialCard, ExerciseShell } from "@/components/exercise/ExerciseShell";
 import { ErrorState, LoadingState } from "@/components/ui/ProductState";
 import { WritingEditor } from "./WritingEditor";
+import { WritingResultCard } from "./WritingResultCard";
 
 const MIN = 80;
 const MAX = 8000;
@@ -138,14 +139,7 @@ export function WritingPractice() {
           </div>
         </div>
       ) : null}
-      {phase === "result" && result ? (
-        <article className="home-card">
-          <p className="home-kicker">Evaluator</p>
-          {result.taskFulfilment ? <p><strong>Task fulfilment.</strong> {result.taskFulfilment}</p> : null}
-          <div className="passage-body">{result.correction}</div>
-          <button className="btn btn-outline" type="button" onClick={() => void loadPrompt()}>Next prompt</button>
-        </article>
-      ) : null}
+      {phase === "result" && result ? <WritingResultCard result={result} onNext={() => void loadPrompt()} /> : null}
     </ExerciseShell>
   );
 }

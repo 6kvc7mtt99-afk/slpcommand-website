@@ -240,6 +240,35 @@
   border-radius: 50%;
   border: 1px solid var(--ink2);
 }
+
+/*
+  The evaluator result was an unstyled <div className="passage-body">: that
+  class only carries rules when scoped under .doc-paper / .reading-passage /
+  .writing-task, so on its own it inherited browser defaults, and
+  `white-space: normal` collapsed the evaluator's own paragraph breaks into a
+  single dense run — the "wall of AI text" that reads as a chatbot reply. The
+  fix is presentation only: the verdict gets its own labelled block instead of
+  an inline aside sentence, and the write-up is split on its own blank-line
+  breaks into real paragraphs, set at the same measure and line-height as the
+  reading passage (.doc-paper .passage-body) so a submitted evaluation reads
+  like the same instrument as the exam material, not a different product.
+*/
+.writing-result {
+  max-width: 62ch;
+  margin-top: 8px;
+}
+.writing-result-verdict {
+  margin: 4px 0 20px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ink);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--surface, transparent);
+}
+.writing-result-verdict p:last-child { margin: 0; font-size: 15px; }
+.writing-result-body { font-size: 17px; line-height: 1.7; }
+.writing-result-body p { margin: 0 0 16px; }
+.writing-result .btn { margin-top: 8px; }
 .write-stage .writing-editor {
   border: 0;
   background: transparent;

@@ -115,6 +115,22 @@ const server = http.createServer((req, res) => {
     }));
     return;
   }
+  if (url.pathname === "/api/writing/submit" && req.method === "POST") {
+    // No fixture existed for this endpoint at all, so the correction/result
+    // screen was never exercised in E2E. Paragraph breaks are real newlines,
+    // matching the shape confirmed against the deployed preview, to catch a
+    // regression of the white-space collapse bug this fixture accompanies.
+    res.end(JSON.stringify({
+      writingAttemptId: "wa-1",
+      taskFulfilment: "You covered all three required points. The recommendation is specific and actionable.",
+      correction:
+        "The email is clear and appropriately formal for the audience. Structure follows the standard problem-cause-recommendation pattern expected at this level.\n\n" +
+        "One recurring issue: several sentences run past 25 words, which makes the causal relationship between the hazard and the recommendation harder to follow on a single reading. Splitting the second paragraph would raise this closer to a Level 3 register.\n\n" +
+        "Vocabulary and tense use are accurate throughout. No corrections needed there.",
+      mode: "practice",
+    }));
+    return;
+  }
   if (url.pathname === "/api/profile") {
     res.end(JSON.stringify({ target_level: "3" }));
     return;

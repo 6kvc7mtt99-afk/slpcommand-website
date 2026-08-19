@@ -21,6 +21,7 @@ import { CommercialCard, ExerciseShell } from "@/components/exercise/ExerciseShe
 import { ExamDisclaimerGate } from "@/components/exercise/ExamDisclaimerGate";
 import { ExamTimer } from "@/components/exercise/ExamTimer";
 import { WritingEditor } from "./WritingEditor";
+import { WritingResultCard } from "./WritingResultCard";
 
 type Phase = "gate" | "loading" | "live" | "evaluating" | "done" | "quota" | "error";
 
@@ -184,14 +185,19 @@ export function WritingExam() {
         </div>
       ) : null}
       {phase === "evaluating" ? <p className="muted">Submitting to the evaluator…</p> : null}
-      {phase === "done" ? (
+      {phase === "done" && result ? (
+        <WritingResultCard
+          result={result}
+          onNext={() => router.push("/writing")}
+          nextLabel="Back to Writing"
+          primaryAction
+          note={examMode === "formative_exam" ? "This is not a level. Only an official examining body can award SLP." : undefined}
+        />
+      ) : null}
+      {phase === "done" && !result ? (
         <article className="home-card">
-          <h2>{examMode === "formative_exam" ? "Indicative feedback" : "Exam submitted"}</h2>
-          {examMode === "formative_exam" ? (
-            <p className="muted">This is not a level. Only an official examining body can award SLP.</p>
-          ) : null}
-          {result?.taskFulfilment ? <p><strong>Task fulfilment.</strong> {result.taskFulfilment}</p> : null}
-          {result?.correction ? <div className="passage-body">{result.correction}</div> : <p>Submitted.</p>}
+          <h2>Exam submitted</h2>
+          <p>Submitted.</p>
           <button className="btn btn-primary" type="button" onClick={() => router.push("/writing")}>Back to Writing</button>
         </article>
       ) : null}

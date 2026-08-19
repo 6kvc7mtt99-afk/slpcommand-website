@@ -76,9 +76,27 @@ export function decodeProgress(raw: unknown): ProgressResponse | null {
     },
     proficiencyTransition: {
       noticeable: asBool(transition.noticeable),
-      notice: transition.notice == null ? null : asString(transition.notice),
+      notice: decodeTransitionNotice(transition.notice),
+      coach: decodeTransitionCoach(transition.coach),
     },
   };
+}
+
+function decodeTransitionNotice(raw: unknown): { title: string; body: string; action: string } | null {
+  if (!isRecord(raw)) return null;
+  const title = asString(raw.title);
+  const body = asString(raw.body);
+  if (!title && !body) return null;
+  return { title, body, action: asString(raw.action) };
+}
+
+function decodeTransitionCoach(raw: unknown): { whyChanged: string; whatNow: string; howToRaise: string } | null {
+  if (!isRecord(raw)) return null;
+  const whyChanged = asString(raw.whyChanged);
+  const whatNow = asString(raw.whatNow);
+  const howToRaise = asString(raw.howToRaise);
+  if (!whyChanged && !whatNow && !howToRaise) return null;
+  return { whyChanged, whatNow, howToRaise };
 }
 
 export function displaySkillLevel(skill: ProgressSkill, effectiveLevel: string | number | null): string | number | null {

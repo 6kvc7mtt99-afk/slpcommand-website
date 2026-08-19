@@ -81,7 +81,27 @@ export type ProgressResponse = {
     coverage: number;
     skillsAvailable: string[];
   };
-  proficiencyTransition: { noticeable: boolean; notice: string | null };
+  proficiencyTransition: {
+    noticeable: boolean;
+    /**
+     * Verified against the real backend on the deployed preview: `notice` is
+     * an object ({kind, title, body, action, dismissible}), never a string.
+     * The old `notice: string | null` type meant `asString()` silently
+     * returned "" for every real transition, so TransitionBanner's
+     * `!notice` guard hid the message on every single account it fired for —
+     * including the exact case it exists for: a methodology change that
+     * lowers a displayed level for a reason that has nothing to do with the
+     * learner's English.
+     */
+    notice: { title: string; body: string; action: string } | null;
+    /**
+     * A second object the old decoder never attempted to read at all:
+     * targeted coaching text answering exactly "what changed / why / what to
+     * do next" — the real content the Progress screen was missing, sitting
+     * unused in a response that was already being fetched.
+     */
+    coach: { whyChanged: string; whatNow: string; howToRaise: string } | null;
+  };
 };
 
 export type EntitlementsResponse = {

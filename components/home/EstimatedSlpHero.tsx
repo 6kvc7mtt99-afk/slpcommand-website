@@ -100,11 +100,46 @@ export function ConfidenceScaleCard({ progress }: { progress: ProgressResponse |
   );
 }
 
+/**
+ * This is the "what changed, and what should I do about it" content the
+ * Progress review flagged as missing. It already existed in the API response
+ * — `notice` (title/body) and `coach` (whyChanged/whatNow/howToRaise) — and
+ * was invisible because `notice` used to be typed as a string when the real
+ * field is an object; see the note on decodeTransitionNotice. No history is
+ * fabricated here: the same real response marks `allowTrendAcross: false`
+ * for this account, i.e. the backend itself says a continuous trend line
+ * across a methodology change would misrepresent it, which is exactly why
+ * this stays text (what changed and why) rather than a chart.
+ */
 export function TransitionBanner({ progress }: { progress: ProgressResponse | null }) {
-  if (!progress?.proficiencyTransition.noticeable || !progress.proficiencyTransition.notice) return null;
+  const { noticeable, notice, coach } = progress?.proficiencyTransition ?? { noticeable: false, notice: null, coach: null };
+  if (!noticeable || !notice) return null;
   return (
-    <aside className="home-banner" role="status">
-      {progress.proficiencyTransition.notice}
+    <aside className="home-banner transition-banner" role="status">
+      {notice.title ? <p className="transition-banner-title">{notice.title}</p> : null}
+      {notice.body ? <p>{notice.body}</p> : null}
+      {coach ? (
+        <dl className="transition-coach">
+          {coach.whyChanged ? (
+            <div>
+              <dt>What changed</dt>
+              <dd>{coach.whyChanged}</dd>
+            </div>
+          ) : null}
+          {coach.whatNow ? (
+            <div>
+              <dt>What now</dt>
+              <dd>{coach.whatNow}</dd>
+            </div>
+          ) : null}
+          {coach.howToRaise ? (
+            <div>
+              <dt>How to raise it</dt>
+              <dd>{coach.howToRaise}</dd>
+            </div>
+          ) : null}
+        </dl>
+      ) : null}
     </aside>
   );
 }
