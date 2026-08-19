@@ -456,16 +456,10 @@ input:focus, select:focus, textarea:focus {
 .home-skill-mini:last-child { border-right: 0; }
 .home-skill-mini span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 650; }
 .home-skill-mini strong { font-size: 16px; font-variant-numeric: tabular-nums; }
-.home-scale { margin: 0; }
-.home-scale div {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--line);
-}
-.home-scale dt { font-weight: 600; }
-.home-scale dd { margin: 0; color: var(--muted); }
+.confidence-position { margin: 8px 0 6px; font-size: 15px; }
+.confidence-rungs { display: flex; gap: 4px; margin: 4px 0 10px; }
+.confidence-rungs span { flex: 1; height: 3px; background: var(--line); border-radius: 2px; }
+.confidence-rungs span.is-reached { background: var(--accent); }
 .home-banner {
   background: var(--note-bg);
   border: 1px solid var(--note-border);

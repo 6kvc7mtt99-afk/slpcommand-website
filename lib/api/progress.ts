@@ -104,3 +104,34 @@ export function firstConfidenceScale(progress: ProgressResponse): Record<string,
   }
   return {};
 }
+
+/**
+ * `confidence_scale` is typed `Record<string, unknown>` because the backend
+ * never published a shape for it — which is why the UI that read it fell back
+ * to `Object.entries(scale).map(([key, value]) => <dt>{key}</dt>)`. Verified
+ * against a real account on the deployed preview, that rendered the raw
+ * field names as labels: "currentId", "currentKind", "position", "steps"
+ * (blank — it's an array, and the old code only printed strings/numbers).
+ *
+ * This reads the specific fields the real payload carries and returns the two
+ * that are actually meant for a reader: the label ("Reliable") with its place
+ * on the scale, and the sentence that explains it. `currentId` / `currentKind`
+ * are internal and dropped. Every field is read defensively — if the backend
+ * changes shape, this returns null and the card stops rendering rather than
+ * guessing.
+ */
+export type ConfidencePosition = {
+  label: string;
+  meaning: string;
+  position: number | null;
+  total: number | null;
+};
+
+export function readConfidencePosition(scale: Record<string, unknown>): ConfidencePosition | null {
+  const label = scale.currentLabel;
+  if (typeof label !== "string" || !label) return null;
+  const meaning = typeof scale.currentMeaning === "string" ? scale.currentMeaning : "";
+  const position = typeof scale.position === "number" ? scale.position : null;
+  const total = typeof scale.total === "number" ? scale.total : null;
+  return { label, meaning, position, total };
+}

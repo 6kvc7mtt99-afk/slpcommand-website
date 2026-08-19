@@ -11,7 +11,7 @@ export default async function ListeningHome() {
     <SkillLaunch
       skill="Listening"
       title="Listening"
-      lead="No transcript — just like the real exam. Academy uses the iOS catalog prefix rule."
+      lead="No transcript — just like the real exam."
       actions={[
         {
           href: "/listening/practice",
@@ -30,12 +30,12 @@ export default async function ListeningHome() {
         {
           href: "/listening/intelligence",
           label: "Intelligence",
-          detail: "Readiness, weaknesses and missions from the backend.",
+          detail: "Where you stand, what is weak, and what to train next.",
         },
         {
           href: "/listening/academy",
           label: "Academy",
-          detail: "Cloud standing plus the free-set catalog. Pro topics stay locked.",
+          detail: "Structured classes. Some stay locked until you upgrade.",
         },
       ]}
     />

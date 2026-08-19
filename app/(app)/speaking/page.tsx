@@ -10,12 +10,12 @@ export default async function SpeakingHome() {
     <SkillLaunch
       skill="Speaking"
       title="Speaking"
-      lead="Recorded practice and exam. Coach is a later, gated train."
+      lead="Recorded practice and exam. Coach arrives later, as a separate, gated feature."
       actions={[
         {
           href: "/speaking/practice",
           label: "Practice",
-          detail: "One prompt, one recording. The backend evaluates. No local score.",
+          detail: "One prompt, one recording, one evaluation. Nothing is scored until it reaches the server.",
           disabled: !access.usable,
           disabledReason: "Speaking AI feedback is not available on your current plan. Manage subscriptions in the iOS app.",
         },
@@ -29,7 +29,7 @@ export default async function SpeakingHome() {
         {
           href: "/speaking/history",
           label: "History",
-          detail: "Past attempts from the backend. Signed audio URLs expire.",
+          detail: "Every past attempt, with its recording — for a limited time.",
         },
       ]}
     />

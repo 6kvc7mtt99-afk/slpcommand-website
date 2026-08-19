@@ -1,6 +1,7 @@
 import {
   displayOverallLevel,
   firstConfidenceScale,
+  readConfidencePosition,
   shouldShowProgressRing,
 } from "@/lib/api/progress";
 import type { ProgressResponse } from "@/lib/api/types";
@@ -72,21 +73,29 @@ export function EstimatedSlpHero({ progress }: { progress: ProgressResponse | nu
 
 export function ConfidenceScaleCard({ progress }: { progress: ProgressResponse | null }) {
   if (!progress) return null;
-  const scale = firstConfidenceScale(progress);
-  const entries = Object.entries(scale);
-  if (entries.length === 0) return null;
+  const position = readConfidencePosition(firstConfidenceScale(progress));
+  if (!position) return null;
 
   return (
     <article className="home-card">
       <p className="home-kicker">Confidence scale</p>
-      <dl className="home-scale">
-        {entries.map(([key, value]) => (
-          <div key={key}>
-            <dt>{key}</dt>
-            <dd>{typeof value === "string" || typeof value === "number" ? String(value) : ""}</dd>
-          </div>
-        ))}
-      </dl>
+      <div className="confidence-position">
+        <strong>{position.label}</strong>
+        {position.position != null && position.total != null ? (
+          <span className="muted">
+            {" "}
+            — {position.position} of {position.total}
+          </span>
+        ) : null}
+      </div>
+      {position.total != null ? (
+        <div className="confidence-rungs" aria-hidden="true">
+          {Array.from({ length: position.total }, (_, i) => (
+            <span key={i} className={i < (position.position ?? 0) ? "is-reached" : ""} />
+          ))}
+        </div>
+      ) : null}
+      {position.meaning ? <p className="muted">{position.meaning}</p> : null}
     </article>
   );
 }

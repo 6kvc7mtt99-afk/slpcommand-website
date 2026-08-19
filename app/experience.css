@@ -89,12 +89,22 @@
   margin-top: 24px;
 }
 
+/*
+  Bottom-anchoring this grid in a near-fullscreen box reads as a deliberate
+  editorial title card on tall viewports, but on the common 900px laptop
+  height it left roughly 500px of blank white above the fold on every skill
+  hub — Reading, Listening, Writing, Speaking all opened to an empty page
+  before any content appeared. Verified against a real account on the
+  deployed preview. Anchoring to the top keeps the same oversized type
+  treatment but puts it where a reader's eye actually lands first.
+*/
 .skill-brief {
-  min-height: calc(100vh - 120px);
+  min-height: 0;
+  padding-top: clamp(24px, 6vh, 64px);
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.65fr);
   gap: 40px 64px;
-  align-items: end;
+  align-items: start;
 }
 .skill-brief h1 {
   font-size: clamp(48px, 7vw, 88px);

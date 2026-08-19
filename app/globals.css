@@ -148,10 +148,16 @@ input, select {
 }
 .home-skill-mini span { display: block; font-size: 12px; color: var(--muted); text-transform: capitalize; }
 .home-skill-mini strong { font-size: 16px; }
-.home-scale { margin: 0; }
-.home-scale div { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
-.home-scale dt { font-weight: 600; }
-.home-scale dd { margin: 0; color: var(--muted); }
+/*
+  Replaces .home-scale, which styled a <dl> of raw backend object keys
+  (currentId, currentKind, position, steps...) rendered verbatim as labels.
+  ConfidenceScaleCard now reads three specific fields and shows them as a
+  label, a place on a 4-rung scale, and the sentence that explains it.
+*/
+.confidence-position { margin: 8px 0 6px; font-size: 15px; }
+.confidence-rungs { display: flex; gap: 4px; margin: 4px 0 10px; }
+.confidence-rungs span { flex: 1; height: 3px; background: var(--line); border-radius: 2px; }
+.confidence-rungs span.is-reached { background: var(--accent); }
 .home-banner {
   background: var(--note-bg);
   border: 1px solid var(--note-border);

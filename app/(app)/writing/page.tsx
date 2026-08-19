@@ -10,12 +10,12 @@ export default async function WritingHome() {
     <SkillLaunch
       skill="Writing"
       title="Writing"
-      lead="Evaluation stays on the server. Tools use the current orchestrator, not the deprecated dashboards."
+      lead="Every evaluation is scored by the backend, not the browser — nothing here can be talked into a better mark."
       actions={[
         {
           href: "/writing/academy",
           label: "Academy",
-          detail: "One server-composed home. Recommend-null is left empty.",
+          detail: "A single recommended class. Nothing to pick when there is nothing to recommend yet.",
         },
         {
           href: "/writing/practice",
@@ -39,7 +39,7 @@ export default async function WritingHome() {
         {
           href: "/writing/history",
           label: "History",
-          detail: "Past corrections from the backend. Nothing is scored in the browser.",
+          detail: "Every past correction, in order.",
         },
       ]}
     />

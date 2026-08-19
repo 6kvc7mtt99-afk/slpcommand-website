@@ -11,7 +11,7 @@ export default async function ReadingHome() {
     <SkillLaunch
       skill="Reading"
       title="Reading"
-      lead="One passage, one question. Academy and Intelligence use the same backend evidence."
+      lead="One passage, one question. Academy and Intelligence read the same evidence, so neither invents a second opinion."
       actions={[
         {
           href: "/reading/academy",
@@ -35,7 +35,7 @@ export default async function ReadingHome() {
         {
           href: "/reading/intelligence",
           label: "Intelligence",
-          detail: "Where you are, and what the backend says to do next.",
+          detail: "Where you stand, and what to train next.",
         },
       ]}
     />
