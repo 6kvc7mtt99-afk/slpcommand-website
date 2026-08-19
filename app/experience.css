@@ -217,6 +217,29 @@
   min-height: calc(100vh - 120px);
 }
 .write-task { max-width: 62ch; margin-bottom: 16px; }
+/*
+  audience/time-limit and the self-check checklist exist on every real prompt
+  but were discarded by the decoder (see lib/api/writing.ts). Styled as part
+  of the existing task briefing, not a new surface.
+*/
+.write-task-meta { margin: -4px 0 12px; font-size: 13px; }
+.write-checklist { list-style: none; margin: 8px 0 16px; padding: 0; }
+.write-checklist li {
+  padding: 6px 0 6px 20px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  position: relative;
+}
+.write-checklist li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--ink2);
+}
 .write-stage .writing-editor {
   border: 0;
   background: transparent;

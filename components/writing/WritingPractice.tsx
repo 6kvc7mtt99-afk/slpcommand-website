@@ -96,7 +96,20 @@ export function WritingPractice() {
         <div className="write-stage">
           <aside className="write-task">
             {prompt.title ? <h2>{prompt.title}</h2> : null}
+            {prompt.audience || prompt.timeLimitMinutes ? (
+              <p className="muted write-task-meta">
+                {prompt.audience ? `To: ${prompt.audience}` : ""}
+                {prompt.audience && prompt.timeLimitMinutes ? " · " : ""}
+                {prompt.timeLimitMinutes ? `${prompt.timeLimitMinutes} min` : ""}
+              </p>
+            ) : null}
             <div className="passage-body">{prompt.prompt}</div>
+            {prompt.checklist.length ? (
+              <div>
+                <p className="home-kicker">Before you submit</p>
+                <ul className="write-checklist">{prompt.checklist.map((item) => <li key={item}>{item}</li>)}</ul>
+              </div>
+            ) : null}
             {prompt.guidance.suggestedStructure.length ? (
               <div>
                 <p className="home-kicker">Suggested structure</p>

@@ -91,12 +91,27 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === "/api/writing/prompts/next") {
+    // Shape matches the real backend response, verified on the deployed
+    // preview: top-level {ok, source, prompt:{id, promptText, ...}}, not the
+    // flat {writingPromptId, prompt} shape this fixture used to send. The old
+    // shape happened to satisfy the decoder's old (wrong) alias list, so this
+    // fixture was hiding the real contract mismatch instead of catching it.
     res.end(JSON.stringify({
-      writingPromptId: "wp-1",
-      title: "Orders",
-      prompt: "Write a short sitrep.",
-      wordTarget: 120,
-      guidance: { suggestedStructure: ["Issue", "Action"], practiceTips: ["Be specific."] },
+      ok: true,
+      source: "writing_prompt_library",
+      prompt: {
+        id: "wp-1",
+        title: "Orders",
+        promptText: "Write a short sitrep.",
+        level2Task: null,
+        level3Task: null,
+        audience: "your section commander",
+        timeLimitMinutes: 35,
+        levelBand: "3",
+        wordTarget: 120,
+        guidance: { suggestedStructure: ["Issue", "Action"], practiceTips: ["Be specific."] },
+        checklist: ["I said what happened", "I said what is needed"],
+      },
     }));
     return;
   }
