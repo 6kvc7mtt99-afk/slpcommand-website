@@ -107,6 +107,34 @@ h3 {
   letter-spacing: -0.015em;
   margin: 0 0 6px;
 }
+/*
+ * The public site stylesheet (style.css) also sets bare h1/h2/h3 rules for
+ * the marketing pages, and both files are equal-specificity type selectors,
+ * so bundling order — not this file — decides which one wins. Scoping the
+ * product's own values under .app-shell (the authenticated app's root
+ * element) gives them higher specificity so they always win here, regardless
+ * of how the two files end up ordered in the build.
+ */
+.app-shell h1 {
+  font-size: var(--fs-title);
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  margin: 0 0 8px;
+}
+.app-shell h2 {
+  font-size: var(--fs-section);
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+.app-shell h3 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 6px;
+}
 .muted { color: var(--muted); font-size: var(--fs-support); }
 .section-eyebrow,
 .home-kicker,

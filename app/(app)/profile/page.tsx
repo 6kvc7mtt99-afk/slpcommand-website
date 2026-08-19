@@ -10,7 +10,8 @@ export default function ProfilePage() {
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [level, setLevel] = useState<string>("3");
+  const [level, setLevel] = useState<string | null>(null);
+  const [levelError, setLevelError] = useState(false);
   const [plan, setPlan] = useState("SLP Command Free");
   const [note, setNote] = useState("");
   const [confirmDelete, setConfirmDelete] = useState("");
@@ -26,7 +27,7 @@ export default function ProfilePage() {
         const raw = profile.target_level ?? "3";
         setLevel(raw === "2+" ? "3" : raw === "2" ? "2" : "3");
       } catch {
-        /* keep default */
+        setLevelError(true);
       }
       try {
         const snap = await apiRequest<EntitlementsSnapshot>("/entitlements");
@@ -40,6 +41,7 @@ export default function ProfilePage() {
 
   async function saveLevel(next: "2" | "3") {
     setLevel(next);
+    setLevelError(false);
     try {
       await apiRequest("/profile", { method: "PATCH", body: { target_level: next } });
       setNote("Target level saved.");
@@ -126,6 +128,11 @@ export default function ProfilePage() {
       <article className="home-card">
         <h2>Target level</h2>
         <p className="muted">SLP Command trains Level 2 and Level 3. Pick the band you are preparing for.</p>
+        {level == null ? (
+          <p className="muted">
+            {levelError ? "Couldn't load your target level. Pick one to set it." : "Loading…"}
+          </p>
+        ) : null}
         <div className="seg" role="group" aria-label="Target level">
           <button className={level === "2" ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={() => saveLevel("2")}>SLP 2</button>
           <button className={level === "3" ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={() => saveLevel("3")}>SLP 3</button>

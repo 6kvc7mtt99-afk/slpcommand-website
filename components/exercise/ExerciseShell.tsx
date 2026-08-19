@@ -14,12 +14,14 @@ export function ExerciseShell({
   title,
   children,
   layout = "page",
+  showTitle = false,
 }: {
   skill: string;
   mode: string;
   title: string;
   children: React.ReactNode;
   layout?: "page" | "stage";
+  showTitle?: boolean;
 }) {
   if (layout === "stage") {
     return (
@@ -28,7 +30,7 @@ export function ExerciseShell({
           <span>{skill}</span>
           <span>{mode}</span>
         </div>
-        <h1 className="visually-hidden">{title}</h1>
+        <h1 className={showTitle ? undefined : "visually-hidden"}>{title}</h1>
         {children}
       </section>
     );

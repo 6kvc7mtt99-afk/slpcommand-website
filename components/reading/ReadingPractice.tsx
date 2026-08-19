@@ -94,7 +94,13 @@ export function ReadingPractice() {
   }
 
   return (
-    <ExerciseShell skill="Reading" mode="Practice" title="One passage, one question" layout="stage">
+    <ExerciseShell
+      skill="Reading"
+      mode="Practice"
+      title="One passage, one question"
+      layout="stage"
+      showTitle={phase !== "ready" && phase !== "answered"}
+    >
       {phase === "quota" ? <CommercialCard /> : null}
       {phase === "error" ? <ErrorState message={message} onRetry={() => void load(true)} /> : null}
       {phase === "loading" ? (

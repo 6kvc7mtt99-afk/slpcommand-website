@@ -78,7 +78,13 @@ export function ListeningPractice({
   const marked = correctIndex ?? item?.correctIndex ?? null;
 
   return (
-    <ExerciseShell skill="Listening" mode="Practice" title="One clip, one question" layout="stage">
+    <ExerciseShell
+      skill="Listening"
+      mode="Practice"
+      title="One clip, one question"
+      layout="stage"
+      showTitle={phase !== "ready" && phase !== "answered"}
+    >
       <p className="muted">No transcript — just like the real exam.</p>
       {phase === "quota" ? <CommercialCard /> : null}
       {phase === "error" ? <ErrorState message={message} onRetry={() => void load(true)} /> : null}

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { stateLabel } from "@/lib/api/academy";
 import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
@@ -73,7 +72,6 @@ export default async function ReadingAcademyPage() {
         {" · "}
         <Link href="/reading/practice">Practice</Link>
       </p>
-      <span className="muted">{stateLabel("mastered")}</span>
     </section>
   );
 }
