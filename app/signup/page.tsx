@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/marketing/SiteChrome";
+import { AuthContext } from "@/components/marketing/AuthContext";
 import { loginErrorMessage } from "@/lib/api/client";
 
 const ROLES = ["military", "civilian", "student", "other"] as const;
@@ -93,6 +94,7 @@ export default function SignupPage() {
         ]}
       />
       <main className="auth-stage">
+        <AuthContext mode="signup" />
         <div className="auth-card">
         <p className="section-eyebrow">Workspace</p>
         <h1>Create an account</h1>

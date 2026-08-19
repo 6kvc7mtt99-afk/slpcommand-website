@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/marketing/SiteChrome";
+import { AuthContext } from "@/components/marketing/AuthContext";
 import { loginErrorMessage } from "@/lib/api/client";
 
 export default function LoginPage() {
@@ -52,6 +53,7 @@ export default function LoginPage() {
         ]}
       />
       <main className="auth-stage">
+        <AuthContext mode="login" />
         <div className="auth-card">
           <p className="home-kicker">Workspace</p>
           <h1>Log in</h1>

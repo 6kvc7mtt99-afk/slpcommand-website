@@ -159,7 +159,20 @@ h3 {
   padding: 8px 10px;
 }
 .btn-ghost:hover { color: var(--ink); }
-.btn:disabled { opacity: 0.45; cursor: default; }
+/*
+  A 45%-opacity blue primary renders as a washed lilac slab: it reads as broken
+  rather than as "not yet". A disabled control should look inert and deliberate,
+  so it drops to a neutral surface with a real border and muted label — legible,
+  obviously not pressable, and it stops competing with the live primary on the
+  same screen.
+*/
+.btn:disabled {
+  cursor: default;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  box-shadow: none;
+}
 .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
 
 /* ── Inputs ── */
@@ -781,17 +794,59 @@ input:focus, select:focus, textarea:focus {
   .intel-layout { grid-template-columns: 1fr; }
 }
 
-/* ── Auth ── */
+/* ── Auth ──
+   Signup and login were a single card centred in empty space: the same
+   authentication template any product ships. They are the seam between the
+   public argument and the workspace, so they now carry a context column that
+   states what the account actually gives you — in the same measured voice as
+   the rest of the product, without becoming a second landing page. The form
+   keeps its own column and its original width, so the ceremony is unchanged. */
 .auth-stage {
   min-height: calc(100vh - 64px);
-  display: flex;
-  justify-content: center;
-  padding: 48px 20px 80px;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 64px;
+  align-items: start;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 72px 24px 96px;
 }
+.auth-context { padding-top: 6px; }
+.auth-context h2 {
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 8px 0 14px;
+}
+.auth-context p { color: var(--muted); margin: 0 0 20px; max-width: 40ch; }
+.auth-facts { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.auth-facts li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+.auth-facts dt, .auth-facts .fact-label { color: var(--muted); }
+.auth-facts .fact-value { font-weight: 600; text-align: right; }
+.auth-note { margin-top: 18px; font-size: 0.82rem; color: var(--muted); }
 .auth-card {
   width: 100%;
   max-width: 440px;
   padding: 36px 36px 32px;
+}
+@media (max-width: 860px) {
+  .auth-stage {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 40px 20px 72px;
+    max-width: 560px;
+  }
+  /* On a phone the form is the task; the context becomes a short preamble
+     rather than a column competing for the first screen. */
+  .auth-context h2 { font-size: 1.35rem; }
+  .auth-facts { display: none; }
 }
 .auth-card h1 { margin-bottom: 6px; }
 .auth-steps {

@@ -43,38 +43,98 @@ export function SiteHeader({ links }: { links?: { href: string; label: string }[
   );
 }
 
+/**
+ * The footer previously listed twenty-four links at identical weight in one
+ * flat row: the STANAG guides that are the site's reason to exist sat between
+ * "Subprocessors" and "Delete account". Grouping them states what this company
+ * does first and what it is obliged to publish second, and gives the legal
+ * column somewhere to live without competing.
+ */
+const FOOTER_GROUPS: { heading: string; links: { href: string; label: string }[] }[] = [
+  {
+    heading: "Learn",
+    links: [
+      { href: "/guides", label: "All guides" },
+      { href: "/stanag-6001", label: "STANAG 6001" },
+      { href: "/slp", label: "What SLP means" },
+      { href: "/slp-2", label: "SLP 2" },
+      { href: "/slp-3", label: "SLP 3" },
+      { href: "/guides/writing", label: "Writing" },
+      { href: "/guides/listening", label: "Listening" },
+      { href: "/exam", label: "Exam simulation" },
+    ],
+  },
+  {
+    heading: "España",
+    links: [
+      { href: "/es/examen-slp", label: "Examen SLP" },
+      { href: "/es/slp-2", label: "SLP 2222" },
+      { href: "/es/slp-3", label: "SLP 3333" },
+    ],
+  },
+  {
+    heading: "Product",
+    links: [
+      { href: "/about", label: "About" },
+      { href: "/#pricing", label: "Pricing" },
+      { href: "/signup", label: "Start free" },
+      { href: "/support", label: "Support" },
+      { href: "/contact", label: "Contact" },
+    ],
+  },
+  {
+    heading: "Trust",
+    links: [
+      { href: "/trust-center", label: "Trust Center" },
+      { href: "/disclaimer", label: "Disclaimer" },
+      { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
+      { href: "/ai-usage", label: "Responsible AI" },
+      { href: "/security", label: "Security" },
+      { href: "/cookies", label: "Cookies" },
+      { href: "/data-retention", label: "Data retention" },
+      { href: "/subprocessors", label: "Subprocessors" },
+      { href: "/intellectual-property", label: "Intellectual property" },
+      { href: "/legal-notice", label: "Legal notice" },
+      { href: "/delete-account", label: "Delete account" },
+    ],
+  },
+];
+
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      <div className="footer-brand">SLP Command</div>
-      <p>Independent STANAG 6001 / SLP preparation. Not NATO. Not an official exam.</p>
-      <div className="footer-links">
-        <Link href="/guides">Guides</Link>
-        <Link href="/stanag-6001">STANAG 6001</Link>
-        <Link href="/slp">What is SLP</Link>
-        <Link href="/slp-2">SLP 2</Link>
-        <Link href="/slp-3">SLP 3</Link>
-        <Link href="/es/examen-slp">Examen SLP</Link>
-        <Link href="/guides/writing">Writing</Link>
-        <Link href="/guides/listening">Listening</Link>
-        <Link href="/exam">Exam</Link>
-        <Link href="/about">About</Link>
-        <Link href="/trust-center">Trust Center</Link>
-        <Link href="/privacy">Privacy</Link>
-        <Link href="/terms">Terms</Link>
-        <Link href="/ai-usage">Responsible AI</Link>
-        <Link href="/security">Security</Link>
-        <Link href="/cookies">Cookies</Link>
-        <Link href="/data-retention">Data Retention</Link>
-        <Link href="/intellectual-property">IP</Link>
-        <Link href="/subprocessors">Subprocessors</Link>
-        <Link href="/legal-notice">Legal Notice</Link>
-        <Link href="/disclaimer">Disclaimer</Link>
-        <Link href="/support">Support</Link>
-        <Link href="/contact">Contact</Link>
-        <Link href="/delete-account">Delete account</Link>
+      <div className="footer-inner">
+        <div className="footer-identity">
+          <div className="footer-brand">SLP Command</div>
+          <p className="footer-line">
+            Independent training for STANAG 6001 / SLP Levels 2 and 3. Reading,
+            Listening, Writing and Speaking, measured against the constructs the
+            exam rates.
+          </p>
+          <p className="footer-disclaimer">
+            Not NATO. Not a Ministry of Defence. Not an official examining body.
+            AI feedback is indicative guidance, not an official assessment.
+          </p>
+        </div>
+        <div className="footer-columns">
+          {FOOTER_GROUPS.map((group) => (
+            <nav key={group.heading} aria-label={group.heading}>
+              <h2>{group.heading}</h2>
+              <ul>
+                {group.links.map((link) => (
+                  <li key={link.href + link.label}>
+                    <Link href={link.href}>{link.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
       </div>
-      <p>© 2026 SLP Command. Not affiliated with NATO or any official body.</p>
+      <p className="footer-legal">
+        © 2026 SLP Command. Not affiliated with NATO or any official body.
+      </p>
     </footer>
   );
 }

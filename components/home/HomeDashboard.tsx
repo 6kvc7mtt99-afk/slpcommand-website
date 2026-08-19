@@ -25,6 +25,16 @@ const SKILL_HREF: Record<string, string> = {
   speaking: "/speaking/practice",
 };
 
+/**
+ * The backend sends skill keys in lower case ("listening"). They were rendered
+ * straight into prose, so the evidence line under the mission began mid-word:
+ * "listening. You will hear one more clip." Sentence-casing them here keeps the
+ * copy readable without asking the backend to change its contract.
+ */
+function skillLabel(skill: string): string {
+  return skill.charAt(0).toUpperCase() + skill.slice(1);
+}
+
 function greetingForNow(): string {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
@@ -158,13 +168,13 @@ export function HomeDashboard({
           <TransitionBanner progress={initial.progress} />
           {today?.expectedOutcome.certainties.map((item, index) => (
             <p key={`c-${item.skill}-${index}`}>
-              {item.skill ? <strong>{item.skill}. </strong> : null}
+              {item.skill ? <strong>{skillLabel(item.skill)}. </strong> : null}
               {item.text}
             </p>
           ))}
           {today?.expectedOutcome.projections.map((item, index) => (
             <p key={`p-${item.skill}-${index}`} className="muted">
-              {item.skill ? `${item.skill}: ` : ""}
+              {item.skill ? `${skillLabel(item.skill)}: ` : ""}
               {item.text}
             </p>
           ))}

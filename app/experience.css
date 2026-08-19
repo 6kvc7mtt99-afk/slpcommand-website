@@ -188,10 +188,17 @@
   background: var(--line);
 }
 .listen-track > span { display: block; height: 100%; background: var(--ink); }
+/*
+  The transport centres itself inside .listen-stage while this block sat in
+  normal flow, so the clip and the question it belongs to were composed on two
+  different axes — the PLAY control floating mid-canvas above a question hard
+  against the left edge. Sharing one centre line makes the pair read as a single
+  instrument: the clip is the object, the task emerges directly beneath it.
+*/
 .listen-question {
   width: min(560px, 100%);
+  margin: 28px auto 0;
   text-align: left;
-  margin-top: 28px;
 }
 
 .write-stage {

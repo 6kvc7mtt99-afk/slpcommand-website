@@ -67,29 +67,70 @@ body {
 }
 
 /* ─── HERO ─── */
+/*
+  The hero was the standard centred stack: pill badge, headline, centred
+  paragraph, centred button pair. It read as any SaaS landing page.
+
+  It is now asymmetric and anchored on the one idea the whole product rests on —
+  that an SLP is four independent judgements read L-S-R-W, and the lowest digit
+  is the one that matters. Stating that in the hero as a specimen does the work
+  a decorative badge was doing, and teaches the concept before the fold.
+*/
 .hero {
   background: var(--bg);
-  padding: 80px 24px 72px;
-  text-align: center;
+  padding: 88px 24px 72px;
 }
-.hero-inner { max-width: var(--hero-max); margin: 0 auto; }
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--accent-light); color: var(--accent);
-  font-size: 13px; font-weight: 600; padding: 5px 14px; border-radius: 100px;
-  margin-bottom: 22px;
+.hero-inner {
+  max-width: var(--hero-max); margin: 0 auto;
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 56px; align-items: center;
+}
+.hero-eyebrow {
+  font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 18px;
 }
 .hero h1 {
-  font-size: clamp(32px, 5vw, 54px);
-  line-height: 1.12; font-weight: 800;
-  color: var(--ink); margin-bottom: 18px; letter-spacing: -1px;
+  font-size: clamp(34px, 4.6vw, 58px);
+  line-height: 1.08; font-weight: 800;
+  color: var(--ink); margin: 0 0 20px; letter-spacing: -1.4px;
 }
 .hero h1 em { font-style: normal; color: var(--accent); }
-.hero p {
-  font-size: 19px; color: var(--ink2); max-width: 520px;
-  margin: 0 auto 36px; line-height: 1.6;
+.hero .hero-dek {
+  font-size: 18px; color: var(--ink2); max-width: 46ch;
+  margin: 0 0 30px; line-height: 1.6;
 }
-.cta-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hero-note { font-size: 13.5px; color: var(--muted); margin: 18px 0 0; }
+.cta-group { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* The specimen: quiet, ruled, numeric — an instrument label, not a graphic. */
+.hero-profile {
+  margin: 0; padding: 24px 26px 22px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg2, transparent);
+}
+.hero-profile figcaption {
+  font-size: 11px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 14px;
+}
+.profile-digits { list-style: none; margin: 0; padding: 0; }
+.profile-digits li {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  padding: 11px 0; border-top: 1px solid var(--line);
+}
+.profile-digits li:first-child { border-top: 0; }
+.digit-skill { font-size: 14px; color: var(--ink2); }
+.digit-value {
+  font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.profile-note {
+  margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line);
+  font-size: 13px; line-height: 1.55; color: var(--muted);
+}
+@media (max-width: 880px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 36px; }
+  .hero { padding-top: 64px; }
+}
 .btn {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 14px 26px; border-radius: 12px;
@@ -328,12 +369,40 @@ nav.legal a { font-size: 15px; }
 /* ─── SITE FOOTER ─── */
 .site-footer {
   background: var(--ink); color: rgba(255,255,255,.55);
-  padding: 40px 24px; text-align: center; font-size: 13px; line-height: 1.8;
+  padding: 56px 24px 32px; font-size: 13px; line-height: 1.7;
 }
-.site-footer a { color: rgba(255,255,255,.65); text-decoration: none; }
+.site-footer a { color: rgba(255,255,255,.62); text-decoration: none; }
 .site-footer a:hover { color: #fff; }
-.footer-brand { font-weight: 700; font-size: 16px; color: #fff; margin-bottom: 8px; }
-.footer-links { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center; margin: 14px 0; }
+.footer-inner {
+  max-width: var(--hero-max); margin: 0 auto;
+  display: grid; grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr);
+  gap: 40px 56px; align-items: start;
+}
+.footer-brand { font-weight: 700; font-size: 16px; color: #fff; margin-bottom: 10px; letter-spacing: -0.01em; }
+.footer-line { margin: 0 0 12px; max-width: 34ch; }
+.footer-disclaimer { margin: 0; color: rgba(255,255,255,.40); max-width: 38ch; }
+/* Four groups, so the guides that justify the site are not filed next to
+   "Subprocessors" at the same weight. */
+.footer-columns {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 24px;
+}
+.footer-columns h2 {
+  font-size: 11px; letter-spacing: .09em; text-transform: uppercase;
+  color: rgba(255,255,255,.85); margin: 0 0 10px; font-weight: 600;
+}
+.footer-columns ul { list-style: none; margin: 0; padding: 0; }
+.footer-columns li { margin: 0 0 6px; }
+.footer-legal {
+  max-width: var(--hero-max); margin: 40px auto 0; padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.38);
+}
+@media (max-width: 900px) {
+  .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+  .footer-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .footer-columns { grid-template-columns: 1fr; gap: 24px; }
+}
 
 /* legal page footer (smaller) */
 footer.page-footer {
@@ -393,7 +462,19 @@ table.legal-table tr:last-child td { border-bottom: none; }
 
 @media (max-width: 600px) {
   .hero { padding: 56px 20px 48px; }
-  .site-header nav { display: none; }
+  /*
+    This rule used to be `.site-header nav { display: none }`, which removed the
+    entire header navigation on phones with nothing in its place — including the
+    only conversion control above the fold. Rather than shrink the desktop row,
+    the phone header keeps the two things that have to survive: the way into the
+    content cluster, and the way to start. The remaining links are duplicated in
+    the footer, which is one scroll away on every page.
+  */
+  .site-header nav a { display: none; }
+  .site-header nav a[href="/guides"],
+  .site-header nav a.nav-cta { display: inline-flex; align-items: center; }
+  .site-header nav a[href="/guides"] { margin-left: 0; }
+  .site-header nav a.nav-cta { margin-left: 12px; }
   .step { flex-direction: column; gap: 10px; }
   .screenshot-frame { width: 170px; }
   .price-card { padding: 26px 22px; }

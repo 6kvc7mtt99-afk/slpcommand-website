@@ -12,9 +12,17 @@ export default async function ProgressPage() {
           {progress ? `SLP ${progress.overall.level ?? "—"}` : "Estimated SLP"}
         </p>
         <h1 className="visually-hidden">Estimated SLP</h1>
+        {/*
+          This line used to read "Levels come from GET /api/progress. Nothing here
+          is derived in the browser." That is a note to an engineer, not to a
+          candidate, and it shipped on the page a learner opens to find out where
+          they stand. The guarantee it was trying to make — that the number is
+          measured, never invented — is worth keeping; the endpoint name is not.
+        */}
         <p className="muted">
-          Levels come from GET /api/progress. Nothing here is derived in the browser. Confidence labels:
-          Reliable, Fairly reliable, Limited evidence, Out of date.
+          Every level here is measured from work you actually submitted — nothing is
+          estimated to fill a gap. Where the evidence is thin, the confidence label
+          says so: Reliable, Fairly reliable, Limited evidence, or Out of date.
         </p>
       </header>
       <TransitionBanner progress={progress} />
