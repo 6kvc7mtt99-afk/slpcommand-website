@@ -7,12 +7,14 @@ import {
   type AuthorityId,
   getAuthorityPage,
 } from "@/lib/authority";
+import { conversionCta } from "@/lib/conversion";
 import { JsonLd } from "./JsonLd";
 import { SiteFooter, SiteHeader } from "./SiteChrome";
 
 export function AuthorityPage({ id }: { id: AuthorityId }) {
   const page = getAuthorityPage(id);
   const trail = breadcrumbTrail(page);
+  const convert = conversionCta(page.lang);
   return (
     <>
       <SiteHeader />
@@ -59,12 +61,34 @@ export function AuthorityPage({ id }: { id: AuthorityId }) {
           </section>
         ) : null}
 
+        {page.sources?.length ? (
+          <section className="authority-sources">
+            <h2>{page.lang === "es" ? "Fuentes" : "Sources"}</h2>
+            <ol>
+              {page.sources.map((source) => (
+                <li key={source.url}>
+                  <a href={source.url} rel="noopener noreferrer nofollow" target="_blank">
+                    {source.label}
+                  </a>
+                  {source.note ? <span className="source-note">{source.note}</span> : null}
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
+
         <aside className="authority-cta">
-          <h2>{page.cta.heading}</h2>
-          <p>{page.cta.body}</p>
-          <Link className="btn btn-primary" href={page.cta.href}>
-            {page.cta.label}
-          </Link>
+          <h2>{convert.heading}</h2>
+          <p>{convert.body}</p>
+          <div className="authority-cta-actions">
+            <Link className="btn btn-primary" href={convert.href}>
+              {convert.label}
+            </Link>
+            <Link className="btn btn-outline" href={page.cta.href}>
+              {page.cta.label}
+            </Link>
+          </div>
+          <p className="authority-cta-note">{convert.note}</p>
         </aside>
 
         <nav className="authority-related" aria-label="Related guides">

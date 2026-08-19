@@ -41,6 +41,31 @@ describe("authority pages", () => {
     }
   });
 
+  it("cites at least one verified external source on every page", () => {
+    // The cluster's whole claim is that it states the standard accurately.
+    // Eleven of twelve pages originally linked out to nothing, which gives a
+    // reader — or a model deciding whether to cite us — no way to check.
+    for (const [id, page] of Object.entries(AUTHORITY_PAGES)) {
+      expect(page.sources?.length, `${id} has no sources`).toBeGreaterThan(0);
+      for (const source of page.sources ?? []) {
+        expect(source.url, id).toMatch(/^https:\/\//);
+        expect(source.label.length, id).toBeGreaterThan(10);
+      }
+    }
+  });
+
+  it("only cites hosts that have actually been read and recorded", () => {
+    // Adding a URL nobody checked is how a citation ends up not saying what the
+    // page claims it says. Widen this list only after fetching the source.
+    const VERIFIED_HOSTS = ["nato-bilc.org", "www.japcc.org"];
+    for (const [id, page] of Object.entries(AUTHORITY_PAGES)) {
+      for (const source of page.sources ?? []) {
+        const host = new URL(source.url).host;
+        expect(VERIFIED_HOSTS, `${id} cites unverified host ${host}`).toContain(host);
+      }
+    }
+  });
+
   it("emits indexable metadata for the STANAG pillar", () => {
     const meta = authorityMetadata("stanag-6001");
     expect(meta.alternates?.canonical).toBe("https://slpcommand.com/stanag-6001");

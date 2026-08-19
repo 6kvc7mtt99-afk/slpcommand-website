@@ -68,7 +68,10 @@ export function authorityMetadata(id: AuthorityId): Metadata {
   const images = [{ url: og.url, width: 1200, height: 630, alt: og.alt }];
 
   return {
-    title: page.title,
+    // The root layout templates titles as "%s — SLP Command". A page whose own
+    // title already carries the brand ("About SLP Command") would render it
+    // twice, so those opt out of the template instead.
+    title: page.title.includes("SLP Command") ? { absolute: page.title } : page.title,
     description: page.description,
     alternates: {
       canonical: url,
@@ -98,7 +101,7 @@ export function articleJsonLd(id: AuthorityId) {
   const url = `${SITE_ORIGIN}${page.path}`;
   return {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": page.schemaType ?? "Article",
     headline: page.h1,
     description: page.description,
     datePublished: AUTHORITY_PUBLISHED,
@@ -116,6 +119,24 @@ export function articleJsonLd(id: AuthorityId) {
       name: "SLP Command",
       url: `${SITE_ORIGIN}/`,
     },
+    ...(page.sources?.length
+      ? {
+          citation: page.sources.map((source) => ({
+            "@type": "CreativeWork",
+            name: source.label,
+            url: source.url,
+          })),
+        }
+      : {}),
+    ...(page.schemaType === "CollectionPage"
+      ? {
+          hasPart: page.related.map((item) => ({
+            "@type": "WebPage",
+            name: item.label,
+            url: `${SITE_ORIGIN}${item.href}`,
+          })),
+        }
+      : {}),
   };
 }
 
@@ -177,10 +198,14 @@ export const organizationJsonLd = {
     "Military English",
     "Language proficiency testing",
   ],
-  // Populate only with profiles that exist and that we control. An empty
-  // sameAs is not a signal; a wrong one is a liability.
-  sameAs: [] as string[],
+  // Populate only with profiles that exist and that we control, then add
+  // `sameAs: OFFICIAL_PROFILES` below. An empty array is not a weaker signal —
+  // it is emitted into the page as `"sameAs":[]`, which is noise. A wrong one is
+  // a liability. So it ships only when there is something true to put in it.
 };
+
+/** Profiles we control and have verified. Empty until each one exists. */
+export const OFFICIAL_PROFILES: string[] = [];
 
 export const websiteJsonLd = {
   "@context": "https://schema.org",
@@ -191,18 +216,45 @@ export const websiteJsonLd = {
   publisher: { "@type": "Organization", name: "SLP Command", url: `${SITE_ORIGIN}/` },
 };
 
+/**
+ * What a reader can actually obtain today.
+ *
+ * The previous markup declared `operatingSystem: "iOS"` with a single €9.99
+ * Offer and no availability. Both overstate the product: the iOS build is still
+ * "coming to the App Store" (claim C08) and Professional is an Apple in-app
+ * purchase, so that price cannot currently be transacted by anyone. The web
+ * client and its free plan are what exist, so that is what is marked up, with
+ * Professional declared as announced rather than for sale.
+ */
 export const softwareJsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "SLP Command",
   applicationCategory: "EducationalApplication",
-  operatingSystem: "iOS",
-  offers: {
-    "@type": "Offer",
-    price: "9.99",
-    priceCurrency: "EUR",
-    description: "Professional plan. A free plan with real practice quotas is also available.",
-  },
+  operatingSystem: "Web",
+  url: `${SITE_ORIGIN}/`,
+  image: `${SITE_ORIGIN}/assets/og/og-default.png`,
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Free",
+      price: "0",
+      priceCurrency: "EUR",
+      availability: "https://schema.org/InStock",
+      url: `${SITE_ORIGIN}/signup`,
+      description:
+        "Free plan: 10 Reading and 10 Listening practice sessions a week, 3 AI-scored Writing submissions and 3 Speaking evaluations a month, and one full exam simulation a month.",
+    },
+    {
+      "@type": "Offer",
+      name: "Professional",
+      price: "9.99",
+      priceCurrency: "EUR",
+      availability: "https://schema.org/PreOrder",
+      description:
+        "Announced price. Purchased inside the iOS app once it is published on the App Store.",
+    },
+  ],
   description:
     "Independent trainer for STANAG 6001 / SLP-style exams, Levels 2 and 3, covering Reading, Listening, Writing and Speaking.",
 };

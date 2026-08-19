@@ -26,10 +26,11 @@ Parent strategy (do not replace):
 | [19_ANALYTICS_SPEC.md](19_ANALYTICS_SPEC.md) | Events + cookie constraint |
 | [20_CEO_DASHBOARD.md](20_CEO_DASHBOARD.md) | Friday 15 numbers |
 | [21_90_DAY_EXECUTION_PLAN.md](21_90_DAY_EXECUTION_PLAN.md) | D1–90 with KPIs |
-| [22_IMPLEMENTATION_LOG.md](22_IMPLEMENTATION_LOG.md) | What changed |
+| [22_IMPLEMENTATION_LOG.md](22_IMPLEMENTATION_LOG.md) | What changed, all four passes |
 | [23_MARKETING_OS_DECISION.md](23_MARKETING_OS_DECISION.md) | External Marketing OS: audit + reject-with-reasons |
-| [24_CHAIRMAN_AUDIT_2026-08-18.md](24_CHAIRMAN_AUDIT_2026-08-18.md) | Chairman audit of Grok v1: scores, findings, risks |
+| [24_CHAIRMAN_AUDIT.md](24_CHAIRMAN_AUDIT.md) | Consolidated chairman audit: findings, both scorecards, approvals |
 | [25_TECHNICAL_CLOSURE_2026-08-18.md](25_TECHNICAL_CLOSURE_2026-08-18.md) | Lint, E2E determinism, CSRF origin, closure verification |
+| [26_KEYWORD_PAGE_INTENT_MAP.md](26_KEYWORD_PAGE_INTENT_MAP.md) | Keyword → page → intent, cannibalisation, gaps |
 | [os/README.md](os/README.md) | Roles + handoff format |
 | [os/QUALITY_GATE.md](os/QUALITY_GATE.md) | Pre-publish scorecard (≥80 to ship) |
 | [os/EXPERIMENTS.md](os/EXPERIMENTS.md) | Experiment ledger |
@@ -38,6 +39,18 @@ Parent strategy (do not replace):
 
 Live public pages implemented in this pass are listed in `01` and `04`.
 
-**Pass 2 (18 Aug 2026):** `01`–`21` are Grok v1 and stand as written. `22` carries both
-passes. `23`, `24` and `os/` are the Chairman review layer. Claims safety is now enforced
-by `tests/unit/claimsRegistry.test.ts`, not by this documentation alone.
+**Pass structure (18 Aug 2026).** `01`–`21` are Grok v1 and stand as written. `22`
+carries all four passes. The chairman review ran as two independent tracks against
+the same snapshot (`458a48a`) in separate working trees — technical/brand closure
+(`25`) and commercial/authority (`22` Pass 4) — and `24` consolidates both, keeping
+both scorecards because they disagree usefully rather than picking one.
+
+**Executable documents.** Four of these files are enforced by tests, so they cannot
+silently stop describing the site:
+
+| Document | Test |
+|---|---|
+| `03_CLAIMS_REGISTRY.md` | `tests/unit/claimsRegistry.test.ts` |
+| `26_KEYWORD_PAGE_INTENT_MAP.md` | `tests/unit/keywordMap.test.ts` |
+| Free-plan quotas quoted in CTAs | `tests/unit/conversion.test.ts` |
+| SEO invariants (canonical, OG, hreflang, sitemap) | `tests/unit/seoInvariants.test.ts` |

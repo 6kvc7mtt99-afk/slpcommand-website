@@ -101,3 +101,34 @@ content, no new dependencies. Full reasoning: `25_TECHNICAL_CLOSURE_2026-08-18.m
 The two surviving lint warnings are pre-existing product code
 (`CoachSpike.tsx` exhaustive-deps, `WritingTools.tsx` unused import) and do not
 block. Marketing files produce zero lint findings.
+# Pass 4 — Commercial and authority review (Claude, isolated worktree)
+
+Baseline established by actually running the project for the first time:
+`npm install` (node_modules was absent), `tsc --noEmit`, `vitest`, `next build`,
+`next start`, then measuring the rendered HTML. Work done in an isolated git
+worktree on branch `growth/chairman-review` to avoid colliding with concurrent
+sessions. Snapshot of phase 1 preserved as commit `458a48a` and branch
+`snapshot/grok-phase1-20260818`, plus a tar backup in `90-BACKUPS/`.
+
+| Date | Area | Change | Reason | Files | Test | Result | Status |
+|---|---|---|---|---|---|---|---|
+| 2026-08-18 | Safety | Committed phase-1 work untouched; tar backup | It was uncommitted on a production project with two agents writing | whole tree | build+tests at that state | tsc clean, 94/94, build OK | DONE |
+| 2026-08-18 | CRO | **Conversion path opened.** Authority CTAs lead with Start free → `/signup`; contextual link kept as secondary | All 12 pages dead-ended; `/signup` was linked from nowhere | `lib/conversion.ts`, `AuthorityPage.tsx`, `SiteChrome.tsx`, `style.css` | `conversion.test.ts` | 7/7 pass | DONE |
+| 2026-08-18 | CRO | Homepage hero + both pricing cards act; "Get Professional in the app" → `/support` removed | Money CTA pointed at the support desk for a purchase that cannot complete | `content/landing.html`, `content/landing.ts` | `conversion.test.ts`, `landingSync.test.ts` | pass | DONE |
+| 2026-08-18 | Build | `scripts/build-landing.mjs`; landing.ts generated, not hand-synced | The rendered homepage could silently diverge from the edited file | scripts, tests | `landingSync.test.ts` | pass | DONE |
+| 2026-08-18 | Schema | SoftwareApplication made accurate: web client, Free InStock, Professional PreOrder | Declared an iOS purchase that cannot be transacted (C08) | `lib/authority.ts` | `conversion.test.ts` | pass | DONE |
+| 2026-08-18 | Schema | `sameAs: []` no longer emitted | An empty array is noise in the output | `lib/authority.ts` | — | verified in HTML | DONE |
+| 2026-08-18 | Schema | `/guides` → `CollectionPage` + `hasPart` | An index is not an Article | `pages.ts`, `lib/authority.ts` | build + curl | verified | DONE |
+| 2026-08-18 | E-E-A-T | **Citations added to all 12 pages** (BILC, JAPCC), rendered + schema `citation` | 11 of 12 pages cited nothing | `pages.ts`, `AuthorityPage.tsx`, `style.css` | `authority.test.ts` host allowlist | 6/6 pass | DONE |
+| 2026-08-18 | Content | `/es/slp-2`, `/es/slp-3` rewritten: ~70 → 584 / 542 words | Stubs on the priority commercial market | `pages.ts` | build + word count | verified | DONE |
+| 2026-08-18 | Metadata | `/about` brand duplication fixed; 2 over-length titles shortened | "About SLP Command — SLP Command"; 75 and 70 chars | `lib/authority.ts`, `pages.ts` | `seoInvariants.test.ts` | pass | DONE |
+| 2026-08-18 | Recovery | Branded 404; `/es` → `/es/examen-slp` | Stock 404; `/es` was a dead end | `app/not-found.tsx`, `next.config.ts` | curl 404/308 | verified | DONE |
+| 2026-08-18 | Analytics | Search Console verification hook, env-driven, inert | Removes the deployment blocker without touching the cookie position | `app/layout.tsx`, `.env.example` | tsc | clean | DONE |
+| 2026-08-18 | Docs | `19_ANALYTICS_SPEC.md` → v2 with legal analysis and options A–D | v1 stated the constraint but gave no decision path | docs | — | written | DONE |
+| 2026-08-18 | Docs | `26_KEYWORD_PAGE_INTENT_MAP.md` + `keywordMap.test.ts` | Brief §7; the keyword CSV pointed at unverified URLs | docs, tests | `keywordMap.test.ts` | 5/5 pass | DONE |
+| 2026-08-18 | Docs | `24_CHAIRMAN_AUDIT.md` merged with the concurrent technical/brand audit (Track A + Track B, both scorecards kept) — findings, scores, approvals | Two independent reviews ran the same day; neither summarises the other | docs | — | written | DONE |
+| 2026-08-18 | Testing | Authority a11y + breadcrumb + signup e2e coverage | The SEO cluster had none | `tests/e2e/a11y.spec.ts` | Playwright | 4/4 pass | DONE |
+| 2026-08-18 | Testing | **Playwright public-pages executed for the first time** | v1 log recorded it as NEEDS REVIEW / not run | — | Playwright | 3/3 pass | DONE |
+| 2026-08-18 | Product | In-app Support Assistant left untouched | Product surface; needs privacy/AI-policy review | — | — | — | **HUMAN APPROVAL** |
+| 2026-08-18 | Product | 5-step signup left untouched | Likely activation drag, but a founder decision; measure first | — | — | — | DEFERRED |
+| 2026-08-18 | Deploy | Not deployed | Founder-controlled | — | — | — | BLOCKED |

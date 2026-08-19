@@ -1,6 +1,7 @@
 export type AuthoritySection = { h2: string; html: string };
 export type AuthorityFaq = { q: string; a: string };
 export type AuthorityRelated = { href: string; label: string };
+export type AuthoritySource = { label: string; url: string; note?: string };
 
 export type AuthorityPageDef = {
   path: string;
@@ -15,6 +16,19 @@ export type AuthorityPageDef = {
   intent: string;
   funnel: "awareness" | "interest" | "consideration" | "conversion";
   hreflang?: { en?: string; es?: string };
+  /**
+   * Schema.org type for the page itself. `/guides` lists other pages rather
+   * than carrying an argument of its own, and typing an index as an Article
+   * misdescribes it. Defaults to Article.
+   */
+  schemaType?: "Article" | "CollectionPage";
+  /**
+   * Works the page actually relies on. Eleven of the twelve pages shipped with
+   * no outbound citation at all, which is a poor footing for a site whose whole
+   * argument is that it states the standard accurately. Rendered as a Sources
+   * block and emitted as schema.org `citation`.
+   */
+  sources?: AuthoritySource[];
   related: AuthorityRelated[];
   faq: AuthorityFaq[];
   sections: AuthoritySection[];
@@ -22,6 +36,37 @@ export type AuthorityPageDef = {
 };
 
 const UPDATED = "2026-08-18";
+
+/**
+ * Verified 18 August 2026 by fetching each URL. Do not add a source here that
+ * has not been read: a citation to a page that does not say what we claim is
+ * worse than no citation.
+ */
+const SRC_BILC: AuthoritySource = {
+  label: "BILC — STANAG 6001 (Bureau for International Language Coordination)",
+  url: "https://nato-bilc.org/stanag-6001/",
+  note: "Describes Edition 5 as “the NATO agreed standard for language curriculum, test development, and for recording and reporting Standardized Language Profiles (SLPs)”.",
+};
+
+const SRC_JAPCC: AuthoritySource = {
+  label:
+    "Adubato, M. & Efthymiopoulos, M-P., “Capacity Language Building in NATO”, JAPCC Journal Ed. 19 (2014)",
+  url: "https://www.japcc.org/articles/capacity-language-building-in-nato/",
+  note: "“There is no official NATO test but merely national interpretations of the language levels outlined in STANAG 6001 and often one nation’s Level 2 is another nation’s Level 3.”",
+};
+
+const SRC_BILC_ES: AuthoritySource = {
+  label: "BILC — STANAG 6001 (Bureau for International Language Coordination)",
+  url: "https://nato-bilc.org/stanag-6001/",
+  note: "Define la Edición 5 como el estándar acordado por la OTAN para currículo, desarrollo de pruebas y registro de los Perfiles Lingüísticos Estandarizados (SLP).",
+};
+
+const SRC_JAPCC_ES: AuthoritySource = {
+  label:
+    "Adubato, M. y Efthymiopoulos, M-P., «Capacity Language Building in NATO», JAPCC Journal Ed. 19 (2014)",
+  url: "https://www.japcc.org/articles/capacity-language-building-in-nato/",
+  note: "«No existe un examen oficial de la OTAN, sino interpretaciones nacionales de los niveles descritos en STANAG 6001.»",
+};
 
 const DISCLAIMER_EN =
   "<p class=\"note\"><strong>Independent resource.</strong> SLP Command is not affiliated with NATO, BILC, any Ministry of Defence, or any official examining body. National tests implement STANAG 6001 descriptors differently. Always confirm administration details with the authority that runs your sitting.</p>";
@@ -33,7 +78,7 @@ export const AUTHORITY_PAGES = {
   "stanag-6001": {
     path: "/stanag-6001",
     lang: "en",
-    title: "What is STANAG 6001? NATO language proficiency explained",
+    title: "What is STANAG 6001? NATO’s language standard",
     description:
       "STANAG 6001 is NATO’s language-proficiency standard, not a single official exam. How SLP profiles, levels 0–5, and national tests actually work.",
     h1: "STANAG 6001: the NATO language proficiency standard",
@@ -43,6 +88,7 @@ export const AUTHORITY_PAGES = {
     secondaryKeywords: ["NATO language proficiency", "BILC", "SLP", "STANAG 6001 exam"],
     intent: "informational",
     funnel: "awareness",
+    sources: [SRC_BILC, SRC_JAPCC],
     related: [
       { href: "/slp", label: "What SLP means" },
       { href: "/slp-2", label: "SLP 2 (functional)" },
@@ -128,7 +174,7 @@ export const AUTHORITY_PAGES = {
   slp: {
     path: "/slp",
     lang: "en",
-    title: "What SLP means in STANAG 6001 (not speech-language pathology)",
+    title: "SLP meaning in STANAG 6001 (not speech therapy)",
     description:
       "In military language testing, SLP is a Standardized Language Profile: four digits for Listening, Speaking, Reading and Writing. It is not a therapy qualification.",
     h1: "SLP means Standardized Language Profile — not speech therapy",
@@ -138,6 +184,7 @@ export const AUTHORITY_PAGES = {
     secondaryKeywords: ["Standardized Language Profile", "SLP 3333", "SLP 2222", "SLP exam"],
     intent: "informational",
     funnel: "awareness",
+    sources: [SRC_BILC, SRC_JAPCC],
     related: [
       { href: "/stanag-6001", label: "STANAG 6001" },
       { href: "/slp-2", label: "SLP 2" },
@@ -207,6 +254,7 @@ export const AUTHORITY_PAGES = {
     intent: "informational / commercial",
     funnel: "interest",
     hreflang: { en: "/slp-2", es: "/es/slp-2" },
+    sources: [SRC_BILC, SRC_JAPCC],
     related: [
       { href: "/slp-3", label: "SLP 3" },
       { href: "/slp", label: "How to read an SLP" },
@@ -267,6 +315,7 @@ export const AUTHORITY_PAGES = {
     intent: "informational / commercial",
     funnel: "interest",
     hreflang: { en: "/slp-3", es: "/es/slp-3" },
+    sources: [SRC_BILC, SRC_JAPCC],
     related: [
       { href: "/slp-2", label: "SLP 2" },
       { href: "/guides/writing", label: "Why writing fails" },
@@ -328,6 +377,7 @@ export const AUTHORITY_PAGES = {
     secondaryKeywords: ["examen SLP inglés", "SLP 2222", "SLP 3333", "STANAG 6001", "SIPERDEF"],
     intent: "informational / commercial",
     funnel: "interest",
+    sources: [SRC_BILC_ES, SRC_JAPCC_ES],
     related: [
       { href: "/es/slp-2", label: "SLP 2 / 2222" },
       { href: "/es/slp-3", label: "SLP 3 / 3333" },
@@ -402,6 +452,7 @@ export const AUTHORITY_PAGES = {
     intent: "informational / commercial",
     funnel: "interest",
     hreflang: { en: "/slp-2", es: "/es/slp-2" },
+    sources: [SRC_BILC_ES],
     related: [
       { href: "/es/slp-3", label: "SLP 3" },
       { href: "/es/examen-slp", label: "Examen SLP" },
@@ -415,13 +466,36 @@ export const AUTHORITY_PAGES = {
     ],
     sections: [
       {
-        h2: "Qué significa funcional",
+        h2: "Qué significa «funcional»",
         html: `${DISCLAIMER_ES}
-<p>El nivel 2 cubre necesidades sociales y laborales rutinarias. Entiendes hechos. No siempre los matices. El ruido, el acento rápido y la ironía te bajan el rendimiento. Eso es el descriptor, no un insulto.</p>`,
+<p>El nivel 2 es <strong>competencia funcional limitada</strong>. Te permite resolver necesidades sociales y laborales rutinarias en un registro estándar, a velocidad normal, admitiendo alguna repetición. Captas los hechos. No captas de forma fiable la implicación, la ironía ni el desacuerdo formulado con cautela.</p>
+<p>No es poca cosa: es el nivel que muchos destinos exigen. Pero no es «un 3 con menos vocabulario». Son constructos distintos, y se entrenan distinto.</p>`,
+      },
+      {
+        h2: "Cómo se comporta un 2 en cada destreza",
+        html: `<ul>
+<li><strong>Listening</strong> — conversaciones sobre rutinas de trabajo, novedades personales, instrucciones directas. El rendimiento cae con ruido de fondo y con hablantes nativos entre sí.</li>
+<li><strong>Speaking</strong> — describir, narrar en pasado, presente y futuro, dar instrucciones sencillas, resolver gestiones cotidianas. Las estructuras complejas se evitan o se rompen.</li>
+<li><strong>Reading</strong> — textos auténticos pero sencillos sobre temas conocidos: idea principal y detalle relevante, con vacilación ante la sintaxis larga.</li>
+<li><strong>Writing</strong> — correo, nota de servicio, informe breve. La gramática puede ser correcta y el texto seguir sin cumplir la tarea que se pedía.</li>
+</ul>
+<p>El perfil se lee por dígitos, en el orden <strong>Listening–Speaking–Reading–Writing</strong>. Un 2222 no es una media: son cuatro calificaciones independientes.</p>`,
+      },
+      {
+        h2: "El error habitual: entrenar lo que ya se te da bien",
+        html: `<p>El desperdicio típico en nivel 2 es pulir la destreza cómoda —casi siempre reading— y esquivar el listening cronometrado y el writing con tarea. El destino no mira tu mejor dígito: mira el que te falta.</p>
+<p>El segundo desperdicio es memorizar listas de «inglés militar» sin haber escrito nunca una petición que un superior ocupado pueda ejecutar sin volver a preguntar. El vocabulario técnico no compensa una tarea incumplida.</p>`,
       },
       {
         h2: "Qué entrenar primero",
-        html: `<p>Listening cronometrado y writing de tarea corta (correo, nota, informe breve). No otro temario general de gramática si ya puedes narrar en pasado. El perfil se lee por dígitos: el destino mira el que te falta.</p>`,
+        html: `<p>Si tu objetivo es consolidar un 2 en los cuatro dígitos, el orden que suele rendir más es:</p>
+<ol>
+<li><strong>Listening cronometrado</strong>, con audio a velocidad real y una sola escucha cuando el formato lo permita.</li>
+<li><strong>Writing de tarea corta</strong>: correo, nota, informe breve — evaluando primero si la tarea se cumplió y después la lengua.</li>
+<li><strong>Speaking</strong> con preguntas de seguimiento, no con exposición memorizada.</li>
+<li><strong>Reading</strong>, que suele ser el dígito que menos trabajo adicional necesita a este nivel.</li>
+</ol>
+<p>Si ya narras en pasado con soltura, otro temario general de gramática no es tu cuello de botella.</p>`,
       },
     ],
     cta: {
@@ -446,6 +520,7 @@ export const AUTHORITY_PAGES = {
     intent: "informational / commercial",
     funnel: "interest",
     hreflang: { en: "/slp-3", es: "/es/slp-3" },
+    sources: [SRC_BILC_ES],
     related: [
       { href: "/es/slp-2", label: "SLP 2" },
       { href: "/guides/writing", label: "Writing (EN)" },
@@ -461,11 +536,34 @@ export const AUTHORITY_PAGES = {
       {
         h2: "Qué pide el 3",
         html: `${DISCLAIMER_ES}
-<p>Temas no familiares, reuniones, hipótesis, lo implícito, la pregunta que no ensayaste. Una exposición memorizada no es un 3. Un writing brillante sobre el tema equivocado tampoco.</p>`,
+<p>El nivel 3 no es «fluidez» entendida como sensación. Es la capacidad de seguir y producir lengua sobre temas prácticos, sociales y profesionales <strong>que pueden no serte familiares</strong>: reuniones, exposiciones, hipótesis, lo implícito, y la pregunta que no habías preparado.</p>
+<p>El acento rara vez es lo que tumba el perfil. Lo que lo tumba es la organización, la tarea y la precisión bajo presión.</p>`,
       },
       {
-        h2: "Dónde se pierde el perfil",
-        html: `<p>En writing, por la tarea. En listening, por la postura del hablante y los números. En speaking, en las preguntas de seguimiento. En reading, por elegir el distractor que repite una palabra del texto.</p>`,
+        h2: "Dónde se rompen los hábitos de nivel 2",
+        html: `<ul>
+<li><strong>Writing</strong> — un texto limpio sobre el asunto equivocado sigue siendo un suspenso. El 3 pide un informe razonado, no una anécdota bien redactada. Ver <a href="/guides/writing">por qué falla el writing</a>.</li>
+<li><strong>Listening</strong> — captar la idea general de un tema conocido ya no basta. Hace falta la recomendación, la salvedad y el número que cambió el plan.</li>
+<li><strong>Speaking</strong> — una exposición memorizada se cae en el turno de preguntas. El 3 incluye lo imprevisto.</li>
+<li><strong>Reading</strong> — elegir la opción que repite una palabra del texto es la trampa clásica; el 3 se juega en la inferencia.</li>
+</ul>`,
+      },
+      {
+        h2: "Una frase de nivel 3 hace un trabajo",
+        html: `<p>Compara:</p>
+<blockquote><p>«La situación es muy importante y debemos actuar pronto.»</p></blockquote>
+<blockquote><p>«El retraso parece logístico más que político; si el convoy no se desvía esta noche, se cierra la ventana de reabastecimiento.»</p></blockquote>
+<p>La segunda toma una posición, nombra una causa y enuncia una consecuencia. Ese es el registro. Los adjetivos nunca fueron el problema.</p>`,
+      },
+      {
+        h2: "Cómo prepararlo sin engañarte",
+        html: `<p>El salto del 2 al 3 se subestima porque el 2 se alcanza acumulando; el 3 se alcanza <em>reorganizando</em>. Tres comprobaciones honestas:</p>
+<ul>
+<li>¿Puedes defender una postura ante una pregunta que no ensayaste?</li>
+<li>¿Tu writing responde a la tarea pedida, o al tema que dominas?</li>
+<li>¿Sostienes el rendimiento con reloj, o sólo sin límite de tiempo?</li>
+</ul>
+<p>Si alguna respuesta es «no», el trabajo no es más vocabulario. Es entrenar el constructo que falla, medido. Consulta también <a href="/es/examen-slp">cómo se convoca y se prepara el examen SLP</a>.</p>`,
       },
     ],
     cta: {
@@ -479,6 +577,7 @@ export const AUTHORITY_PAGES = {
   guides: {
     path: "/guides",
     lang: "en",
+    schemaType: "CollectionPage" as const,
     title: "STANAG 6001 / SLP guides",
     description:
       "Independent guides to STANAG 6001 and SLP preparation: levels, writing, listening, and exam simulation. Not an official NATO resource.",
@@ -489,6 +588,7 @@ export const AUTHORITY_PAGES = {
     secondaryKeywords: ["SLP preparation", "military English guides"],
     intent: "informational",
     funnel: "awareness",
+    sources: [SRC_BILC],
     related: [
       { href: "/stanag-6001", label: "STANAG 6001" },
       { href: "/slp", label: "SLP" },
@@ -533,6 +633,7 @@ export const AUTHORITY_PAGES = {
     secondaryKeywords: ["SLP writing", "SLP 3 writing", "task achievement STANAG"],
     intent: "informational / commercial",
     funnel: "consideration",
+    sources: [SRC_BILC],
     related: [
       { href: "/slp-3", label: "SLP 3" },
       { href: "/guides/listening", label: "Listening" },
@@ -600,6 +701,7 @@ export const AUTHORITY_PAGES = {
     secondaryKeywords: ["SLP listening", "military English listening", "connected speech STANAG"],
     intent: "informational / commercial",
     funnel: "consideration",
+    sources: [SRC_BILC],
     related: [
       { href: "/slp-3", label: "SLP 3" },
       { href: "/guides/writing", label: "Writing" },
@@ -660,6 +762,7 @@ export const AUTHORITY_PAGES = {
     secondaryKeywords: ["simulacro SLP", "SLP exam practice", "timed STANAG test"],
     intent: "commercial",
     funnel: "consideration",
+    sources: [SRC_BILC],
     related: [
       { href: "/guides/writing", label: "Writing" },
       { href: "/guides/listening", label: "Listening" },
@@ -707,6 +810,7 @@ export const AUTHORITY_PAGES = {
     secondaryKeywords: ["SLP Command app", "military English trainer"],
     intent: "informational / branded",
     funnel: "awareness",
+    sources: [SRC_BILC],
     related: [
       { href: "/stanag-6001", label: "STANAG 6001" },
       { href: "/disclaimer", label: "Institutional disclaimer" },

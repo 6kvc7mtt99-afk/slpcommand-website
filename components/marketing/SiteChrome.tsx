@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SIGNUP_PATH } from "@/lib/conversion";
 
 export function LogoMark() {
   return (
@@ -20,6 +21,11 @@ export function SiteHeader({ links }: { links?: { href: string; label: string }[
     { href: "/support", label: "Support" },
     { href: "/login", label: "Log in" },
   ];
+  // The public site had no registration entry point outside the login link, so
+  // every organic reader who wanted to act had to work out that "Log in" also
+  // leads to an account. The free plan is the honest first step while the iOS
+  // app is unreleased, so it gets its own action.
+  const primary = { href: SIGNUP_PATH, label: "Start free" };
   return (
     <header className="site-header">
       <LogoMark />
@@ -29,6 +35,9 @@ export function SiteHeader({ links }: { links?: { href: string; label: string }[
             {item.label}
           </Link>
         ))}
+        <Link className="nav-cta" href={primary.href}>
+          {primary.label}
+        </Link>
       </nav>
     </header>
   );

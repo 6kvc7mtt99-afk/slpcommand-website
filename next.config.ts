@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*.html", destination: "/:path*", permanent: true },
       { source: "/www", destination: "/", permanent: true },
+      // `/es` is the natural shortening of the Spanish cluster and a likely
+      // hand-typed or shared address, but nothing was mounted there, so it 404'd.
+      // Send it to the Spanish entry page rather than the English homepage.
+      { source: "/es", destination: "/es/examen-slp", permanent: true },
     ];
   },
 };
