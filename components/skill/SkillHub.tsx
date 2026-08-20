@@ -15,7 +15,45 @@ export type Destination = {
   cta: string;
   disabled?: boolean;
   disabledReason?: string;
+  /**
+   * Real remaining/limit from the entitlements response for this
+   * destination's feature. The learner could previously only discover a
+   * spent allowance by opening the task and hitting the wall — the
+   * number existed on every request and was never shown. Omitted when
+   * the plan reports no limit for the feature.
+   */
+  quota?: { remaining: number | null; limit: number | null; period: string | null };
 };
+
+function periodPhrase(period: string | null | undefined): string {
+  return period === "weekly" ? " this week" : period === "monthly" ? " this month" : "";
+}
+
+/** "4 of 10 left this week" from real numbers only; null if either is missing. */
+function quotaLine(quota: Destination["quota"]): string | null {
+  if (!quota || quota.remaining == null || quota.limit == null) return null;
+  return `${quota.remaining} of ${quota.limit} left${periodPhrase(quota.period)}`;
+}
+
+/**
+ * Why a destination is unavailable.
+ *
+ * A spent allowance and an unentitled feature both arrive as
+ * `usable: false`, and both used to render the plan's copy — so a
+ * learner who had simply used their ten reading passages was told the
+ * feature was "not available on your current plan", which is not what
+ * happened. When the entitlements response says the limit was reached,
+ * that is what this says.
+ */
+function lockReason(dest: Destination): string {
+  const quota = dest.quota;
+  if (quota && quota.remaining === 0 && quota.limit != null) {
+    return `You have used all ${quota.limit}${periodPhrase(quota.period)}. This resets ${
+      quota.period === "weekly" ? "next week" : quota.period === "monthly" ? "next month" : "with your plan"
+    }.`;
+  }
+  return dest.disabledReason ?? "Not available on your current plan.";
+}
 
 /**
  * A skill hub as a product surface rather than a list of links.
@@ -92,13 +130,18 @@ export function SkillHub({
                   <p>{dest.detail}</p>
                   {dest.disabled ? (
                     <p className="p-dest-locked">
-                      <span className="p-lock-chip">Locked</span>
-                      <span>{dest.disabledReason ?? "Not available on your current plan."}</span>
+                      <span className="p-lock-chip">
+                        {dest.quota?.remaining === 0 && dest.quota.limit != null ? "Used up" : "Locked"}
+                      </span>
+                      <span>{lockReason(dest)}</span>
                     </p>
                   ) : (
                     <p className="p-dest-go">
                       {dest.cta}
                       <span className="p-arrow" aria-hidden="true">→</span>
+                      {quotaLine(dest.quota) ? (
+                        <span className="p-dest-quota p-num">{quotaLine(dest.quota)}</span>
+                      ) : null}
                     </p>
                   )}
                 </div>

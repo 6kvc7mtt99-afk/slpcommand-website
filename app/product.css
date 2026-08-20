@@ -519,6 +519,16 @@ a.p-dest:focus-visible {
   font-weight: 620;
   color: var(--p-accent);
 }
+/* Remaining allowance, pushed to the far end of the CTA row so it reads
+   as a fact about the action rather than part of its label. */
+.p-dest-quota {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--p-muted);
+  letter-spacing: 0;
+}
+.p-dest-quota.is-out { color: var(--p-bad); }
 a.p-dest:hover .p-dest-go .p-arrow { transform: translateX(4px); }
 .p-dest-go .p-arrow { transition: transform var(--p-t) var(--p-ease); }
 
