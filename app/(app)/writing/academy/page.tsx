@@ -110,7 +110,11 @@ export default async function WritingAcademyPage() {
       <p className="academy-links">
         <Link href="/writing/academy/search">Search the library</Link>
         {" · "}
+        <Link href="/writing/academy/map">Competency map</Link>
+        {" · "}
         <Link href="/writing/tools">Writing tools</Link>
+        {" · "}
+        <Link href="/writing/intelligence">Writing Intelligence</Link>
       </p>
     </div>
   );

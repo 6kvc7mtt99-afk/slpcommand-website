@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type InstrumentSkill = {
   key: "reading" | "listening" | "writing" | "speaking";
@@ -58,6 +58,15 @@ export function ReadinessInstrument({
   const pointer = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
   const clock = useRef(0);
   const intro = useRef(0);
+  // A ref, not state: the draw loop reads this every frame without
+  // needing to re-run the setup effect. `hoverKey` (state, below) exists
+  // only so the legend's own DOM can show which entry is highlighted.
+  const highlightRef = useRef<InstrumentSkill["key"] | null>(null);
+  const highlightAmt = useRef(0);
+  const [hoverKey, setHoverKey] = useState<InstrumentSkill["key"] | null>(null);
+  useEffect(() => {
+    highlightRef.current = hoverKey;
+  }, [hoverKey]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -190,20 +199,32 @@ export function ReadinessInstrument({
         (a, b) => project({ x: 0, y: 0, z: b.depth }, rx, ry).z - project({ x: 0, y: 0, z: a.depth }, rx, ry).z
       );
 
+      // Hovering a legend entry isolates its ring — the one interaction
+      // this instrument has, and it exists to answer a real question a
+      // static 4-ring stack cannot: "which ring is my reading level?"
+      // Eased rather than snapped so the isolation reads as a focus
+      // pull, not a toggle.
+      const highlightTarget = highlightRef.current;
+      highlightAmt.current += ((highlightTarget ? 1 : 0) - highlightAmt.current) * 0.16;
+      const h = highlightAmt.current;
+
       for (const { skill, depth } of planes) {
-        strokeArc(depth, START, START + SWEEP, rx, ry, trackRgb.split(",").map(Number) as [number, number, number], trackA, 5, false);
+        const isTarget = highlightTarget === skill.key;
+        const dim = highlightTarget ? 1 - h * (isTarget ? 0 : 0.72) : 1;
+        strokeArc(depth, START, START + SWEEP, rx, ry, trackRgb.split(",").map(Number) as [number, number, number], trackA * dim, 5, false);
         const raw = skill.level;
         if (raw == null || !Number.isFinite(raw) || raw <= 0) continue;
         const value = Math.max(0, Math.min(4, raw));
         const rgb = RING_RGB[skill.key];
         const end = START + SWEEP * (value / 4) * ease;
-        const head = strokeArc(depth, START, end, rx, ry, rgb, 1, 10, true);
+        const widthBoost = isTarget ? 1 + h * 0.5 : 1;
+        const head = strokeArc(depth, START, end, rx, ry, rgb, dim, 10 * widthBoost, true);
         if (head) {
-          ctx!.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},1)`;
-          ctx!.shadowColor = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.85)`;
-          ctx!.shadowBlur = 15 * head.s;
+          ctx!.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${dim.toFixed(3)})`;
+          ctx!.shadowColor = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${(0.85 * dim).toFixed(3)})`;
+          ctx!.shadowBlur = (isTarget ? 22 : 15) * head.s;
           ctx!.beginPath();
-          ctx!.arc(head.x, head.y, 4.6 * head.s, 0, Math.PI * 2);
+          ctx!.arc(head.x, head.y, (isTarget ? 5.6 : 4.6) * widthBoost * head.s, 0, Math.PI * 2);
           ctx!.fill();
           ctx!.shadowBlur = 0;
         }
@@ -268,7 +289,15 @@ export function ReadinessInstrument({
       </div>
       <ul className="inst-legend">
         {skills.map((s) => (
-          <li key={s.key}>
+          <li
+            key={s.key}
+            className={hoverKey === s.key ? "is-hover" : undefined}
+            tabIndex={0}
+            onMouseEnter={() => setHoverKey(s.key)}
+            onMouseLeave={() => setHoverKey((k) => (k === s.key ? null : k))}
+            onFocus={() => setHoverKey(s.key)}
+            onBlur={() => setHoverKey((k) => (k === s.key ? null : k))}
+          >
             <i style={{ background: `rgb(${RING_RGB[s.key].join(",")})` }} aria-hidden="true" />
             <span>{s.label}</span>
             <b className="p-num">{s.level == null ? "—" : s.level}</b>

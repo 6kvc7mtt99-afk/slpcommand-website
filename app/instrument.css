@@ -1,0 +1,128 @@
+/* ============================================================
+   SLP Command — shared depth, motion and reveal primitives (Phase 5).
+   Loaded last, after records.css. Scoped under .app-shell.
+
+   Every flagship surface this phase touches (Home, Intelligence,
+   Academy, Exam entry, Writing/Speaking assessment, Progress) draws
+   from this one vocabulary instead of inventing its own elevation or
+   entrance animation. Three ideas, reused everywhere:
+
+     ELEVATION — an object that is "the current one" sits physically
+     above the surface around it (shadow + lift), not just coloured
+     differently. Used for the active Academy lesson, a hovered
+     Intelligence finding, the priority object.
+
+     IGNITION — a one-shot transition for the moment a screen changes
+     KIND, not just content — practice becoming exam, a submission
+     becoming a report. Plays once on mount, never loops.
+
+     REVEAL — a staged, directional entrance for content that arrives
+     as a sequence of real findings (evidence, then diagnosis, then a
+     report's paragraphs) rather than a single block.
+
+   All three are inert under prefers-reduced-motion: elements land in
+   their final state with no animation, nothing before it is hidden.
+   ============================================================ */
+
+/* ── Elevation ─────────────────────────────────────────────── */
+.p-elevate {
+  transition: transform var(--p-t) var(--p-ease), box-shadow var(--p-t) var(--p-ease), border-color var(--p-t) var(--p-ease);
+}
+.p-elevate.is-current,
+.p-elevate:hover,
+.p-elevate:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: var(--p-edge), var(--p-shadow-2);
+}
+/* A resolved/past object recedes rather than just losing colour —
+   the same "closer = current" logic the Intelligence spine already
+   uses, applied to physical depth instead of colour saturation. */
+.p-recede { opacity: 0.62; transform: scale(0.985); transition: opacity var(--p-t) var(--p-ease), transform var(--p-t) var(--p-ease); }
+.p-recede:hover { opacity: 0.9; }
+
+/* ── Ignition ──────────────────────────────────────────────
+   A brief, one-shot "this is now a different kind of room" cue.
+   Scale-settle + a glow sweep in the surface's own accent, never a
+   spin or a bounce — an instrument arming, not a splash screen. */
+@keyframes p-ignite {
+  0%   { opacity: 0; transform: scale(0.975); filter: saturate(1.4) brightness(1.08); }
+  55%  { opacity: 1; filter: saturate(1.15) brightness(1.02); }
+  100% { opacity: 1; transform: scale(1); filter: saturate(1) brightness(1); }
+}
+.p-ignite { animation: p-ignite 560ms var(--p-ease) both; }
+@keyframes p-ignite-ring {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--task-accent, var(--p-accent)) 55%, transparent); }
+  100% { box-shadow: 0 0 0 34px color-mix(in srgb, var(--task-accent, var(--p-accent)) 0%, transparent); }
+}
+.p-ignite-ring { animation: p-ignite-ring 720ms var(--p-ease-io) both; }
+
+/* ── Staged reveal ─────────────────────────────────────────
+   A parent gets `.p-reveal-stage`; children get `.p-reveal-item` with
+   `--i` set to their position. Each item rises in on the same curve,
+   offset by its index — the same stagger math already used for
+   Intelligence's evidence bars, generalised into one utility instead
+   of six local re-implementations. */
+.p-reveal-item {
+  animation: p-rise 460ms var(--p-ease) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+/* ── Live instrument pulse ─────────────────────────────────
+   Driven by a real value on --level (0–1), not a canned loop — used
+   where the value is an actual live signal (microphone amplitude).
+   A component with no live signal to report should not use this
+   class; use p-ignite-ring's fixed sweep instead. */
+.p-live-ring {
+  --level: 0;
+  box-shadow: 0 0 0 calc(4px + var(--level) * 22px) color-mix(in srgb, var(--task-accent, var(--p-bad)) calc(8% + var(--level) * 30%), transparent);
+  transition: box-shadow 90ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .p-ignite, .p-ignite-ring, .p-reveal-item { animation: none; }
+  .p-live-ring { transition: none; box-shadow: 0 0 0 8px color-mix(in srgb, var(--task-accent, var(--p-bad)) 20%, transparent); }
+  .p-elevate.is-current, .p-elevate:hover { transform: none; }
+}
+
+/* ── Plan boundary ─────────────────────────────────────────
+   Shared by every "not on your current plan" moment in the product
+   (see CommercialCard/CommercialDialog, components/exercise/
+   ExerciseShell.tsx) — one identity wherever a learner meets a plan
+   limit, whichever real reason the caller gives for it. */
+.plan-lock {
+  position: relative;
+  max-width: 480px;
+  padding: 30px 32px 28px;
+  border-radius: var(--p-r-lg);
+  border: 1px solid var(--p-line);
+  background: var(--p-elevated);
+  box-shadow: var(--p-edge), var(--p-shadow-1);
+}
+.plan-lock-mark {
+  display: block;
+  width: 34px; height: 34px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--p-line-strong);
+  background: linear-gradient(var(--p-muted), var(--p-muted)) center / 14px 2px no-repeat;
+}
+.plan-lock-kicker {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--p-muted);
+  margin: 0 0 8px;
+}
+.plan-lock h2 { font-size: 19px; font-weight: 640; letter-spacing: -0.02em; margin: 0 0 8px; line-height: 1.3; }
+.plan-lock-body { margin: 0; font-size: 14px; color: var(--p-muted); line-height: 1.5; }
+.plan-lock-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 18px;
+  font-size: 13.5px; font-weight: 620;
+  color: var(--p-accent);
+  text-decoration: none;
+}
+.plan-lock-link:hover { text-decoration: none; }
+.plan-lock-link:hover .p-arrow { transform: translateX(3px); }
+.plan-lock-link .p-arrow { transition: transform var(--p-t) var(--p-ease); }
+
+/* Dialog variant: the same identity, centred as a modal card. */
+.plan-lock-dialog { max-width: 440px; width: 100%; text-align: left; }

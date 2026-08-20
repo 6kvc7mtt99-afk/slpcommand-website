@@ -207,6 +207,56 @@ const server = http.createServer((req, res) => {
     }));
     return;
   }
+  if (url.pathname === "/api/writing/learning-state") {
+    // Shape verified live against production (writing_learning_state_v3 /
+    // writing_competencies_v3) — field names and nesting match the real
+    // response exactly, values trimmed for a readable fixture.
+    res.end(JSON.stringify({
+      version: "writing_learning_state_v3",
+      modelVersion: "writing_competencies_v3",
+      targetLevel: "3",
+      attempts: 14,
+      hasEvidence: true,
+      summary: { mastered: 37, emerging: 0, weak: 4, untested: 4, blocked: 6, total: 51 },
+      blockingPromotion: [
+        {
+          id: "W1.1", title: "Parse the task: identify every required move", branch: "W1", band: "1+",
+          discriminator: null, state: "weak", demonstrations: 14,
+          evidence: { examples: [{ text: "Level 3 task is underdeveloped", severity: "critical", attemptId: "95095bd1" }] },
+        },
+        {
+          id: "W4.3", title: "Cohesion within a paragraph", branch: "W4", band: "2",
+          discriminator: null, state: "weak", demonstrations: 14,
+          evidence: { examples: [{ text: "Limited use of advanced connectors.", severity: "recurrent", attemptId: "10a06f0e" }] },
+        },
+      ],
+      nextTraining: [
+        { id: "W1.1", title: "Parse the task: identify every required move", state: "weak", band: "1+", why: "Your own errors point here: task." },
+      ],
+      levelThree: [
+        { discriminator: "D1", label: "Answer objections", status: "absent", prerequisitesOutstanding: ["W1.1"] },
+      ],
+    }));
+    return;
+  }
+  if (url.pathname === "/api/writing/academy/lessons") {
+    res.end(JSON.stringify({
+      coverage: {
+        version: "writing_academy_v3",
+        totalLessons: 3,
+        modules: [
+          { module: "self_editing", title: "Self-Editing and Revision", lessons: 1 },
+          { module: "level_three_gates", title: "The Four Gates to Level 3", lessons: 2 },
+        ],
+      },
+      lessons: [
+        { id: "ACA-W3.6", module: "self_editing", title: "Finding What You Can't See", level: "2+", competencyId: "W3.6", estimatedMinutes: 12 },
+        { id: "wl-1", module: "level_three_gates", title: "Openings", level: "3", competencyId: "W1.1", estimatedMinutes: 15 },
+        { id: "ACA-W4.3", module: "level_three_gates", title: "Making Paragraphs Cohere", level: "3", competencyId: "W4.3", estimatedMinutes: 14 },
+      ],
+    }));
+    return;
+  }
   if (url.pathname === "/api/writing/academy/lesson/wl-1") {
     res.end(JSON.stringify({ lesson: {
       id: "wl-1", title: "Openings", module: "Structure", level: "3",

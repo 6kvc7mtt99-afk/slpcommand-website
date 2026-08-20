@@ -41,6 +41,25 @@ test("academy pages have no serious axe violations", async ({ page }) => {
   expect(results.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
 });
 
+test("Writing Intelligence renders the real learning-state model, links a blocking competency to its lesson, and has no serious axe violations", async ({ page }) => {
+  await page.goto("/writing/intelligence");
+  await expect(page.locator("body")).toContainText("What is blocking SLP 3");
+  // Real quoted examiner evidence, not a placeholder.
+  await expect(page.locator("body")).toContainText("Level 3 task is underdeveloped");
+  // The priority competency (W1.1) must resolve to its real catalog lesson (wl-1), not a dead link.
+  await expect(page.locator('a.priority-body[href="/writing/academy/lesson/wl-1"]')).toBeVisible();
+  const results = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  expect(results.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+});
+
+test("Writing competency map groups the real 49-lesson catalog by module and never invents a per-lesson state", async ({ page }) => {
+  await page.goto("/writing/academy/map");
+  await expect(page.locator("body")).toContainText("Self-Editing and Revision");
+  await expect(page.getByRole("link", { name: "Finding What You Can't See" })).toBeVisible();
+  // No mastery data exists in this response — a state chip here would be fabricated.
+  await expect(page.locator(".records-state")).toHaveCount(0);
+});
+
 test("settings groups real controls and surfaces plan quota without raw backend keys", async ({ page }) => {
   await page.goto("/profile");
   // Every group heading, so a regression that drops a whole section fails here.

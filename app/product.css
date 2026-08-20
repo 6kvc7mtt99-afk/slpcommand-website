@@ -801,35 +801,10 @@ a.p-rung-val.none:hover { text-decoration: underline; }
 /* ── 10. Progress ────────────────────────────────────────── */
 .p-progress-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
-  gap: 48px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 48px 64px;
   align-items: center;
 }
-.p-dial { position: relative; display: grid; place-items: center; }
-.p-dial svg { display: block; width: 100%; max-width: 260px; height: auto; }
-.p-dial-track { fill: none; stroke: color-mix(in srgb, var(--p-ink) 11%, transparent); stroke-width: 10; }
-.p-dial-fill {
-  fill: none;
-  stroke: var(--p-accent);
-  stroke-width: 10;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 1.1s var(--p-ease);
-}
-.p-dial-center { position: absolute; text-align: center; }
-.p-dial-center b { display: block; font-size: 40px; font-weight: 650; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; line-height: 1; }
-.p-dial-center span { display: block; margin-top: 6px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--p-muted); font-weight: 650; }
-
-.p-dial-scale {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 250px;
-  margin-top: -14px;
-  font-size: 11px;
-  color: var(--p-muted);
-  font-variant-numeric: tabular-nums;
-}
-.p-dial-scale span:nth-child(2) { letter-spacing: 0.08em; text-transform: uppercase; font-weight: 650; }
 
 /* Per-skill breakdown table */
 .p-skill-table { display: flex; flex-direction: column; }
@@ -1132,16 +1107,34 @@ a.p-dest:hover {
   list-style: none;
   margin: 0;
   padding: 0;
-  pointer-events: none;
 }
-.inst-legend li { display: flex; align-items: center; gap: 6px; }
-.inst-legend i { width: 7px; height: 7px; border-radius: 50%; display: block; }
+/* Each entry is a real hover/focus target — see ReadinessInstrument's
+   highlightRef — so it isolates that skill's ring in the instrument
+   above. A 3D object with four overlapping rings otherwise gives no
+   way to answer "which one is mine?" without this. */
+.inst-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 7px;
+  margin: -3px -7px;
+  border-radius: var(--p-r-sm);
+  cursor: default;
+  transition: background var(--p-t-fast) var(--p-ease);
+}
+.inst-legend li:hover,
+.inst-legend li:focus-visible { background: color-mix(in srgb, var(--p-ink) 6%, transparent); outline: none; }
+.inst-legend li.is-hover span,
+.inst-legend li.is-hover b { color: var(--p-ink); }
+.inst-legend i { width: 7px; height: 7px; border-radius: 50%; display: block; transition: transform var(--p-t) var(--p-ease); }
+.inst-legend li.is-hover i { transform: scale(1.35); }
 .inst-legend span {
   font-size: 10.5px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--p-muted);
   font-weight: 600;
+  transition: color var(--p-t-fast) var(--p-ease);
 }
 .inst-legend b { font-size: 11.5px; color: var(--p-ink); font-weight: 600; }
 @media (max-width: 640px) {

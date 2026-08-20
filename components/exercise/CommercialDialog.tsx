@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function CommercialDialog({
   open,
   title = "This feature is not available on your current plan.",
@@ -12,13 +14,20 @@ export function CommercialDialog({
   if (!open) return null;
   return (
     <div className="dialog-backdrop" role="dialog" aria-modal="true" aria-labelledby="commercial-title">
-      <article className="home-card dialog-card">
-        <p className="home-kicker">Plan</p>
+      <article className="plan-lock plan-lock-dialog">
+        <span className="plan-lock-mark" aria-hidden="true" />
+        <p className="plan-lock-kicker">Plan boundary</p>
         <h2 id="commercial-title">{title}</h2>
-        <p className="muted">{body}</p>
-        <button className="btn btn-primary" type="button" onClick={onClose}>
-          Close
-        </button>
+        <p className="plan-lock-body">{body}</p>
+        <div className="cta-row" style={{ marginTop: 18 }}>
+          <button className="btn btn-primary" type="button" onClick={onClose}>
+            Close
+          </button>
+          <Link className="plan-lock-link" href="/profile#plan" onClick={onClose}>
+            View plan &amp; usage
+            <span className="p-arrow" aria-hidden="true">→</span>
+          </Link>
+        </div>
       </article>
     </div>
   );

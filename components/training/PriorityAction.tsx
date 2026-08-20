@@ -33,7 +33,7 @@ export function PriorityAction({
   secondaryLabel?: string;
 }) {
   return (
-    <div className="priority-action" data-reveal>
+    <div className="priority-action p-elevate is-current" data-reveal>
       <span className="priority-mark" aria-hidden="true" />
       <Link href={href} className="priority-body">
         <span className="p-eyebrow">{eyebrow}</span>

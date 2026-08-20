@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ConfidenceScaleCard, TransitionBanner } from "@/components/home/EstimatedSlpHero";
-import { ProgressDial } from "@/components/progress/ProgressDial";
+import { ReadinessInstrument, type InstrumentSkill } from "@/components/instrument/ReadinessInstrument";
 import { displayOverallLevel } from "@/lib/api/progress";
 import { loadProgress } from "@/lib/server/home";
 import { evidenceUnit } from "@/lib/evidenceUnit";
@@ -17,6 +17,19 @@ export default async function ProgressPage() {
     progress?.skills.listening.confidence_label ||
     progress?.overall.confidence ||
     "";
+
+  // Same instrument Home uses, fed the same real per-skill shape — this
+  // is the one place in the product where "where do I stand" and "where
+  // am I heading" are the same four numbers, so they get the same
+  // object rather than a second, flatter chart re-deriving it.
+  const instrumentSkills: InstrumentSkill[] = SKILLS.map((skill) => {
+    const row = progress?.skills[skill];
+    const value = row?.available && row.level != null ? Number(row.level) : NaN;
+    return { key: skill, label: skill, level: Number.isFinite(value) ? value : null };
+  });
+  const targetRaw = (progress?.targetLevel ?? "").toString().trim();
+  const targetParsed = targetRaw === "" ? NaN : Number(targetRaw);
+  const targetNum = Number.isFinite(targetParsed) && targetParsed > 0 ? targetParsed : null;
 
   return (
     <div className="p-progress-page">
@@ -54,13 +67,9 @@ export default async function ProgressPage() {
             </dl>
           ) : null}
         </div>
-        {hasDial ? (
-          <ProgressDial
-            level={overall!}
-            caption="Estimated SLP"
-            target={progress?.targetLevel ? String(progress.targetLevel) : null}
-          />
-        ) : null}
+        <aside className="p-instrument-bay" aria-label="Readiness by skill">
+          <ReadinessInstrument skills={instrumentSkills} overall={overall} target={targetNum} size={360} />
+        </aside>
       </section>
 
       <TransitionBanner progress={progress} />
