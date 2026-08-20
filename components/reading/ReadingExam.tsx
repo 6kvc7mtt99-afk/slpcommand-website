@@ -114,7 +114,19 @@ export function ReadingExam() {
   );
 
   return (
-    <ExerciseShell skill="Reading" mode="Exam" title="Exam simulation">
+    <ExerciseShell
+      skill="Reading"
+      mode="Exam"
+      title="Exam simulation"
+      progress={phase === "live" && exam ? { current: index + 1, total: exam.items.length } : null}
+      toolbar={
+        phase === "live" && exam ? (
+          <div className="exam-toolbar">
+            <ExamTimer seconds={exam.timeLimitSeconds} onExpire={expire} />
+          </div>
+        ) : null
+      }
+    >
       {phase === "gate" ? (
         <ExamDisclaimerGate skill="reading" onAccept={() => void begin()} onCancel={() => router.push("/reading")} />
       ) : null}
@@ -131,12 +143,7 @@ export function ReadingExam() {
 
       {phase === "live" && exam && item ? (
         <div className="exam-live">
-          <div className="exam-toolbar">
-            <ExamTimer seconds={exam.timeLimitSeconds} onExpire={expire} />
-            <p className="muted">
-              {index + 1} / {exam.items.length} · answered {answeredCount}
-            </p>
-          </div>
+          <p className="exam-count muted">answered {answeredCount} of {exam.items.length}</p>
           <div className="reading-workspace">
           <article className="reading-passage">
             {item.passageTitle ? <h2>{item.passageTitle}</h2> : null}

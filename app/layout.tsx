@@ -4,6 +4,7 @@ import "../style.css";
 import "./design-system.css";
 import "./experience.css";
 import "./product.css";
+import "./task.css";
 import { SentryInit } from "./sentry-init";
 
 export const metadata: Metadata = {
