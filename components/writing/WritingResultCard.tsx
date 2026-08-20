@@ -43,23 +43,29 @@ export function WritingResultCard({
   primaryAction?: boolean;
 }) {
   const paragraphs = paragraphsOf(result.correction);
+  // The report arrives as a sequence — verdict, then the examiner's own
+  // paragraphs, then what to do next — rather than a single block, since
+  // that is genuinely the order a reader uses it in. Each section's
+  // position in that real sequence drives its stagger delay; nothing
+  // here is timed against the evaluator's actual response latency.
+  let step = 0;
   return (
-    <article className="assessment">
-      <header className="assessment-head">
+    <article className="assessment p-ignite">
+      <header className="assessment-head p-reveal-item" style={{ ["--i" as string]: step++ }}>
         <p className="assessment-kind">{result.formative ? "Indicative assessment" : "Writing assessment"}</p>
         <h2>Your submission has been assessed</h2>
         {note ? <p className="assessment-note">{note}</p> : null}
       </header>
 
       {result.taskFulfilment ? (
-        <section className="assessment-verdict">
+        <section className="assessment-verdict p-reveal-item" style={{ ["--i" as string]: step++ }}>
           <p className="assessment-label">Task fulfilment</p>
           <p className="assessment-verdict-text">{result.taskFulfilment}</p>
         </section>
       ) : null}
 
       {paragraphs.length ? (
-        <section className="assessment-body">
+        <section className="assessment-body p-reveal-item" style={{ ["--i" as string]: step++ }}>
           <p className="assessment-label">Examiner’s report</p>
           {paragraphs.map((p, i) => (
             <p key={i}>{p}</p>
@@ -67,7 +73,7 @@ export function WritingResultCard({
         </section>
       ) : null}
 
-      <footer className="assessment-next">
+      <footer className="assessment-next p-reveal-item" style={{ ["--i" as string]: step++ }}>
         <p className="assessment-label">Next</p>
         <button className={primaryAction ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={onNext}>
           {nextLabel}

@@ -28,6 +28,14 @@ export function SpeakingRecorder({
   const chunks = useRef<Blob[]>([]);
   const stream = useRef<MediaStream | null>(null);
   const timer = useRef<number | null>(null);
+  // Real signal, not decoration: while recording, the ring's glow
+  // radius is driven by this AnalyserNode reading the actual
+  // microphone stream, not a fixed-timing CSS loop.
+  const ringRef = useRef<HTMLDivElement | null>(null);
+  const audioCtx = useRef<AudioContext | null>(null);
+  const analyser = useRef<AnalyserNode | null>(null);
+  const levelData = useRef<Uint8Array<ArrayBuffer> | null>(null);
+  const levelRaf = useRef(0);
 
   useEffect(() => {
     function discard() {
@@ -58,6 +66,64 @@ export function SpeakingRecorder({
     stream.current = null;
     if (timer.current) window.clearInterval(timer.current);
     timer.current = null;
+    stopLevelMeter();
+  }
+
+  function stopLevelMeter() {
+    if (levelRaf.current) cancelAnimationFrame(levelRaf.current);
+    levelRaf.current = 0;
+    analyser.current = null;
+    levelData.current = null;
+    if (audioCtx.current) {
+      const ctx = audioCtx.current;
+      audioCtx.current = null;
+      void ctx.close();
+    }
+    ringRef.current?.style.removeProperty("--level");
+  }
+
+  /**
+   * Reads real amplitude off the same stream MediaRecorder is
+   * capturing (a separate, unconnected tap — never routed to
+   * destination, so nothing is audible or double-recorded) and writes
+   * it straight to a CSS custom property via a ref, bypassing React
+   * state so a 60fps meter never triggers a re-render. Best-effort: if
+   * AudioContext throws (unsupported browser, exhausted context count),
+   * recording continues exactly as before this existed.
+   */
+  function startLevelMeter(liveStream: MediaStream) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    try {
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const source = ctx.createMediaStreamSource(liveStream);
+      const node = ctx.createAnalyser();
+      node.fftSize = 256;
+      node.smoothingTimeConstant = 0.6;
+      source.connect(node);
+      audioCtx.current = ctx;
+      analyser.current = node;
+      levelData.current = new Uint8Array(new ArrayBuffer(node.frequencyBinCount));
+      const tick = () => {
+        const a = analyser.current;
+        const data = levelData.current;
+        if (!a || !data) return;
+        a.getByteTimeDomainData(data);
+        let sumSquares = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          sumSquares += v * v;
+        }
+        const rms = Math.sqrt(sumSquares / data.length);
+        const level = Math.min(1, rms * 4.5);
+        ringRef.current?.style.setProperty("--level", level.toFixed(3));
+        levelRaf.current = requestAnimationFrame(tick);
+      };
+      levelRaf.current = requestAnimationFrame(tick);
+    } catch {
+      /* Recording itself does not depend on this. */
+    }
   }
 
   async function start() {
@@ -65,6 +131,7 @@ export function SpeakingRecorder({
     try {
       const next = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.current = next;
+      startLevelMeter(next);
       const mime = pickRecorderMime();
       const recorder = mime ? new MediaRecorder(next, { mimeType: mime }) : new MediaRecorder(next);
       chunks.current = [];
@@ -107,7 +174,7 @@ export function SpeakingRecorder({
     <div className={`recorder is-${state}${state === "recording" ? " is-recording" : ""}`}>
       <p className="home-kicker">Microphone</p>
       <div className="recorder-face">
-        <div className="recorder-ring" aria-hidden="true">
+        <div className={`recorder-ring${state === "recording" ? " p-live-ring" : ""}`} ref={ringRef} aria-hidden="true">
           <span className="recorder-dot" />
         </div>
         <p className="recorder-clock" role="timer" aria-label="Recording" aria-live="polite">

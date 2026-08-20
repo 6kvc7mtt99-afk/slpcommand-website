@@ -118,7 +118,7 @@ export function IntelligenceBriefing({
           </div>
           <ul className="intel-bars">
             {bars.map((bar, i) => (
-              <li key={bar.label} style={{ ["--i" as string]: i }}>
+              <li key={bar.label} className="p-reveal-item" style={{ ["--i" as string]: i }}>
                 <span className="intel-bar-label">{bar.label}</span>
                 <span className="intel-bar-track">
                   <i style={{ width: `${Math.max(0, Math.min(100, bar.value))}%` }} />
@@ -143,8 +143,8 @@ export function IntelligenceBriefing({
             {ranked.map((item, i) => {
               const tone = severityTone(item.severity);
               return (
-                <li key={item.key} style={{ ["--i" as string]: i }}>
-                  <Link href={weaknessHref(item)} className={`intel-finding tone-${tone}`}>
+                <li key={item.key} className="p-reveal-item" style={{ ["--i" as string]: i }}>
+                  <Link href={weaknessHref(item)} className={`intel-finding tone-${tone} p-elevate`}>
                     <span className="intel-finding-bar" aria-hidden="true" />
                     <span className="intel-finding-main">
                       <strong>{item.label || item.key}</strong>
@@ -212,7 +212,7 @@ export function IntelligenceBriefing({
           </div>
         </div>
         <div className="intel-exits">
-          <Link href={academyHref} className="intel-exit is-primary">
+          <Link href={academyHref} className="intel-exit is-primary p-elevate">
             <span className="p-eyebrow">Learn</span>
             <strong>Open {skill} Academy</strong>
             <p>Structured classes chosen from this same evidence.</p>
@@ -220,7 +220,7 @@ export function IntelligenceBriefing({
               Open Academy <span className="p-arrow" aria-hidden="true">→</span>
             </span>
           </Link>
-          <Link href={practiceHref} className="intel-exit">
+          <Link href={practiceHref} className="intel-exit p-elevate">
             <span className="p-eyebrow">Train</span>
             <strong>Go to practice</strong>
             <p>Add attempts. Nothing here moves until you do.</p>

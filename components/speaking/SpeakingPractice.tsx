@@ -142,17 +142,17 @@ const CRITERIA_LABEL: Record<"content" | "tasks" | "accuracy" | "textProduced", 
 export function SpeakingResultCard({ result }: { result: SpeakingEvaluateResult }) {
   const rating = result.rating;
   return (
-    <article className="speaking-result">
+    <article className="speaking-result p-ignite">
       <p className="section-eyebrow">Speaking assessment</p>
-      <div className="writing-result-verdict">
+      <div className="writing-result-verdict p-reveal-item" style={{ ["--i" as string]: 0 }}>
         <p className="home-kicker">Verdict</p>
         <p>{rating.credited ? `This task met Level ${rating.levelAttempted}` : `This task did not meet Level ${rating.levelAttempted}`}</p>
       </div>
       <p className="muted">No band yet. A single task does not receive a decimal SLP.</p>
       {!rating.ratable ? <p className="err">{rating.ratableReason || "Insufficient evidence to rate this attempt."}</p> : null}
       <ul className="criteria-list">
-        {(["content", "tasks", "accuracy", "textProduced"] as const).map((key) => (
-          <li key={key}>
+        {(["content", "tasks", "accuracy", "textProduced"] as const).map((key, i) => (
+          <li key={key} className="p-reveal-item" style={{ ["--i" as string]: i + 1 }}>
             <span className={`criteria-status ${rating.criteria[key].met ? "met" : "unmet"}`}>
               {rating.criteria[key].met ? "Met" : "Not met"}
             </span>

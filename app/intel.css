@@ -113,7 +113,9 @@
   overflow: hidden;
   transition: transform var(--p-t) var(--p-ease), border-color var(--p-t) var(--p-ease), box-shadow var(--p-t) var(--p-ease);
 }
-.intel-finding:hover { transform: translateY(-2px); border-color: var(--p-line-strong); box-shadow: var(--p-edge), var(--p-shadow-2); text-decoration: none; }
+/* Lift/shadow on hover come from .p-elevate (instrument.css); this adds
+   only what that shared primitive doesn't cover. */
+.intel-finding:hover { border-color: var(--p-line-strong); text-decoration: none; }
 .intel-finding-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
 .intel-finding.tone-critical .intel-finding-bar { background: var(--p-bad); }
 .intel-finding.tone-warn .intel-finding-bar { background: var(--p-warn); }
@@ -147,10 +149,9 @@
   background-image: linear-gradient(135deg, var(--p-skill-glow), transparent 58%);
   box-shadow: var(--p-edge), var(--p-shadow-1);
   overflow: hidden;
-  transition: transform var(--p-t) var(--p-ease), box-shadow var(--p-t) var(--p-ease);
 }
-.priority-action:hover,
-.priority-action:focus-within { transform: translateY(-3px); box-shadow: var(--p-edge), var(--p-shadow-2); }
+/* Elevation (the permanent lift, since this is always the current
+   priority) comes from .p-elevate.is-current in instrument.css. */
 .priority-mark {
   position: absolute;
   left: 30px; top: 33px;
@@ -205,7 +206,7 @@
   text-decoration: none; color: inherit;
   transition: transform var(--p-t) var(--p-ease), border-color var(--p-t) var(--p-ease), box-shadow var(--p-t) var(--p-ease);
 }
-.intel-exit:hover { transform: translateY(-3px); border-color: var(--p-line-strong); box-shadow: var(--p-edge), var(--p-shadow-2); text-decoration: none; }
+.intel-exit:hover { border-color: var(--p-line-strong); text-decoration: none; }
 .intel-exit.is-primary { border-color: color-mix(in srgb, var(--p-accent) 42%, var(--p-line)); }
 .intel-exit .p-eyebrow { margin-bottom: 4px; color: var(--p-skill, var(--p-accent)); }
 .intel-exit strong { font-size: 19px; font-weight: 640; letter-spacing: -0.025em; }

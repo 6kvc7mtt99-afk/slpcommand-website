@@ -64,7 +64,7 @@ test.describe("visual QA — workspace", () => {
       { path: "/speaking", name: "speaking-home", text: "Speaking" },
       { path: "/speaking/practice", name: "speaking-practice", text: "Audio is sent" },
       { path: "/speaking/exam", name: "speaking-exam", text: "Educational simulation only" },
-      { path: "/progress", name: "progress", text: "Estimated SLP" },
+      { path: "/progress", name: "progress", text: "You are at SLP 2.2." },
       { path: "/profile", name: "profile", text: "Profile" },
       { path: "/admin", name: "admin", text: "Admin access" },
     ];

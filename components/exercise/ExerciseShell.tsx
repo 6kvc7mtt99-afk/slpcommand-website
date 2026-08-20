@@ -158,6 +158,18 @@ export function SkillLaunch({
   );
 }
 
+/**
+ * The plan boundary.
+ *
+ * Every caller supplies its own real reason — a spent weekly quota
+ * reads differently from a feature the plan has never included, and
+ * conflating them into one generic "upgrade" message would misstate
+ * which one actually happened (see SkillHub's lockReason for the same
+ * distinction on skill-hub entry points). This component only owns the
+ * shared identity: a boundary is a boundary, wherever it's hit, and the
+ * one honest, universal next step is the real plan page — not a
+ * fabricated benefits list this component cannot verify per caller.
+ */
 export function CommercialCard({
   title = "You have used the allowance on your current plan.",
   body = "Subscriptions are managed in the iOS app until web billing exists.",
@@ -166,10 +178,15 @@ export function CommercialCard({
   body?: string;
 }) {
   return (
-    <article className="home-card home-pro-banner" role="status">
-      <p className="home-kicker">Plan</p>
+    <article className="plan-lock" role="status">
+      <span className="plan-lock-mark" aria-hidden="true" />
+      <p className="plan-lock-kicker">Plan boundary</p>
       <h2>{title}</h2>
-      <p className="muted">{body}</p>
+      <p className="plan-lock-body">{body}</p>
+      <Link className="plan-lock-link" href="/profile#plan">
+        View plan &amp; usage
+        <span className="p-arrow" aria-hidden="true">→</span>
+      </Link>
     </article>
   );
 }
