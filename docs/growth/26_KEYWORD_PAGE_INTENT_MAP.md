@@ -63,7 +63,7 @@ useful. Do not spray.
 | Rank | URL | Primary keyword | Why | Priority |
 |---|---|---|---|---|
 | 1 | `/guides/reading` | STANAG 6001 reading | Completes the four-skill cluster; inference-vs-vocabulary is a real misconception | P1 |
-| 2 | `/guides/speaking` | STANAG 6001 speaking | Highest-anxiety skill; five named dimensions are a differentiator | P1 |
+| 2 | `/guides/speaking` | STANAG 6001 speaking | Highest-anxiety skill; the four named assessment criteria are a differentiator | P1 |
 | 3 | `/guides/how-to-prepare` | how to prepare for STANAG 6001 | Commercial how-to, currently unserved | P1 |
 | 4 | `/es/aprobar-slp-3333` | cómo aprobar el SLP 3333 | Spain, high commercial intent | P2 |
 | 5 | `/compare/stanag-vs-cefr` | STANAG 6001 vs CEFR | Frequent question; must carry heavy caveats — the mapping is not official | P2 |

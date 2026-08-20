@@ -31,6 +31,7 @@ Parent strategy (do not replace):
 | [24_CHAIRMAN_AUDIT.md](24_CHAIRMAN_AUDIT.md) | Consolidated chairman audit: findings, both scorecards, approvals |
 | [25_TECHNICAL_CLOSURE_2026-08-18.md](25_TECHNICAL_CLOSURE_2026-08-18.md) | Lint, E2E determinism, CSRF origin, closure verification |
 | [26_KEYWORD_PAGE_INTENT_MAP.md](26_KEYWORD_PAGE_INTENT_MAP.md) | Keyword → page → intent, cannibalisation, gaps |
+| [27_MARKETING_EXECUTION_PLAN.md](27_MARKETING_EXECUTION_PLAN.md) | Infrastructure → execution handoff: external stack, roadmap, Rafael/Claude split |
 | [os/README.md](os/README.md) | Roles + handoff format |
 | [os/QUALITY_GATE.md](os/QUALITY_GATE.md) | Pre-publish scorecard (≥80 to ship) |
 | [os/EXPERIMENTS.md](os/EXPERIMENTS.md) | Experiment ledger |

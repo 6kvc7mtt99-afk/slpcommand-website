@@ -24,7 +24,7 @@ Verification: VERIFIED · NEEDS REVIEW · FORBIDDEN
 | C15 | Used by NATO / unit X | UNVERIFIED | — | — | FORBIDDEN | N | — | Any unit, HQ, or flag endorsement |
 | C16 | Guaranteed apto / pass | MARKETING CLAIM | — | — | FORBIDDEN | N | — | “Aprobarás sí o sí” |
 | C17 | 11 Academy topics per skill | PRODUCT FACT | slpcommand.com | 2026-08-18 | VERIFIED | Y | Exact number while true | Inflate |
-| C18 | Speaking scored on 5 dimensions | PRODUCT FACT | slpcommand.com | 2026-08-18 | VERIFIED | Y | Name them | “Official examiner score” |
+| C18 | Speaking scored on four assessment criteria (Content, Tasks, Accuracy, Text produced) | PRODUCT FACT | `components/speaking/SpeakingPractice.tsx` (`SpeakingResultCard`, keys `content`/`tasks`/`accuracy`/`textProduced`) | 2026-08-19 | VERIFIED against product code | Y | Name the four; “four assessment criteria” | “Five dimensions”; “Official examiner score”; stating these four are a verbatim quotation from a specific BILC document without a fetched, dated source for that document |
 | C19 | Ready GO €119–129/mo | COMPETITOR FACT | readygotraining.com | 2026-08-18 | VERIFIED | Internal / fair compare only | Do not misquote their price |
 | C20 | Okara is $120/mo | UNVERIFIED | Conflicting public pages ($99 / $129 / $249) | 2026-08-18 | UNVERIFIED | N | Confirm checkout | Publish a price we did not see |
 

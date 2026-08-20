@@ -43,7 +43,7 @@ Military and defence personnel, Guardia Civil / FAS candidates, NATO-related sta
 
 1. Separate SLP 2 and SLP 3 formats — not one slider labelled “harder”.
 2. Writing judged on **task** and **language** separately.
-3. Speaking scored on five named dimensions with reasoning.
+3. Speaking scored on the four named assessment criteria (Content, Tasks, Accuracy, Text produced) with reasoning.
 4. Intelligence that can say “limited evidence” or “out of date”.
 5. A daily plan that also says what **not** to train.
 6. Explicit refusal to invent a pass probability.
