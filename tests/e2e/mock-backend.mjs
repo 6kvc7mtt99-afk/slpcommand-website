@@ -184,7 +184,17 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === "/api/writing/academy/home" && req.method === "POST") {
-    res.end(JSON.stringify({ coach: { headline: "Rewrite the opening", detail: "Task coverage first." }, todaysFocus: { title: "Openings" }, lesson: { id: "wl-1", title: "Openings", reason: "weak openings" }, readiness: { mastered: 0, emerging: 1, weak: 1, untested: 4 }, sessions: [] }));
+    res.end(JSON.stringify({
+      coach: { headline: "Rewrite the opening", detail: "Your last three openings buried the claim in the second sentence." },
+      todaysFocus: { title: "Openings", reasons: ["Two of your last three submissions lost task-fulfilment points on the opening line.", "SLP3 examiners weight the first sentence heavily — it sets the claim they grade against."] },
+      lesson: { id: "wl-1", title: "Openings", reason: "weak openings" },
+      readiness: { mastered: 0, emerging: 1, weak: 1, untested: 4 },
+      sessions: [
+        { id: "s1", title: "Warm-up: claim in one sentence", subtitle: "Rewrite three prompts' opening lines only.", minutes: 8 },
+        { id: "s2", title: "Full task under time", subtitle: "One complete SLP3 task, timed.", minutes: 35 },
+        { id: "s3", title: "Review the examiner's report", subtitle: "Read the correction against your own draft.", minutes: 10 },
+      ],
+    }));
     return;
   }
   if (url.pathname === "/api/writing/academy/lesson/wl-1") {

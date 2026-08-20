@@ -33,15 +33,57 @@
 .intel-facts { margin-top: 4px; }
 .intel-step { margin-top: 52px; }
 .intel-step-head { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 22px; }
-.intel-step-no {
-  flex: none;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--p-skill, var(--p-accent));
-  padding-top: 4px;
-  letter-spacing: 0.06em;
-}
 .intel-step-head h2 { font-size: var(--p-fs-title); letter-spacing: -0.028em; font-weight: 640; margin: 0 0 4px; }
+
+/* ── The spine ─────────────────────────────────────────────
+   Evidence → diagnosis → priority → action is one diagnostic
+   argument, not four dashboard widgets — a single connecting line
+   threads every step's node, continuing past the exits into a
+   quiet closing pointer at Progress. This is the same spine+node
+   grammar as the Academy training path (.path-lessons), reused
+   rather than reinvented, so the two surfaces read as one system.
+
+   Depth is real, not decorative: each node is filled a little more
+   than the last via color-mix keyed to --i (the step's position in
+   the actual reasoning sequence), so the path reads as moving from
+   "here is what we know" toward "here is what to do" — proximity
+   encodes how close the step is to action, not ornament. */
+.intel-spine { position: relative; }
+.intel-spine::before {
+  content: "";
+  position: absolute;
+  left: 15px; top: 4px; bottom: 4px;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--p-line-strong) 6%, var(--p-line) 92%, transparent);
+  border-radius: 1px;
+}
+.intel-step-no {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  border: 1.5px solid color-mix(in srgb, var(--p-skill, var(--p-accent)) calc(28% + var(--i, 0) * 16%), var(--p-line-strong));
+  background: color-mix(in srgb, var(--p-skill, var(--p-accent)) calc(4% + var(--i, 0) * 7%), var(--p-bg));
+  color: color-mix(in srgb, var(--p-skill, var(--p-accent)) calc(55% + var(--i, 0) * 12%), var(--p-muted));
+  box-shadow: 0 0 0 calc(3px + var(--i, 0) * 1px) color-mix(in srgb, var(--p-skill-glow) calc(40% + var(--i, 0) * 20%), transparent);
+}
+.intel-spine-end {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 26px 0 6px;
+}
+.intel-spine-end .intel-step-no { background: var(--p-skill, var(--p-accent)); border-color: var(--p-skill, var(--p-accent)); }
+.intel-spine-end p { margin: 0; font-size: 13.5px; color: var(--p-muted); }
+.intel-spine-end a { font-weight: 620; }
 .intel-step-head p { margin: 0; font-size: 14px; color: var(--p-muted); max-width: 62ch; }
 
 /* Evidence bars */
@@ -282,3 +324,29 @@ a.path-lesson-body:hover .path-go { transform: translateX(3px); color: var(--p-s
    below carries the visual weight the old aside used to. */
 .academy-masthead { max-width: 76ch; padding: 24px 0 4px; }
 .academy-masthead .p-lead { margin-bottom: 0; }
+
+/* Writing Academy — plain-text coaching reasons, not clickable findings. */
+.academy-reasons { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; max-width: 68ch; }
+.academy-reasons li {
+  position: relative; padding-left: 18px; font-size: 14.5px; color: var(--p-ink2); line-height: 1.5;
+}
+.academy-reasons li::before {
+  content: ""; position: absolute; left: 0; top: 0.6em; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--p-skill, var(--p-accent));
+}
+
+/* Writing Academy — today's plan is a real ordered sequence (the backend's
+   own session order), so it earns numbered steps rather than the
+   curriculum-tree treatment reading/listening use for an unordered catalog. */
+.academy-sessions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; max-width: 780px; }
+.academy-sessions li {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 16px 4px; border-bottom: 1px solid var(--p-line);
+  animation: p-rise 500ms var(--p-ease) both; animation-delay: calc(var(--i, 0) * 70ms);
+}
+.academy-sessions li:last-child { border-bottom: 0; }
+.academy-session-no { flex: none; font-size: 12px; color: var(--p-muted); padding-top: 2px; }
+.academy-sessions li > div { flex: 1; min-width: 0; }
+.academy-sessions strong { display: block; font-size: 15.5px; font-weight: 620; letter-spacing: -0.01em; }
+.academy-sessions p { margin: 4px 0 0; font-size: 13.5px; color: var(--p-muted); }
+.academy-session-min { flex: none; font-size: 12px; color: var(--p-muted); padding-top: 2px; }

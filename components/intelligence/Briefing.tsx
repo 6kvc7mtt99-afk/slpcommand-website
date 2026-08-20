@@ -62,7 +62,9 @@ export function IntelligenceBriefing({
   if (ranked.length) steps.push("diagnosis");
   if (priority || missionsLocked) steps.push("priority");
   steps.push("action");
-  const stepNo = (name: string) => String(steps.indexOf(name) + 1).padStart(2, "0");
+  const stepIdx = (name: string) => steps.indexOf(name);
+  const stepNo = (name: string) => String(stepIdx(name) + 1).padStart(2, "0");
+  const nodeStyle = (name: string) => ({ ["--i" as string]: stepIdx(name) });
 
   return (
     <div className={`intel skill-${key}`}>
@@ -104,10 +106,11 @@ export function IntelligenceBriefing({
         )}
       </section>
 
+      <div className="intel-spine">
       {steps.includes("evidence") && bars.length ? (
         <section className="p-section intel-step" data-reveal>
           <div className="intel-step-head">
-            <span className="intel-step-no p-num">{stepNo("evidence")}</span>
+            <span className="intel-step-no p-num" style={nodeStyle("evidence")}>{stepNo("evidence")}</span>
             <div>
               <h2>What the evidence shows</h2>
               <p>Accuracy the backend has actually recorded, by sub-skill.</p>
@@ -130,7 +133,7 @@ export function IntelligenceBriefing({
       {steps.includes("diagnosis") ? (
         <section className="p-section intel-step" data-reveal>
           <div className="intel-step-head">
-            <span className="intel-step-no p-num">{stepNo("diagnosis")}</span>
+            <span className="intel-step-no p-num" style={nodeStyle("diagnosis")}>{stepNo("diagnosis")}</span>
             <div>
               <h2>What is holding you back</h2>
               <p>Ranked by severity. Each one opens the class that trains it.</p>
@@ -167,7 +170,7 @@ export function IntelligenceBriefing({
       {steps.includes("priority") ? (
         <section className="p-section intel-step" data-reveal>
           <div className="intel-step-head">
-            <span className="intel-step-no p-num">{stepNo("priority")}</span>
+            <span className="intel-step-no p-num" style={nodeStyle("priority")}>{stepNo("priority")}</span>
             <div>
               <h2>Train this first</h2>
               <p>Chosen by the backend from the same evidence — not a second opinion.</p>
@@ -202,7 +205,7 @@ export function IntelligenceBriefing({
 
       <section className="p-section intel-step" data-reveal>
         <div className="intel-step-head">
-          <span className="intel-step-no p-num">{stepNo("action")}</span>
+          <span className="intel-step-no p-num" style={nodeStyle("action")}>{stepNo("action")}</span>
           <div>
             <h2>Where to go now</h2>
             <p>The Academy owns the class. Practice is where the evidence changes.</p>
@@ -227,6 +230,14 @@ export function IntelligenceBriefing({
           </Link>
         </div>
       </section>
+
+      <div className="intel-spine-end" data-reveal>
+        <span className="intel-step-no" style={{ ["--i" as string]: steps.length }} aria-hidden="true" />
+        <p>
+          What you train from here updates <Link href="/progress">Progress</Link>.
+        </p>
+      </div>
+      </div>
     </div>
   );
 }
