@@ -48,9 +48,14 @@ function quotaLine(quota: Destination["quota"]): string | null {
 function lockReason(dest: Destination): string {
   const quota = dest.quota;
   if (quota && quota.remaining === 0 && quota.limit != null) {
-    return `You have used all ${quota.limit}${periodPhrase(quota.period)}. This resets ${
-      quota.period === "weekly" ? "next week" : quota.period === "monthly" ? "next month" : "with your plan"
-    }.`;
+    const resets =
+      quota.period === "weekly" ? "next week" : quota.period === "monthly" ? "next month" : "with your plan";
+    // "all 1 this month" reads as a bug even though the number is right.
+    const spent =
+      quota.limit === 1
+        ? `You have used your one${periodPhrase(quota.period)}`
+        : `You have used all ${quota.limit}${periodPhrase(quota.period)}`;
+    return `${spent}. This resets ${resets}.`;
   }
   return dest.disabledReason ?? "Not available on your current plan.";
 }
