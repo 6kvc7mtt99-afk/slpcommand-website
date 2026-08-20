@@ -1,4 +1,5 @@
 import type { ProgressResponse } from "@/lib/api/types";
+import { evidenceUnit } from "@/lib/evidenceUnit";
 
 /**
  * "Where you stand in this skill" — the instrument beside each hub hero.
@@ -53,7 +54,7 @@ export function SkillStatus({
           <div>
             <dt>Evidence</dt>
             <dd className="p-num">
-              {evidence.count} {evidence.unit || "attempts"}
+              {evidence.count} {evidenceUnit(evidence.unit)}
             </dd>
           </div>
         ) : null}

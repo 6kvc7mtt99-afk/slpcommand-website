@@ -3,6 +3,7 @@ import { ConfidenceScaleCard, TransitionBanner } from "@/components/home/Estimat
 import { ProgressDial } from "@/components/progress/ProgressDial";
 import { displayOverallLevel } from "@/lib/api/progress";
 import { loadProgress } from "@/lib/server/home";
+import { evidenceUnit } from "@/lib/evidenceUnit";
 
 const SKILLS = ["reading", "listening", "writing", "speaking"] as const;
 
@@ -80,7 +81,7 @@ export default async function ProgressPage() {
               // Joined rather than concatenated with leading separators, so a
               // row with only a confidence label never renders a stray "· ".
               const meta: string[] = [];
-              if (row.evidence?.count) meta.push(`${row.evidence.count} ${row.evidence.unit || "attempts"}`);
+              if (row.evidence?.count) meta.push(`${row.evidence.count} ${evidenceUnit(row.evidence.unit)}`);
               else if (level == null) meta.push("no evidence yet");
               if (row.confidence_label) meta.push(row.confidence_label);
               if (row.stale) meta.push("out of date");
