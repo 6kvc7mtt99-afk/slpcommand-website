@@ -49,6 +49,11 @@ function timeoutFor(path: string): number {
     return AI_TIMEOUT;
   }
   if (path.includes("/speaking/evaluate") || path.includes("/speaking/attempts/")) return 90_000;
+  // EXAM-REAL-003, Checkpoint 3 — /warmup/respond and /respond each do a Whisper
+  // transcription plus (usually) one more OpenAI call (the next examiner turn, or the
+  // rubric rating on the turn that completes a task) — same AI-call cost shape as
+  // /speaking/evaluate above, same timeout.
+  if (path.includes("/speaking/exam/")) return 90_000;
   if (path.includes("/support/conversations") && path.includes("/messages")) return 90_000;
   return DEFAULT_TIMEOUT;
 }

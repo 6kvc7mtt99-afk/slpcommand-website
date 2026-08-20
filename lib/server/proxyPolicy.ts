@@ -99,6 +99,16 @@ const ALLOW: Rule[] = [
   { method: "POST", pattern: /^\/api\/speaking\/coach\/consent$/, reason: "ok" },
   { method: "POST", pattern: /^\/api\/speaking\/coach\/session$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/speaking\/coach\/session\/[^/]+$/, reason: "ok" },
+  // EXAM-REAL-003, Checkpoint 3 — SLP3 Real Exam Speaking. No requireQuota on the backend
+  // (EXAM_MODULE has no SPEAKING entry — documented, deliberate omission, see server.js),
+  // so these are not in QUOTA_PATHS below either: there is no charge to protect against a
+  // retry double-firing. Session-start duplication is instead guarded client-side
+  // (lib/speaking/examSession.ts's inflight/cached memoization, mirroring Listening's).
+  { method: "POST", pattern: /^\/api\/speaking\/exam\/start$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/speaking\/exam\/warmup\/respond$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/speaking\/exam\/respond$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/speaking\/exam\/finish$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/speaking\/exam\/state$/, reason: "ok" },
   // requireAdminUser console. DENY is evaluated first, so shared-secret
   // POST /api/admin/billing/reconcile stays 410.
   { method: "GET", pattern: /^\/api\/admin\//, reason: "ok" },
