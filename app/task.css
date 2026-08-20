@@ -628,10 +628,24 @@
 }
 .assessment-body p:last-child { margin-bottom: 0; }
 .assessment-next { padding-top: 24px; }
+.assessment-next-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
+/* The report's real "understand why / go train it" continuation — a
+   quieter register than the primary button, since re-drafting is the
+   more common next move and this is the second-most-likely one. */
+.assessment-next-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13.5px; font-weight: 620;
+  color: var(--p-muted);
+  text-decoration: none;
+}
+.assessment-next-link:hover { color: var(--task-accent, var(--p-accent)); text-decoration: none; }
+.assessment-next-link:hover .p-arrow { transform: translateX(3px); }
+.assessment-next-link .p-arrow { transition: transform var(--p-t) var(--p-ease); }
 @media (max-width: 700px) {
   .assessment-head { padding-bottom: 18px; }
   .assessment-verdict-text { font-size: 17.5px; }
   .assessment-next .btn { width: 100%; }
+  .assessment-next-actions { flex-direction: column; align-items: flex-start; }
 }
 
 /* ── The speaking instrument ──────────────────────────────

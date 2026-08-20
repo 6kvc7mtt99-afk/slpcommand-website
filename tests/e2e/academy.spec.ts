@@ -52,6 +52,25 @@ test("Writing Intelligence renders the real learning-state model, links a blocki
   expect(results.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
 });
 
+test("Writing Practice result screen closes the loop into Intelligence and Academy, and never collapses the examiner's paragraphs", async ({ page }) => {
+  await page.goto("/writing/practice");
+  await expect(page.locator("body")).toContainText("Draft and evaluation");
+  await page.locator("#writing-draft").fill(
+    "Dear Section Commander, I am writing to report a hazard identified during this morning's inspection. ".repeat(3),
+  );
+  await page.getByRole("button", { name: "Submit for evaluation" }).click();
+  await expect(page.getByRole("heading", { name: "Your submission has been assessed" })).toBeVisible();
+  // The evaluator's response has two real paragraph breaks — three <p> elements, not one collapsed block
+  // (the section also has a ".assessment-label" <p>, excluded here since it isn't report content).
+  await expect(page.locator(".assessment-body p:not(.assessment-label)")).toHaveCount(3);
+  await expect(page.locator(".assessment-verdict-text")).toContainText("The recommendation is specific and actionable");
+  // Both continuations read the same evidence this report is drawn from — the loop the report closes.
+  await expect(page.getByRole("link", { name: /What this means for my competencies/ })).toHaveAttribute("href", "/writing/intelligence");
+  await expect(page.getByRole("link", { name: /Open Writing Academy/ })).toHaveAttribute("href", "/writing/academy");
+  const results = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  expect(results.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+});
+
 test("Writing competency map groups the real 49-lesson catalog by module and never invents a per-lesson state", async ({ page }) => {
   await page.goto("/writing/academy/map");
   await expect(page.locator("body")).toContainText("Self-Editing and Revision");

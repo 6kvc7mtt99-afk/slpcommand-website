@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { WritingCorrection } from "@/lib/api/writing";
 
 /**
@@ -75,9 +76,24 @@ export function WritingResultCard({
 
       <footer className="assessment-next p-reveal-item" style={{ ["--i" as string]: step++ }}>
         <p className="assessment-label">Next</p>
-        <button className={primaryAction ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={onNext}>
-          {nextLabel}
-        </button>
+        <div className="assessment-next-actions">
+          <button className={primaryAction ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={onNext}>
+            {nextLabel}
+          </button>
+          {/* The loop this report is part of — evaluate, then understand why,
+              then train it — was real in the backend (Writing Intelligence's
+              blockingPromotion evidence includes these same attempts) but had
+              no path here before. Both destinations read the same evidence
+              this report is drawn from, not a second opinion. */}
+          <Link className="assessment-next-link" href="/writing/intelligence">
+            What this means for my competencies
+            <span className="p-arrow" aria-hidden="true">→</span>
+          </Link>
+          <Link className="assessment-next-link" href="/writing/academy">
+            Open Writing Academy
+            <span className="p-arrow" aria-hidden="true">→</span>
+          </Link>
+        </div>
       </footer>
     </article>
   );
