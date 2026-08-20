@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
@@ -43,13 +43,15 @@ export default async function ReadingAcademyPage() {
       ) : null}
       <article className="home-card">
         <p className="home-kicker">Coverage</p>
-        <p className="coverage-row">
-          <span>Sustained {asString(summary.mastered, "0")}</span>
-          <span>Developing {asString(summary.emerging, "0")}</span>
-          <span>Needs work {asString(summary.weak, "0")}</span>
-          <span>Not asked {asString(summary.untested, "0")}</span>
-          <span>Waiting {asString(summary.blocked, "0")}</span>
-        </p>
+        <CoverageBar
+          segments={[
+            { label: "Sustained", value: Number(asString(summary.mastered, "0")) || 0, tone: "ok" },
+            { label: "Developing", value: Number(asString(summary.emerging, "0")) || 0, tone: "accent" },
+            { label: "Needs work", value: Number(asString(summary.weak, "0")) || 0, tone: "warn" },
+            { label: "Not asked", value: Number(asString(summary.untested, "0")) || 0, tone: "muted" },
+            { label: "Waiting", value: Number(asString(summary.blocked, "0")) || 0, tone: "muted" },
+          ]}
+        />
       </article>
       {curriculum.map((unit) => {
         const rec = isRecord(unit) ? unit : {};

@@ -3,16 +3,9 @@ import { redirect } from "next/navigation";
 import { HomeDashboard } from "@/components/home/HomeDashboard";
 import { loadHomeV2 } from "@/lib/server/home";
 import { readAuthCookies } from "@/lib/server/authCookies";
+import { greetingNameFromEmail } from "@/lib/displayName";
 
 export const dynamic = "force-dynamic";
-
-function greetingNameFromEmail(email: string | undefined): string | null {
-  if (!email) return null;
-  const local = email.split("@")[0] ?? "";
-  const cleaned = local.replace(/[._-]+/g, " ").trim();
-  if (!cleaned) return null;
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-}
 
 export default async function DashboardPage() {
   const hdrs = await headers();

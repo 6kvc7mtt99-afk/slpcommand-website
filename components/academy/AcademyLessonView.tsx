@@ -66,6 +66,40 @@ export function AcademyLessonView({
   );
 }
 
+/**
+ * The four/five coverage counts are real (mastered/emerging/weak/untested,
+ * optionally blocked) but rendering them as plain text gave the curriculum
+ * no sense of shape — a learner could not see at a glance whether they were
+ * mostly sustained or mostly untested. The bar is a proportion of the same
+ * numbers already printed below it, not a new metric.
+ */
+export function CoverageBar({ segments }: { segments: Array<{ label: string; value: number; tone: "ok" | "accent" | "warn" | "muted" }> }) {
+  const total = segments.reduce((sum, s) => sum + s.value, 0);
+  return (
+    <div className="coverage-bar-wrap">
+      <div className="coverage-bar" role="img" aria-label={segments.map((s) => `${s.label} ${s.value}`).join(", ")}>
+        {segments.map((s) =>
+          s.value > 0 ? (
+            <span
+              key={s.label}
+              className={`coverage-seg tone-${s.tone}`}
+              style={{ flexGrow: s.value, flexBasis: 0 }}
+            />
+          ) : null
+        )}
+        {total === 0 ? <span className="coverage-seg tone-muted" style={{ flexGrow: 1, flexBasis: 0 }} /> : null}
+      </div>
+      <p className="coverage-row">
+        {segments.map((s) => (
+          <span key={s.label}>
+            {s.label} {s.value}
+          </span>
+        ))}
+      </p>
+    </div>
+  );
+}
+
 export function EmptyAcademy({ title, body }: { title: string; body: string }) {
   return (
     <section className="exercise">

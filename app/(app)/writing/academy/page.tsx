@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
@@ -43,12 +43,14 @@ export default async function WritingAcademyPage() {
       ) : null}
       <article className="home-card">
         <p className="home-kicker">Coverage</p>
-        <p className="coverage-row">
-          <span>Sustained {asString(readiness.mastered, "0")}</span>
-          <span>Developing {asString(readiness.emerging, "0")}</span>
-          <span>Needs work {asString(readiness.weak, "0")}</span>
-          <span>Not asked {asString(readiness.untested, "0")}</span>
-        </p>
+        <CoverageBar
+          segments={[
+            { label: "Sustained", value: Number(asString(readiness.mastered, "0")) || 0, tone: "ok" },
+            { label: "Developing", value: Number(asString(readiness.emerging, "0")) || 0, tone: "accent" },
+            { label: "Needs work", value: Number(asString(readiness.weak, "0")) || 0, tone: "warn" },
+            { label: "Not asked", value: Number(asString(readiness.untested, "0")) || 0, tone: "muted" },
+          ]}
+        />
       </article>
       {sessions.filter(isRecord).map((session) => (
         <article key={asString(session.id, asString(session.title))} className="academy-unit">

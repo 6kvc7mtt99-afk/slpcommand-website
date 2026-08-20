@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiRequest, FrontendError } from "@/lib/api/client";
 import { interpretEntitlements, planLabel, type EntitlementsSnapshot } from "@/lib/entitlements";
 import { CommercialDialog } from "@/components/exercise/CommercialDialog";
+import { greetingNameFromEmail } from "@/lib/displayName";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -111,22 +112,21 @@ export default function ProfilePage() {
     }
   }
 
+  const displayName = greetingNameFromEmail(email);
+
   return (
     <section className="exercise">
-      <header className="page-head">
-        <p className="section-eyebrow">Account</p>
-        <h1>Profile</h1>
+      <header className="page-head profile-identity">
+        <p className="section-eyebrow">Training profile</p>
+        <h1>{displayName ?? "Profile"}</h1>
+        <p className="muted">
+          {email ?? "—"} · {plan}
+        </p>
       </header>
       <div className="profile-grid">
       <div>
       <article className="home-card">
-        <p className="home-kicker">Identity</p>
-        <p><strong>Email</strong><br />{email ?? "—"}</p>
-        <p><strong>Plan</strong><br />{plan}</p>
-        <p className="muted">Subscriptions are managed in the iOS app until web billing exists.</p>
-      </article>
-      <article className="home-card">
-        <h2>Target level</h2>
+        <p className="home-kicker">Target level</p>
         <p className="muted">SLP Command trains Level 2 and Level 3. Pick the band you are preparing for.</p>
         {level == null ? (
           <p className="muted">
@@ -138,16 +138,22 @@ export default function ProfilePage() {
           <button className={level === "3" ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={() => saveLevel("3")}>SLP 3</button>
         </div>
       </article>
+      <article className="home-card">
+        <p className="home-kicker">Plan</p>
+        <h2>{plan}</h2>
+        <p className="muted">Subscriptions are managed in the iOS app until web billing exists.</p>
+      </article>
       </div>
       <div>
       <article className="home-card">
-        <h2>Your data</h2>
+        <p className="home-kicker">Your data</p>
         <div className="cta-row">
           <button className="btn btn-outline" type="button" onClick={() => void exportData()}>Export account</button>
           <button className="btn btn-outline" type="button" onClick={() => void requestReport()}>Request report</button>
         </div>
       </article>
-      <article className="home-card">
+      <article className="home-card profile-danger">
+        <p className="home-kicker">Danger zone</p>
         <h2>Delete account</h2>
         <p className="muted">This is permanent. Type DELETE to confirm.</p>
         <label htmlFor="delete-confirm">Confirmation</label>

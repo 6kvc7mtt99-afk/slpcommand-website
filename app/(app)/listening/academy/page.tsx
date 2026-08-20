@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { LISTENING_ACADEMY_CATEGORIES, isListeningTopicLocked, topicsFor } from "@/lib/listening/academyCatalog";
 import { backendJson } from "@/lib/server/backend";
 import { loadEntitlements } from "@/lib/server/home";
@@ -34,13 +34,15 @@ export default async function ListeningAcademyPage() {
       {result.status >= 400 ? <EmptyAcademy title="Cloud standing" body="Cloud Academy standing is unavailable. The local catalog below still follows the free-set rule." /> : null}
       <article className="academy-now">
         <p className="home-kicker">Coverage</p>
-        <p className="coverage-row">
-          <span>Sustained {asString(counts.mastered, "0")}</span>
-          <span>Developing {asString(counts.emerging, "0")}</span>
-          <span>Needs work {asString(counts.weak, "0")}</span>
-          <span>Not asked {asString(counts.untested, "0")}</span>
-          <span>Waiting {asString(counts.blocked, "0")}</span>
-        </p>
+        <CoverageBar
+          segments={[
+            { label: "Sustained", value: Number(asString(counts.mastered, "0")) || 0, tone: "ok" },
+            { label: "Developing", value: Number(asString(counts.emerging, "0")) || 0, tone: "accent" },
+            { label: "Needs work", value: Number(asString(counts.weak, "0")) || 0, tone: "warn" },
+            { label: "Not asked", value: Number(asString(counts.untested, "0")) || 0, tone: "muted" },
+            { label: "Waiting", value: Number(asString(counts.blocked, "0")) || 0, tone: "muted" },
+          ]}
+        />
         <Link className="btn btn-primary" href={practiceHref}>
           {nextStep === "exam" ? "Take the exam" : nextStep === "prerequisite" ? "Train the prerequisite" : decision.hasEvidence ? "Start training" : "Record a baseline"}
         </Link>

@@ -484,6 +484,14 @@ input:focus, select:focus, textarea:focus {
 .home-skill-mini:last-child { border-right: 0; }
 .home-skill-mini span { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 650; }
 .home-skill-mini strong { font-size: 16px; font-variant-numeric: tabular-nums; }
+.home-skill-mini-cta {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--accent);
+  text-decoration: none;
+}
+.home-skill-mini-cta:hover { text-decoration: underline; }
 .confidence-position { margin: 8px 0 6px; font-size: 15px; }
 .confidence-rungs { display: flex; gap: 4px; margin: 4px 0 10px; }
 .confidence-rungs span { flex: 1; height: 3px; background: var(--line); border-radius: 2px; }
@@ -710,19 +718,33 @@ input:focus, select:focus, textarea:focus {
   background: var(--elevated);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 16px 18px 12px;
+  padding: 18px 20px 14px;
+  transition: border-color var(--dur-2) var(--ease-std), box-shadow var(--dur-2) var(--ease-std);
+}
+.writing-editor:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.writing-editor label {
+  display: block;
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
 }
 .writing-editor textarea {
+  width: 100%;
   border: 0;
   background: transparent;
-  padding: 8px 0 0;
+  padding: 4px 0 0;
   box-shadow: none;
-  min-height: 320px;
+  min-height: 380px;
   font-size: 16.5px;
   line-height: 1.65;
   resize: vertical;
 }
-.writing-editor textarea:focus { box-shadow: none; }
+.writing-editor textarea:focus { box-shadow: none; outline: none; }
 .writing-meter {
   display: flex;
   justify-content: space-between;
@@ -809,6 +831,21 @@ input:focus, select:focus, textarea:focus {
 .academy-path > li.is-done::before { background: var(--ok); border-color: var(--ok); }
 .academy-unit.is-locked::before,
 .academy-path > li.is-locked::before { background: transparent; border-color: var(--muted); }
+.coverage-bar-wrap { margin: 10px 0 4px; }
+.coverage-bar {
+  display: flex;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--line);
+  margin-bottom: 12px;
+}
+.coverage-seg + .coverage-seg { border-left: 1px solid var(--bg); }
+.coverage-seg.tone-ok { background: var(--ok); }
+.coverage-seg.tone-accent { background: var(--accent); }
+.coverage-seg.tone-warn { background: var(--warn); }
+.coverage-seg.tone-muted { background: var(--line); }
 .coverage-row {
   display: flex;
   flex-wrap: wrap;
@@ -1007,11 +1044,15 @@ input:focus, select:focus, textarea:focus {
 }
 .seg .btn + .btn { border-left: 1px solid var(--line); }
 .instrument { max-width: none; }
+.profile-identity h1 { text-transform: capitalize; }
 .profile-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0 48px;
 }
+.profile-danger { border-top-color: var(--bad); }
+.profile-danger .home-kicker { color: var(--bad); }
+.profile-danger input { display: block; margin: 8px 0 12px; max-width: 220px; }
 @media (max-width: 900px) {
   .writing-workspace, .profile-grid { grid-template-columns: 1fr; }
 }

@@ -94,8 +94,8 @@ export function WritingPractice() {
       {phase === "loading" ? <LoadingState label="Loading a prompt…" lines={4} /> : null}
       {phase === "error" ? <ErrorState message={message} onRetry={() => void loadPrompt()} /> : null}
       {prompt && phase !== "quota" && phase !== "error" ? (
-        <div className="write-stage">
-          <aside className="write-task">
+        <div className="writing-workspace">
+          <aside className="writing-task">
             {prompt.title ? <h2>{prompt.title}</h2> : null}
             {prompt.audience || prompt.timeLimitMinutes ? (
               <p className="muted write-task-meta">
