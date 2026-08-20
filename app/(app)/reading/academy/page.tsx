@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
 import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { AcademyPath, type PathUnit } from "@/components/academy/AcademyPath";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
@@ -24,25 +25,43 @@ export default async function ReadingAcademyPage() {
   const summary = isRecord(state.summary) ? state.summary : {};
   const curriculum = Array.isArray(data.curriculum) ? data.curriculum : [];
 
+  const units: PathUnit[] = curriculum.filter(isRecord).map((unit) => ({
+    id: asString(unit.id, asString(unit.title)),
+    title: asString(unit.title),
+    lessons: (Array.isArray(unit.lessons) ? unit.lessons : []).filter(isRecord).map((item) => ({
+      id: asString(item.id),
+      title: asString(item.title),
+      href: `/reading/academy/lesson/${encodeURIComponent(asString(item.id))}`,
+    })),
+  }));
+
   return (
-    <section className="exercise page-skill skill-reading">
-      <header className="page-head">
-        <p className="section-eyebrow">Reading Academy</p>
-        <h1>{asString(reason.headline, "Start here")}</h1>
-        <p className="muted">{asString(reason.detail, "The backend chose this next class from your evidence.")}</p>
-      </header>
-      {asString(lesson.id) ? (
-        <article className="academy-now">
-          <p className="home-kicker">Today</p>
-          <h2>{asString(lesson.title)}</h2>
-          <p className="muted">{asString(lesson.learningObjective)}</p>
-          <Link className="btn btn-primary" href={`/reading/academy/lesson/${encodeURIComponent(asString(lesson.id))}`}>
-            Open the class
-          </Link>
-        </article>
-      ) : null}
-      <article className="home-card">
-        <p className="home-kicker">Coverage</p>
+    <div className="academy page-skill skill-reading">
+      <section className="p-hero academy-hero" data-enter>
+        <div>
+          <p className="p-eyebrow is-skill">Reading Academy</p>
+          <h1 className="p-hero-title">{asString(reason.headline, "Start here")}</h1>
+          <p className="p-lead">{asString(reason.detail, "The backend chose this next class from your evidence.")}</p>
+          {asString(lesson.id) ? (
+            <div className="p-hero-actions">
+              <Link className="btn btn-primary btn-hero" href={`/reading/academy/lesson/${encodeURIComponent(asString(lesson.id))}`}>
+                Open the class
+                <span className="p-arrow" aria-hidden="true">→</span>
+              </Link>
+              <Link className="btn btn-outline" href="/reading/practice">Go to practice</Link>
+            </div>
+          ) : null}
+        </div>
+        {asString(lesson.id) ? (
+          <aside className="academy-objective p-panel">
+            <p className="p-eyebrow">Current objective</p>
+            <h2>{asString(lesson.title)}</h2>
+            <p>{asString(lesson.learningObjective)}</p>
+          </aside>
+        ) : null}
+      </section>
+      <section className="p-section" data-reveal>
+        <p className="p-eyebrow">Coverage</p>
         <CoverageBar
           segments={[
             { label: "Sustained", value: Number(asString(summary.mastered, "0")) || 0, tone: "ok" },
@@ -52,28 +71,21 @@ export default async function ReadingAcademyPage() {
             { label: "Waiting", value: Number(asString(summary.blocked, "0")) || 0, tone: "muted" },
           ]}
         />
-      </article>
-      {curriculum.map((unit) => {
-        const rec = isRecord(unit) ? unit : {};
-        const lessons = Array.isArray(rec.lessons) ? rec.lessons : [];
-        return (
-          <article key={asString(rec.id, asString(rec.title))} className="academy-unit">
-            <h2>{asString(rec.title)}</h2>
-            <ul className="academy-path">
-              {lessons.filter(isRecord).map((item) => (
-                <li key={asString(item.id)}>
-                  <Link href={`/reading/academy/lesson/${encodeURIComponent(asString(item.id))}`}>{asString(item.title)}</Link>
-                </li>
-              ))}
-            </ul>
-          </article>
-        );
-      })}
-      <p>
-        <Link href="/reading/academy/map">Competency map</Link>
-        {" · "}
-        <Link href="/reading/practice">Practice</Link>
-      </p>
-    </section>
+      </section>
+      <section className="p-section" aria-label="Training path">
+        <div className="p-section-head" data-reveal>
+          <div>
+            <h2>Your training path</h2>
+            <p>The full reading curriculum. The marked class is the one your evidence points at.</p>
+          </div>
+        </div>
+        <AcademyPath units={units} currentLessonId={asString(lesson.id)} practiceHref="/reading/practice" />
+        <p className="academy-links">
+          <Link href="/reading/academy/map">Competency map</Link>
+          {" · "}
+          <Link href="/reading/intelligence">Reading Intelligence</Link>
+        </p>
+      </section>
+    </div>
   );
 }

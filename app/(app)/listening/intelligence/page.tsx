@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { IntelligenceError, MissionsSection, ReadinessCardView, WeaknessSection } from "@/components/intelligence/IntelligencePanel";
+import { IntelligenceBriefing } from "@/components/intelligence/Briefing";
+import { IntelligenceError } from "@/components/intelligence/IntelligencePanel";
 import { decodeMissions, decodeReadiness, decodeWeaknesses } from "@/lib/api/intelligence";
 import { isListeningTopicLocked, topicForSkillOrSubSkill } from "@/lib/listening/academyCatalog";
 import { backendJson } from "@/lib/server/backend";
@@ -14,46 +14,28 @@ export default async function ListeningIntelligencePage() {
     backendJson<unknown>({ path: "/api/listening/intelligence/missions", cache: "no-store" }),
   ]);
   if (readiness.status >= 500) return <IntelligenceError message="Intelligence is unavailable right now." />;
-  const card = decodeReadiness(readiness.data);
-  const weaknesses = decodeWeaknesses(weakness.data);
   const locked = missions.status === 403;
 
   return (
-    <section className="exercise page-skill skill-listening">
-      <header className="page-head intel-decision">
-        <p className="section-eyebrow">Listening Intelligence</p>
-        <h1>What is weak, and what to do next</h1>
-      </header>
-      <div className="intel-layout">
-        <div>
-          <WeaknessSection
-        items={weaknesses}
-        hrefFor={(item) => {
-          const topic = topicForSkillOrSubSkill(item.key);
-          if (!topic) return "/listening/academy";
-          if (isListeningTopicLocked(topic.id, isPro)) return "/listening/academy";
-          return `/listening/academy/topic/${topic.id}`;
-        }}
-      />
-        </div>
-        <div>
-          {readiness.status >= 400 ? <IntelligenceError message="Readiness could not be loaded." /> : <ReadinessCardView card={card} />}
-      <MissionsSection
-        missions={locked ? [] : decodeMissions(missions.data)}
-        locked={locked}
-        hrefFor={(mission) =>
-          mission.targetSkill
-            ? `/listening/practice?focusSkill=${encodeURIComponent(mission.targetSkill)}`
-            : "/listening/practice"
-        }
-      />
-      <p>
-        <Link href="/listening/mastery">Mastery</Link>
-        {" · "}
-        <Link href="/listening/academy">Academy</Link>
-      </p>
-        </div>
-      </div>
-    </section>
+    <IntelligenceBriefing
+      skill="Listening"
+      card={decodeReadiness(readiness.data)}
+      weaknesses={decodeWeaknesses(weakness.data)}
+      missions={locked ? [] : decodeMissions(missions.data)}
+      missionsLocked={locked}
+      readinessFailed={readiness.status >= 400}
+      weaknessHref={(item) => {
+        const topic = topicForSkillOrSubSkill(item.key);
+        if (!topic || isListeningTopicLocked(topic.id, isPro)) return "/listening/academy";
+        return `/listening/academy/topic/${topic.id}`;
+      }}
+      missionHref={(mission) =>
+        mission.targetSkill
+          ? `/listening/practice?focusSkill=${encodeURIComponent(mission.targetSkill)}`
+          : "/listening/practice"
+      }
+      academyHref="/listening/academy"
+      practiceHref="/listening/practice"
+    />
   );
 }
