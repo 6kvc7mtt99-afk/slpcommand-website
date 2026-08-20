@@ -9,31 +9,37 @@ export type InstrumentSkill = {
   level: number | null;
 };
 
-const RING_COLOR: Record<InstrumentSkill["key"], string> = {
-  reading: "#c08a4a",
-  listening: "#4a9ec0",
-  writing: "#6aa87e",
-  speaking: "#9b8ad4",
+const RING_RGB: Record<InstrumentSkill["key"], [number, number, number]> = {
+  reading: [192, 138, 74],
+  listening: [74, 158, 192],
+  writing: [106, 168, 126],
+  speaking: [155, 138, 212],
 };
 
+type V3 = { x: number; y: number; z: number };
+
 /**
- * The readiness instrument.
+ * The readiness instrument — a real 3D object.
  *
- * A single object that states, at a glance, where the learner stands
- * across all four skills against their target. Four concentric arcs on a
- * shared 0–4 SLP scale, drawn on a tilted plane so the thing reads as a
- * physical gauge rather than a chart. The tilt tracks the pointer, which
- * is what makes it feel like an object with a surface.
+ * Four rings suspended at different depths inside one volume, each
+ * showing a skill's measured level on the shared 0–4 SLP scale. This runs
+ * a genuine 3D pipeline: every point is rotated on two axes, projected
+ * through a perspective divide, and the rings are drawn back-to-front
+ * with depth-derived opacity and stroke width — so a ring that swings
+ * behind the stack is actually occluded and dimmed, not merely squashed.
  *
  * It is data, not decoration:
- *   - each arc's sweep is that skill's measured level / 4
+ *   - each ring's sweep is that skill's measured level / 4
  *   - a skill the backend has not measured draws only its empty track,
  *     never a zeroed arc that could be misread as a score of nothing
- *   - the target ring is the learner's real targetLevel
+ *   - the dashed plane is the learner's real target level, cut through
+ *     the whole volume
  *
- * Canvas 2D with hand-rolled perspective rather than a WebGL dependency:
- * the whole thing is a few hundred bytes of maths, runs on the GPU-backed
- * 2D context, and degrades to a static frame under reduced motion.
+ * Canvas 2D rather than WebGL: the pipeline is a few dozen lines of
+ * maths, there is no shader compilation or context-loss handling to own,
+ * and it adds no dependency. It idles on a slow drift, leans toward the
+ * pointer, and renders exactly one static frame under
+ * prefers-reduced-motion.
  */
 export function ReadinessInstrument({
   skills,
@@ -48,8 +54,9 @@ export function ReadinessInstrument({
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const raf = useRef<number>(0);
+  const raf = useRef(0);
   const pointer = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
+  const clock = useRef(0);
   const intro = useRef(0);
 
   useEffect(() => {
@@ -67,112 +74,157 @@ export function ReadinessInstrument({
 
     const cx = size / 2;
     const cy = size / 2;
+    const FOCAL = 820;
     const START = Math.PI * 0.75;
     const SWEEP = Math.PI * 1.5;
+    const GAP = 26;
+    const RADIUS = 128;
 
-    function onMove(event: PointerEvent) {
-      const box = wrap!.getBoundingClientRect();
-      pointer.current.tx = ((event.clientX - box.left) / box.width - 0.5) * 2;
-      pointer.current.ty = ((event.clientY - box.top) / box.height - 0.5) * 2;
+    function onMove(e: PointerEvent) {
+      const b = wrap!.getBoundingClientRect();
+      pointer.current.tx = ((e.clientX - b.left) / b.width - 0.5) * 2;
+      pointer.current.ty = ((e.clientY - b.top) / b.height - 0.5) * 2;
     }
     function onLeave() {
       pointer.current.tx = 0;
       pointer.current.ty = 0;
     }
 
-    /** Project a point on the instrument plane through the current tilt. */
-    function project(x: number, y: number, tiltX: number, tiltY: number) {
-      const dx = x - cx;
-      const dy = y - cy;
-      const ry = dy * Math.cos(tiltX);
-      const depth = dy * Math.sin(tiltX) + dx * Math.sin(tiltY);
-      const scale = 1 + depth / (size * 2.6);
-      return { x: cx + dx * Math.cos(tiltY) * scale, y: cy + ry * scale };
+    /** Rotate X then Y, then perspective-divide. */
+    function project(p: V3, rx: number, ry: number) {
+      const cx1 = Math.cos(rx), sx1 = Math.sin(rx);
+      const y1 = p.y * cx1 - p.z * sx1;
+      const z1 = p.y * sx1 + p.z * cx1;
+      const cy1 = Math.cos(ry), sy1 = Math.sin(ry);
+      const x2 = p.x * cy1 + z1 * sy1;
+      const z2 = -p.x * sy1 + z1 * cy1;
+      const s = FOCAL / (FOCAL + z2);
+      return { x: cx + x2 * s, y: cy + y1 * s, z: z2, s };
     }
 
-    function arc(radius: number, from: number, to: number, tiltX: number, tiltY: number) {
-      const steps = 56;
-      ctx!.beginPath();
+    function strokeArc(
+      depth: number,
+      from: number,
+      to: number,
+      rx: number,
+      ry: number,
+      rgb: [number, number, number],
+      alpha: number,
+      width: number,
+      glow: boolean
+    ) {
+      const steps = 72;
+      let prev: ReturnType<typeof project> | null = null;
+      let last: ReturnType<typeof project> | null = null;
+      ctx!.lineCap = "round";
       for (let i = 0; i <= steps; i++) {
         const a = from + ((to - from) * i) / steps;
-        const p = project(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius, tiltX, tiltY);
-        if (i === 0) ctx!.moveTo(p.x, p.y);
-        else ctx!.lineTo(p.x, p.y);
+        const pt = project({ x: Math.cos(a) * RADIUS, y: Math.sin(a) * RADIUS, z: depth }, rx, ry);
+        if (prev) {
+          // Depth shading. Segments further from the camera dim and thin —
+          // this is what makes the stack read as a volume rather than as
+          // four flat rings drawn on top of each other.
+          const t = Math.max(0, Math.min(1, (pt.s - 0.74) / 0.46));
+          ctx!.strokeStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${(alpha * (0.3 + t * 0.7)).toFixed(3)})`;
+          ctx!.lineWidth = Math.max(0.6, width * pt.s);
+          if (glow) {
+            ctx!.shadowColor = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.5)`;
+            ctx!.shadowBlur = 15 * pt.s;
+          }
+          ctx!.beginPath();
+          ctx!.moveTo(prev.x, prev.y);
+          ctx!.lineTo(pt.x, pt.y);
+          ctx!.stroke();
+          if (glow) ctx!.shadowBlur = 0;
+        }
+        prev = pt;
+        last = pt;
       }
-      ctx!.stroke();
+      return last;
     }
 
-    function draw() {
+    function draw(now: number) {
       const p = pointer.current;
-      p.x += (p.tx - p.x) * 0.06;
-      p.y += (p.ty - p.y) * 0.06;
-      const tiltX = 0.42 + p.y * 0.13;
-      const tiltY = p.x * 0.16;
-
-      if (intro.current < 1) intro.current = Math.min(1, intro.current + 0.018);
+      p.x += (p.tx - p.x) * 0.055;
+      p.y += (p.ty - p.y) * 0.055;
+      if (!reduced) clock.current = now / 1000;
+      if (intro.current < 1) intro.current = Math.min(1, intro.current + 0.013);
       const ease = 1 - Math.pow(1 - intro.current, 3);
 
-      const styles = getComputedStyle(wrap!);
-      const track = styles.getPropertyValue("--inst-track").trim() || "rgba(255,255,255,0.10)";
-      const tick = styles.getPropertyValue("--inst-tick").trim() || "rgba(255,255,255,0.22)";
-      const targetCol = styles.getPropertyValue("--inst-target").trim() || "#c8942a";
+      // Idle drift plus pointer lean. The drift is what makes it read as an
+      // object sitting in space rather than a chart that happens to tilt.
+      const rx = 0.46 + Math.sin(clock.current * 0.27) * 0.04 + p.y * 0.2;
+      const ry = Math.sin(clock.current * 0.19) * 0.085 + p.x * 0.3;
+
+      const cs = getComputedStyle(wrap!);
+      const tickRgb = cs.getPropertyValue("--inst-tick-rgb").trim() || "255,255,255";
+      const trackRgb = cs.getPropertyValue("--inst-track-rgb").trim() || "255,255,255";
+      const trackA = Number(cs.getPropertyValue("--inst-track-a").trim() || 0.1);
+      const targetCol = cs.getPropertyValue("--inst-target").trim() || "#c8942a";
 
       ctx!.clearRect(0, 0, size, size);
-      ctx!.lineCap = "round";
 
-      // Scale ticks — 0 to 4, the frame the arcs are read against.
-      ctx!.strokeStyle = tick;
-      ctx!.lineWidth = 1;
+      // Scale ticks, on the mid plane so they read as the shared frame.
       for (let i = 0; i <= 4; i++) {
         const a = START + (SWEEP * i) / 4;
-        const inner = project(cx + Math.cos(a) * 88, cy + Math.sin(a) * 88, tiltX, tiltY);
-        const outer = project(cx + Math.cos(a) * (i % 2 === 0 ? 162 : 155), cy + Math.sin(a) * (i % 2 === 0 ? 162 : 155), tiltX, tiltY);
+        const inner = project({ x: Math.cos(a) * 54, y: Math.sin(a) * 54, z: 0 }, rx, ry);
+        const outer = project(
+          { x: Math.cos(a) * (i % 2 === 0 ? 166 : 158), y: Math.sin(a) * (i % 2 === 0 ? 166 : 158), z: 0 },
+          rx,
+          ry
+        );
+        ctx!.strokeStyle = `rgba(${tickRgb},${i % 2 === 0 ? 0.3 : 0.15})`;
+        ctx!.lineWidth = 1;
         ctx!.beginPath();
         ctx!.moveTo(inner.x, inner.y);
         ctx!.lineTo(outer.x, outer.y);
         ctx!.stroke();
       }
 
-      skills.forEach((skill, i) => {
-        const radius = 138 - i * 17;
+      // Painter's algorithm — furthest ring first, so nearer rings occlude.
+      const planes = skills.map((skill, i) => ({
+        skill,
+        depth: (i - (skills.length - 1) / 2) * GAP,
+      }));
+      planes.sort(
+        (a, b) => project({ x: 0, y: 0, z: b.depth }, rx, ry).z - project({ x: 0, y: 0, z: a.depth }, rx, ry).z
+      );
 
-        ctx!.strokeStyle = track;
-        ctx!.lineWidth = 9;
-        arc(radius, START, START + SWEEP, tiltX, tiltY);
-
-        if (skill.level == null || !Number.isFinite(skill.level)) return;
-        const value = Math.max(0, Math.min(4, skill.level));
-        if (value <= 0) return;
-
+      for (const { skill, depth } of planes) {
+        strokeArc(depth, START, START + SWEEP, rx, ry, trackRgb.split(",").map(Number) as [number, number, number], trackA, 5, false);
+        const raw = skill.level;
+        if (raw == null || !Number.isFinite(raw) || raw <= 0) continue;
+        const value = Math.max(0, Math.min(4, raw));
+        const rgb = RING_RGB[skill.key];
         const end = START + SWEEP * (value / 4) * ease;
-        ctx!.strokeStyle = RING_COLOR[skill.key];
-        ctx!.lineWidth = 9;
-        ctx!.shadowColor = RING_COLOR[skill.key];
-        ctx!.shadowBlur = 14;
-        arc(radius, START, end, tiltX, tiltY);
-        ctx!.shadowBlur = 0;
+        const head = strokeArc(depth, START, end, rx, ry, rgb, 1, 10, true);
+        if (head) {
+          ctx!.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},1)`;
+          ctx!.shadowColor = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.85)`;
+          ctx!.shadowBlur = 15 * head.s;
+          ctx!.beginPath();
+          ctx!.arc(head.x, head.y, 4.6 * head.s, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.shadowBlur = 0;
+        }
+      }
 
-        // Head of the arc — the reading point.
-        const head = project(cx + Math.cos(end) * radius, cy + Math.sin(end) * radius, tiltX, tiltY);
-        ctx!.fillStyle = RING_COLOR[skill.key];
-        ctx!.beginPath();
-        ctx!.arc(head.x, head.y, 4.2, 0, Math.PI * 2);
-        ctx!.fill();
-      });
-
-      // Target ring — the learner's real objective, drawn across the stack.
+      // Target plane — the real objective, cut through the whole volume.
       if (target != null && Number.isFinite(target)) {
         const a = START + SWEEP * (Math.max(0, Math.min(4, target)) / 4);
-        const from = project(cx + Math.cos(a) * 56, cy + Math.sin(a) * 56, tiltX, tiltY);
-        const to = project(cx + Math.cos(a) * 172, cy + Math.sin(a) * 172, tiltX, tiltY);
+        const zHalf = ((skills.length - 1) / 2) * GAP;
+        const from = project({ x: Math.cos(a) * 48, y: Math.sin(a) * 48, z: -zHalf }, rx, ry);
+        const to = project({ x: Math.cos(a) * 172, y: Math.sin(a) * 172, z: zHalf }, rx, ry);
         ctx!.strokeStyle = targetCol;
+        ctx!.globalAlpha = 0.8;
         ctx!.lineWidth = 1.5;
-        ctx!.setLineDash([4, 4]);
+        ctx!.setLineDash([5, 5]);
         ctx!.beginPath();
         ctx!.moveTo(from.x, from.y);
         ctx!.lineTo(to.x, to.y);
         ctx!.stroke();
         ctx!.setLineDash([]);
+        ctx!.globalAlpha = 1;
       }
 
       if (!reduced) raf.current = requestAnimationFrame(draw);
@@ -180,7 +232,7 @@ export function ReadinessInstrument({
 
     if (reduced) {
       intro.current = 1;
-      draw();
+      draw(0);
     } else {
       wrap.addEventListener("pointermove", onMove);
       wrap.addEventListener("pointerleave", onLeave);
@@ -217,7 +269,7 @@ export function ReadinessInstrument({
       <ul className="inst-legend">
         {skills.map((s) => (
           <li key={s.key}>
-            <i style={{ background: RING_COLOR[s.key] }} aria-hidden="true" />
+            <i style={{ background: `rgb(${RING_RGB[s.key].join(",")})` }} aria-hidden="true" />
             <span>{s.label}</span>
             <b className="p-num">{s.level == null ? "—" : s.level}</b>
           </li>

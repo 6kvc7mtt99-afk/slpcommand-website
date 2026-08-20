@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SupportAssistant } from "./SupportAssistant";
 import { Reveal } from "@/components/ui/Reveal";
+import { RouteTransition } from "./RouteTransition";
 
 const NAV = [
   { href: "/dashboard", label: "Home", skill: null },
@@ -116,6 +117,7 @@ export function AppShell({
       {/* Keyed on the route so both the entrance animation and the reveal
           observer re-run on every client-side navigation, instead of only
           on the first hard load. */}
+      <RouteTransition />
       <div className="app-main" id="main" key={path}>
         <Reveal />
         {children}

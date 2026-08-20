@@ -1052,8 +1052,11 @@ a.p-dest:hover {
 
 /* ── 15. The readiness instrument ─────────────────────────── */
 .inst {
-  --inst-track: rgba(20, 22, 26, 0.09);
-  --inst-tick: rgba(20, 22, 26, 0.20);
+  /* The 3D pipeline composites its own alpha per depth, so it needs the
+     channels rather than a finished rgba(). */
+  --inst-track-rgb: 20, 22, 26;
+  --inst-track-a: 0.13;
+  --inst-tick-rgb: 20, 22, 26;
   --inst-target: #c8942a;
   position: relative;
   display: grid;
@@ -1064,8 +1067,9 @@ a.p-dest:hover {
 }
 @media (prefers-color-scheme: dark) {
   .inst {
-    --inst-track: rgba(255, 255, 255, 0.075);
-    --inst-tick: rgba(255, 255, 255, 0.20);
+    --inst-track-rgb: 255, 255, 255;
+    --inst-track-a: 0.07;
+    --inst-tick-rgb: 255, 255, 255;
     --inst-target: #d9a53f;
   }
 }
@@ -1199,4 +1203,24 @@ a.p-dest.mode-assess:hover { border-color: color-mix(in srgb, var(--p-skill) 62%
 .p-dest.mode-train { border-color: color-mix(in srgb, var(--p-accent) 22%, var(--p-line)); }
 .p-dest.mode-train .p-dest-stage {
   background-image: linear-gradient(160deg, var(--p-skill-glow), transparent 62%);
+}
+
+/* ── 18. Exit choreography ────────────────────────────────
+   Paired with RouteTransition. The outgoing view leaves in the direction
+   of travel — forward when going deeper into a skill, back when
+   returning — so the incoming staged entrance reads as a continuation
+   instead of a hard swap. Transform and opacity only, and the whole thing
+   is inert under prefers-reduced-motion (the observer never arms).
+   ------------------------------------------------------------ */
+.is-leaving .app-main {
+  transition: opacity 150ms cubic-bezier(0.4, 0, 1, 1), transform 150ms cubic-bezier(0.4, 0, 1, 1), filter 150ms linear;
+  opacity: 0;
+}
+.is-leaving.is-deeper .app-main { transform: translate3d(0, -8px, 0) scale(0.992); filter: blur(1px); }
+.is-leaving.is-shallower .app-main { transform: translate3d(0, 8px, 0) scale(1.006); filter: blur(1px); }
+.is-leaving .app-sidebar,
+.is-leaving .app-topbar { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .is-leaving .app-main { transition: none; opacity: 1; transform: none; filter: none; }
 }
