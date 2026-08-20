@@ -41,6 +41,23 @@ test("academy pages have no serious axe violations", async ({ page }) => {
   expect(results.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
 });
 
+test("settings groups real controls and surfaces plan quota without raw backend keys", async ({ page }) => {
+  await page.goto("/profile");
+  // Every group heading, so a regression that drops a whole section fails here.
+  for (const heading of ["Training", "Plan & usage", "Appearance & motion", "Privacy & data", "Account"]) {
+    await expect(page.getByRole("heading", { level: 2, name: heading, exact: true })).toBeVisible();
+  }
+  // Real quota numbers from the entitlements response, not a plan name alone.
+  await expect(page.locator(".settings-quotas")).toContainText("of 10 left");
+  // A feature with no `name` must be humanised, never printed as its key.
+  await expect(page.locator(".settings-quotas")).toContainText("Writing AI feedback");
+  await expect(page.locator(".settings-quotas")).not.toContainText("writing_ai_feedback");
+  // Deleting is gated until the confirmation matches.
+  await expect(page.getByRole("button", { name: "Delete account" })).toBeDisabled();
+  const results = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  expect(results.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+});
+
 test("reading, listening and writing lessons render real content and have no serious axe violations", async ({ page }) => {
   await page.goto("/reading/academy/lesson/rl-1?why=2%20classes%20need%20work");
   await expect(page.locator("body")).toContainText("Inference in orders");

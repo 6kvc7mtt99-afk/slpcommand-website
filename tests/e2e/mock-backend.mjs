@@ -18,13 +18,13 @@ const server = http.createServer((req, res) => {
   if (url.pathname === "/api/entitlements") {
     res.end(JSON.stringify({
       ok: true,
-      plan: { key: "free", name: "Free" },
+      plan: { key: "free", name: "SLP Command Free", description: "Core practice with weekly limits." },
       features: [
-        { key: "reading_practice", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } },
-        { key: "listening_practice", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } },
+        { key: "reading_practice", name: "Reading practice", description: "One passage, one question.", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } },
+        { key: "listening_practice", name: "Listening practice", description: "One clip, one question.", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } },
         { key: "writing_ai_feedback", enabled: true, quota: { period: "monthly", limit: 3, remaining: 2 } },
         { key: "speaking_ai_feedback", enabled: true, quota: { period: "monthly", limit: 3, remaining: 2 } },
-        { key: "reading_exam_simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
+        { key: "reading_exam_simulation", name: "Reading exam simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
         { key: "listening_exam_simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
         { key: "academy_access", enabled: true },
         { key: "intelligence_dashboard", enabled: true },
