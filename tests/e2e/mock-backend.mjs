@@ -144,7 +144,17 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === "/api/reading/academy/lesson/rl-1") {
-    res.end(JSON.stringify({ lesson: { id: "rl-1", title: "Inference in orders", learningObjective: "Spot implied meaning.", conceptExplanation: "The answer is what follows.", strategy: "Ask so what.", successCriteria: ["Name the implication"] } }));
+    res.end(JSON.stringify({ lesson: {
+      id: "rl-1", title: "Inference in orders", module: "Core", unit: "Inference", level: "3",
+      learningObjective: "Spot implied meaning in an operational order without it being stated outright.",
+      estimatedMinutes: 12, difficulty: "moderate",
+      conceptExplanation: "An order rarely spells out its full intent. The answer is what follows from the stated facts, not a restatement of them — you are looking for the one conclusion the wording forces, not any conclusion it merely allows.",
+      strategy: "Ask 'so what does this require of me?' after every sentence, not just at the end.",
+      commonMisconception: "Treating the most literal restatement as the safest answer — at Level 3 the literal option is usually the distractor.",
+      successCriteria: ["Name the implication in one sentence.", "Trace it back to the exact clause that forces it.", "Reject options that are true but not implied."],
+      reflectionQuestions: ["What single word in the order carried the implication?", "Could the order support a different implication? Why not?"],
+      competencyId: "c1", competencyTitle: "Reading between the lines",
+    } }));
     return;
   }
   if (url.pathname === "/api/reading/intelligence/readiness") {
@@ -198,7 +208,17 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === "/api/writing/academy/lesson/wl-1") {
-    res.end(JSON.stringify({ lesson: { id: "wl-1", title: "Openings", learningObjective: "State the issue first.", conceptExplanation: "Do not delay the claim." } }));
+    res.end(JSON.stringify({ lesson: {
+      id: "wl-1", title: "Openings", module: "Structure", level: "3",
+      learningObjective: "State the issue first, in one sentence an examiner can grade against.",
+      estimatedMinutes: 15, difficulty: "moderate",
+      conceptExplanation: "Your opening line is the claim the rest of the text has to support. An examiner reads it before anything else and forms an expectation from it — bury the claim in sentence two and everything that follows is graded against the wrong expectation.",
+      strategy: "Write the claim first, in one plain sentence, before you write anything else — then build the paragraph around it.",
+      commonMisconception: "Believing a longer, more elaborate opening sounds more competent — examiners mark clarity, not length.",
+      successCriteria: ["The claim appears in the first sentence.", "A reader could state your position from that sentence alone.", "Nothing before it needs to be read first."],
+      reflectionQuestions: ["Could your opening sentence stand alone as a summary of your position?"],
+      competencyId: "c2", competencyTitle: "Task structure",
+    } }));
     return;
   }
   if (url.pathname === "/api/writing/orchestrator/next" && req.method === "POST") {

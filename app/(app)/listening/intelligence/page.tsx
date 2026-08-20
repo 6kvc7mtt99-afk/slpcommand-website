@@ -27,7 +27,13 @@ export default async function ListeningIntelligencePage() {
       weaknessHref={(item) => {
         const topic = topicForSkillOrSubSkill(item.key);
         if (!topic || isListeningTopicLocked(topic.id, isPro)) return "/listening/academy";
-        return `/listening/academy/topic/${topic.id}`;
+        const why = [
+          item.accuracy != null ? `${Math.round(item.accuracy)}% accurate` : null,
+          item.attempts > 0 ? `${item.attempts} ${item.attempts === 1 ? "attempt" : "attempts"}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        return `/listening/academy/topic/${topic.id}${why ? `?why=${encodeURIComponent(why)}` : ""}`;
       }}
       missionHref={(mission) =>
         mission.targetSkill

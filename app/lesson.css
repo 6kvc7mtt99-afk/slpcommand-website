@@ -1,0 +1,237 @@
+/* ============================================================
+   SLP Command — Academy lesson experience (Phase 3C).
+   Loaded after intel.css. Scoped under .app-shell / .lesson.
+   Reading and Writing lessons share components/academy/AcademyLessonView.tsx
+   and these classes directly. Listening's topic page has its own JSX
+   (a topic can hold several sub-lessons; a lesson cannot) but draws on
+   the same class vocabulary so the three read as one system.
+   ============================================================ */
+
+.lesson { max-width: 780px; }
+
+/* ── Connection to Intelligence/Academy ───────────────────────
+   Only rendered when the linking page passed real evidence through
+   `?why=`. Absent entirely when a lesson is reached from the map,
+   search, or a direct link — never a placeholder. */
+.lesson-connect {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--p-line);
+  font-size: 13.5px;
+}
+.lesson-connect strong {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--p-skill, var(--p-accent));
+}
+.lesson-connect span { color: var(--p-muted); }
+
+/* ── Hero ──────────────────────────────────────────────────── */
+.lesson-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--p-muted);
+  margin: 0 0 10px;
+}
+.lesson-kicker .is-skill-text { color: var(--p-skill, var(--p-accent)); }
+.lesson-kicker b { color: var(--p-muted); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.lesson-title {
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 660;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  margin: 0 0 14px;
+  text-wrap: balance;
+}
+.lesson-lead {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--p-ink2);
+  max-width: 62ch;
+  margin: 0 0 22px;
+}
+.lesson-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 26px;
+}
+.lesson-facts div { display: flex; flex-direction: column; gap: 2px; }
+.lesson-facts dt { font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--p-muted); }
+.lesson-facts dd { margin: 0; font-size: 15px; font-weight: 600; color: var(--p-ink); }
+
+/* ── Progression stepper ───────────────────────────────────────
+   The real workflow (Diagnose → Learn → Practice → Assess → Progress)
+   as a horizontal spine, reusing the Intelligence briefing's node
+   grammar (see .intel-spine in intel.css) rotated 90°. Depth again
+   encodes position, not decoration: the current stage is filled, past
+   stages are quiet, future stages are outlined. */
+.lesson-stages {
+  position: relative;
+  display: flex;
+  margin: 4px 0 34px;
+  padding-top: 4px;
+}
+.lesson-stages::before {
+  content: "";
+  position: absolute;
+  left: 16px; right: 16px; top: 15px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--p-line-strong), var(--p-line) 92%, transparent);
+}
+.lesson-stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+.lesson-stage-dot {
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  font-size: 11px; font-weight: 700;
+  background: var(--p-bg);
+  border: 1.5px solid var(--p-line-strong);
+  color: var(--p-muted);
+}
+.lesson-stage-label {
+  font-size: 10.5px; font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--p-muted);
+}
+/* Past: reached, quiet. */
+.lesson-stage.is-past .lesson-stage-dot { border-color: color-mix(in srgb, var(--p-skill, var(--p-accent)) 45%, var(--p-line-strong)); color: var(--p-skill, var(--p-accent)); }
+/* Current: filled, the loudest node on the line. */
+.lesson-stage.is-current .lesson-stage-dot {
+  background: var(--p-skill, var(--p-accent));
+  border-color: var(--p-skill, var(--p-accent));
+  color: #fff;
+  box-shadow: 0 0 0 5px var(--p-skill-glow);
+}
+.lesson-stage.is-current .lesson-stage-label { color: var(--p-ink); }
+a.lesson-stage:hover .lesson-stage-dot { border-color: var(--p-skill, var(--p-accent)); }
+a.lesson-stage:hover .lesson-stage-label { color: var(--p-ink2); }
+@media (max-width: 640px) {
+  .lesson-stage-label { display: none; }
+  .lesson-stages { margin-bottom: 26px; }
+}
+
+/* ── Content blocks ────────────────────────────────────────── */
+.lesson-block { margin-top: 40px; }
+.lesson-block-label {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--p-skill, var(--p-accent));
+  margin-bottom: 12px;
+}
+.lesson-block-label::after { content: ""; flex: 1; height: 1px; background: var(--p-line); }
+
+/* The dominant training object: what the learner is actually here to
+   understand. Deliberately the largest type on the page after the title. */
+.lesson-block.is-primary p {
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--p-ink);
+  max-width: 66ch;
+  margin: 0;
+}
+
+.lesson-block p { font-size: 15.5px; line-height: 1.6; color: var(--p-ink2); max-width: 66ch; margin: 0; }
+
+.lesson-checklist, .lesson-watch {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 12px;
+  max-width: 66ch;
+}
+.lesson-checklist li, .lesson-watch li {
+  position: relative; padding-left: 26px; font-size: 15px; line-height: 1.5; color: var(--p-ink2);
+}
+.lesson-checklist li::before {
+  content: "✓";
+  position: absolute; left: 0; top: 0;
+  width: 18px; height: 18px;
+  font-size: 11px; font-weight: 700;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  color: var(--ok, #2f9e5e);
+  background: color-mix(in srgb, var(--ok, #2f9e5e) 16%, transparent);
+}
+.lesson-watch li::before {
+  content: "";
+  position: absolute; left: 2px; top: 0.55em;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--warn, #c2710c);
+}
+
+.lesson-reflect {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 14px;
+  max-width: 66ch;
+}
+.lesson-reflect li {
+  font-size: 15.5px; font-style: italic; color: var(--p-ink2); line-height: 1.5;
+  padding-left: 20px; border-left: 2px solid var(--p-line);
+}
+
+/* Listening: a topic can bundle a short internal sequence of lessons. */
+.lesson-sublist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; max-width: 700px; }
+.lesson-sublist li { padding: 14px 0; border-bottom: 1px solid var(--p-line); }
+.lesson-sublist li:last-child { border-bottom: 0; }
+.lesson-sublist strong { display: block; font-size: 15px; font-weight: 620; }
+.lesson-sublist p { margin: 3px 0 0; font-size: 13.5px; color: var(--p-muted); }
+
+/* ── Primary action ────────────────────────────────────────── */
+.lesson-cta {
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ── Completion ────────────────────────────────────────────────
+   Not a persisted "completed" flag — the backend tracks no per-lesson
+   completion state, so this marks reaching the end of THIS reading,
+   not a badge that survives a reload. Deliberately plain: no confetti,
+   no streak language — a professional instrument's sign-off. */
+.lesson-done {
+  margin-top: 56px;
+  padding: 30px 32px;
+  border: 1px solid var(--p-line);
+  border-radius: var(--p-r-lg);
+  background: var(--p-elevated);
+  box-shadow: var(--p-edge), var(--p-shadow-1);
+}
+.lesson-done-mark {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--p-skill, var(--p-accent));
+  margin-bottom: 10px;
+}
+.lesson-done-mark::before {
+  content: "";
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--p-skill, var(--p-accent));
+}
+.lesson-done h2 { margin: 0 0 8px; font-size: 21px; font-weight: 640; letter-spacing: -0.02em; }
+.lesson-done p { margin: 0 0 20px; font-size: 14.5px; color: var(--p-muted); max-width: 56ch; }
+.lesson-done-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+@media (max-width: 640px) {
+  .lesson-connect { flex-direction: column; gap: 4px; }
+  .lesson-done { padding: 24px 22px; }
+}

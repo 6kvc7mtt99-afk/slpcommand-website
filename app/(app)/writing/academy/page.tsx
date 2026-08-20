@@ -54,7 +54,7 @@ export default async function WritingAcademyPage() {
           title={lessonTitle}
           detail={asString(lesson.reason) || undefined}
           evidence={evidenceLine || undefined}
-          href={`/writing/academy/lesson/${encodeURIComponent(lessonId)}`}
+          href={`/writing/academy/lesson/${encodeURIComponent(lessonId)}${evidenceLine ? `?why=${encodeURIComponent(evidenceLine)}` : ""}`}
           ctaLabel="Open today’s class"
           secondaryHref="/writing/practice"
           secondaryLabel="Straight to practice"

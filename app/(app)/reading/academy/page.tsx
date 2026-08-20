@@ -61,7 +61,7 @@ export default async function ReadingAcademyPage() {
           title={asString(lesson.title)}
           detail={asString(lesson.learningObjective) || undefined}
           evidence={evidenceLine || undefined}
-          href={`/reading/academy/lesson/${encodeURIComponent(asString(lesson.id))}`}
+          href={`/reading/academy/lesson/${encodeURIComponent(asString(lesson.id))}${evidenceLine ? `?why=${encodeURIComponent(evidenceLine)}` : ""}`}
           ctaLabel="Train this weakness"
           secondaryHref="/reading/practice"
           secondaryLabel="Straight to practice"

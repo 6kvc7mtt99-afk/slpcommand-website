@@ -56,7 +56,7 @@ export default async function ListeningAcademyPage() {
           eyebrow="Recommended training"
           title={targetTopic.title}
           detail={targetTopic.whyItMatters || targetTopic.description || undefined}
-          href={`/listening/academy/topic/${targetTopic.id}`}
+          href={`/listening/academy/topic/${targetTopic.id}${asString(reason.detail) ? `?why=${encodeURIComponent(asString(reason.detail))}` : ""}`}
           ctaLabel={ctaLabel}
           secondaryHref={practiceHref}
           secondaryLabel="Straight to practice"

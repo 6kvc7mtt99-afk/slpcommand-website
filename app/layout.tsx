@@ -6,6 +6,7 @@ import "./experience.css";
 import "./product.css";
 import "./task.css";
 import "./intel.css";
+import "./lesson.css";
 import { SentryInit } from "./sentry-init";
 
 /**
