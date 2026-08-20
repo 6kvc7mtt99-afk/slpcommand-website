@@ -5,6 +5,8 @@ import type { ProgressResponse } from "@/lib/api/types";
 
 export type Destination = {
   href: string;
+  /** Drives the panel's visual identity. "assess" mirrors the exam environment. */
+  mode?: "train" | "assess" | "learn" | "review";
   /** Small uppercase category label, e.g. "Train". */
   kind: string;
   label: string;
@@ -105,13 +107,13 @@ export function SkillHub({
 
             if (dest.disabled) {
               return (
-                <div key={dest.href} className="p-dest is-locked" data-reveal style={{ ["--i" as string]: index + 1 }}>
+                <div key={dest.href} className={`p-dest is-locked mode-${dest.mode ?? "learn"}`} data-reveal style={{ ["--i" as string]: index + 1 }}>
                   {body}
                 </div>
               );
             }
             return (
-              <Link key={dest.href} href={dest.href} className="p-dest" data-reveal style={{ ["--i" as string]: index + 1 }}>
+              <Link key={dest.href} href={dest.href} className={`p-dest mode-${dest.mode ?? "learn"}`} data-reveal style={{ ["--i" as string]: index + 1 }}>
                 {body}
               </Link>
             );

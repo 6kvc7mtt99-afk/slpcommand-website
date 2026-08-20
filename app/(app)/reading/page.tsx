@@ -11,6 +11,7 @@ export default async function ReadingHome() {
   const destinations: Destination[] = [
     {
       href: "/reading/practice",
+      mode: "train",
       kind: "Train",
       label: "Practice",
       detail: "One passage, one question, immediate feedback. Costs one credit per text.",
@@ -21,6 +22,7 @@ export default async function ReadingHome() {
     },
     {
       href: "/reading/exam",
+      mode: "assess",
       kind: "Assess",
       label: "Exam simulation",
       detail: "A timed STANAG-style paper built from the same item pool. Educational only.",
@@ -31,6 +33,7 @@ export default async function ReadingHome() {
     },
     {
       href: "/reading/academy",
+      mode: "learn",
       kind: "Learn",
       label: "Academy",
       detail: "The class the backend chose from your evidence, inside the full curriculum.",
@@ -39,6 +42,7 @@ export default async function ReadingHome() {
     },
     {
       href: "/reading/intelligence",
+      mode: "learn",
       kind: "Understand",
       label: "Intelligence",
       detail: "Where you stand, what the evidence supports, and what to train next.",

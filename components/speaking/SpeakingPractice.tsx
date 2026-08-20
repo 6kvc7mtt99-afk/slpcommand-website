@@ -89,12 +89,10 @@ export function SpeakingPractice({ userId, level }: { userId: string; level: "2"
   return (
     <ExerciseShell skill="Speaking" mode="Practice" title={prompt?.title ?? "Speaking practice"} layout="stage">
       <div className="speak-stage">
-      <p>{prompt?.instruction}</p>
-      <p className="muted">No local score is computed. A single task never shows a decimal band.</p>
-      <div className="admin-row" style={{ margin: "12px 0" }}>
-        <button className="btn btn-outline" type="button" onClick={() => setIndex((value) => (value + 1) % prompts.length)}>
-          Next prompt
-        </button>
+      <div className="speak-brief">
+        <p className="p-eyebrow">Your task</p>
+        <p className="speak-instruction">{prompt?.instruction}</p>
+        <p className="muted">No local score is computed. A single task never shows a decimal band.</p>
       </div>
       <SpeakingRecorder
         maxSeconds={180}
@@ -108,6 +106,13 @@ export function SpeakingPractice({ userId, level }: { userId: string; level: "2"
       {phase === "quota" ? <CommercialCard title="Speaking AI feedback is not available on your current plan." /> : null}
       {phase === "error" ? <p className="err" role="alert">{message}</p> : null}
       {phase === "result" && result ? <SpeakingResultCard result={result} /> : null}
+      {phase !== "evaluating" && phase !== "result" ? (
+        <div className="speak-alt">
+          <button className="btn btn-ghost" type="button" onClick={() => setIndex((value) => (value + 1) % prompts.length)}>
+            Try a different prompt
+          </button>
+        </div>
+      ) : null}
       {blob && phase !== "evaluating" && phase !== "result" ? (
         confirm ? (
           <div>

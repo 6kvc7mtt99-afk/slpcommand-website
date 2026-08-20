@@ -569,3 +569,79 @@
   .assessment-verdict-text { font-size: 17.5px; }
   .assessment-next .btn { width: 100%; }
 }
+
+/* ── The speaking instrument ──────────────────────────────
+   The recorder already carried a real state machine (idle / requesting /
+   recording / stopped / denied / interrupted); it just rendered them as
+   a small ring with a border-colour change. Each state now reads at a
+   glance, and recording is unmistakable — the one place in the product
+   where continuous motion is the correct answer, because it is the only
+   way to show that capture is live.
+   ------------------------------------------------------------ */
+.task-env .recorder { padding: 34px 32px 28px; width: min(560px, 100%); margin: 0 auto; text-align: center; }
+.task-env .recorder .home-kicker { justify-content: center; }
+.app-shell .recorder-face { display: grid; place-items: center; gap: 18px; }
+.app-shell .recorder-ring {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  border: 2px solid var(--p-line-strong);
+  display: grid;
+  place-items: center;
+  transition: border-color var(--p-t) var(--p-ease), box-shadow var(--p-t) var(--p-ease), transform var(--p-t) var(--p-ease);
+}
+.app-shell .recorder-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--p-muted);
+  transition: background var(--p-t) var(--p-ease), width var(--p-t) var(--p-ease), height var(--p-t) var(--p-ease), border-radius var(--p-t) var(--p-ease);
+}
+.app-shell .recorder.is-idle .recorder-dot { background: var(--p-bad); opacity: 0.55; }
+.app-shell .recorder.is-requesting .recorder-ring { border-color: var(--p-accent); }
+.app-shell .recorder.is-requesting .recorder-dot { background: var(--p-accent); }
+
+/* Live capture: the ring emits, and the dot becomes a stop square. */
+.app-shell .recorder.is-recording .recorder-ring {
+  border-color: var(--p-bad);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--p-bad) 42%, transparent);
+  animation: rec-emit 1.9s var(--p-ease-io) infinite;
+}
+.app-shell .recorder.is-recording .recorder-dot {
+  background: var(--p-bad);
+  width: 26px; height: 26px; border-radius: 5px;
+}
+@keyframes rec-emit {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--p-bad) 40%, transparent); }
+  70%  { box-shadow: 0 0 0 22px color-mix(in srgb, var(--p-bad) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--p-bad) 0%, transparent); }
+}
+.app-shell .recorder.is-stopped .recorder-ring { border-color: var(--p-ok); }
+.app-shell .recorder.is-stopped .recorder-dot { background: var(--p-ok); width: 26px; height: 26px; border-radius: 6px; }
+.app-shell .recorder.is-denied .recorder-ring { border-color: var(--p-bad); }
+.app-shell .recorder.is-denied .recorder-dot { background: var(--p-bad); }
+
+.app-shell .recorder-clock {
+  font-family: var(--p-mono);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--p-ink2);
+  margin: 0;
+}
+.app-shell .recorder.is-recording .recorder-clock { color: var(--p-ink); }
+.task-env .recorder .admin-row { justify-content: center; gap: 12px; }
+.task-env .recorder .btn { min-width: 190px; }
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .recorder.is-recording .recorder-ring { animation: none; box-shadow: 0 0 0 8px color-mix(in srgb, var(--p-bad) 22%, transparent); }
+}
+.speak-brief { width: min(680px, 100%); margin: 0 auto 8px; text-align: center; }
+.speak-brief .p-eyebrow { justify-content: center; }
+.speak-brief .p-eyebrow::after { display: none; }
+.speak-instruction {
+  font-size: clamp(19px, 2vw, 24px);
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+  color: var(--p-ink);
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.speak-alt { margin-top: 4px; }

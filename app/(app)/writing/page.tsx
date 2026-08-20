@@ -10,6 +10,7 @@ export default async function WritingHome() {
   const destinations: Destination[] = [
     {
       href: "/writing/practice",
+      mode: "train",
       kind: "Train",
       label: "Practice",
       detail: "One prompt, a full editor, then a server-side correction against the rubric.",
@@ -20,6 +21,7 @@ export default async function WritingHome() {
     },
     {
       href: "/writing/exam",
+      mode: "assess",
       kind: "Assess",
       label: "Exam simulation",
       detail: "A 70-minute timed paper. Formative below SLP 3 — indicative, never a level.",
@@ -30,6 +32,7 @@ export default async function WritingHome() {
     },
     {
       href: "/writing/academy",
+      mode: "learn",
       kind: "Learn",
       label: "Academy",
       detail: "The class the orchestrator chose, inside the full writing curriculum.",
@@ -38,6 +41,7 @@ export default async function WritingHome() {
     },
     {
       href: "/writing/tools",
+      mode: "review",
       kind: "Sharpen",
       label: "Writing tools",
       detail: "Level 2→3 transformer, examiner vision and exam strategy.",
@@ -46,6 +50,7 @@ export default async function WritingHome() {
     },
     {
       href: "/writing/history",
+      mode: "review",
       kind: "Review",
       label: "History",
       detail: "Every past correction from the backend, in order.",

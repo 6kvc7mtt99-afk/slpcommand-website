@@ -10,6 +10,7 @@ export default async function SpeakingHome() {
   const destinations: Destination[] = [
     {
       href: "/speaking/practice",
+      mode: "train",
       kind: "Train",
       label: "Practice",
       detail: "One prompt, one recording, one evaluation. Nothing is scored until it reaches the server.",
@@ -20,6 +21,7 @@ export default async function SpeakingHome() {
     },
     {
       href: "/speaking/exam",
+      mode: "assess",
       kind: "Assess",
       label: "Exam simulation",
       detail: "Three prompts in one sitting, rated task by task. Educational only.",
@@ -30,6 +32,7 @@ export default async function SpeakingHome() {
     },
     {
       href: "/speaking/history",
+      mode: "review",
       kind: "Review",
       label: "History",
       detail: "Every past attempt with its recording, for as long as the signed link lives.",

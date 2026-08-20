@@ -1172,3 +1172,31 @@ a.p-dest:hover {
   from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.994); }
   to   { opacity: 1; transform: none; }
 }
+
+/* ── 17. Practice and Exam are different objects ──────────
+   The two panels a learner chooses between were visually identical apart
+   from their preview. Exam now carries the same assessment accent it will
+   show once entered (see .task-env.is-exam), so the colour on the panel
+   is the colour of the room behind it — the strongest continuity cue
+   available without shared-element morphing. Practice keeps the skill's
+   own colour and stays calm.
+   ------------------------------------------------------------ */
+.p-dest.mode-assess {
+  --p-skill: #c2710c;
+  --p-skill-glow: rgba(194, 113, 12, 0.15);
+  border-color: color-mix(in srgb, #c2710c 26%, var(--p-line));
+}
+@media (prefers-color-scheme: dark) {
+  .p-dest.mode-assess { --p-skill: #e0932f; --p-skill-glow: rgba(224, 147, 47, 0.16); }
+}
+a.p-dest.mode-assess:hover { border-color: color-mix(in srgb, var(--p-skill) 62%, transparent); }
+.p-dest.mode-assess .p-dest-stage {
+  background-image: linear-gradient(160deg, var(--p-skill-glow), transparent 62%);
+}
+.p-dest.mode-assess .p-dest-go { color: var(--p-skill); }
+
+/* Practice is the primary act — it gets the affirmative accent. */
+.p-dest.mode-train { border-color: color-mix(in srgb, var(--p-accent) 22%, var(--p-line)); }
+.p-dest.mode-train .p-dest-stage {
+  background-image: linear-gradient(160deg, var(--p-skill-glow), transparent 62%);
+}

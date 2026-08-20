@@ -11,6 +11,7 @@ export default async function ListeningHome() {
   const destinations: Destination[] = [
     {
       href: "/listening/practice",
+      mode: "train",
       kind: "Train",
       label: "Practice",
       detail: "One clip, one question, no transcript. Sustained target is 70%.",
@@ -21,6 +22,7 @@ export default async function ListeningHome() {
     },
     {
       href: "/listening/exam",
+      mode: "assess",
       kind: "Assess",
       label: "Exam simulation",
       detail: "A REDS-style timed session built to the real audio budget. Educational only.",
@@ -31,6 +33,7 @@ export default async function ListeningHome() {
     },
     {
       href: "/listening/academy",
+      mode: "learn",
       kind: "Learn",
       label: "Academy",
       detail: "Cloud standing plus the free-set catalog. Pro topics stay locked.",
@@ -39,6 +42,7 @@ export default async function ListeningHome() {
     },
     {
       href: "/listening/intelligence",
+      mode: "learn",
       kind: "Understand",
       label: "Intelligence",
       detail: "What is weak, how confident the estimate is, and what to train next.",
