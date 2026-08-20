@@ -167,7 +167,7 @@ export function ReadinessInstrument({
       // Scale ticks, on the mid plane so they read as the shared frame.
       for (let i = 0; i <= 4; i++) {
         const a = START + (SWEEP * i) / 4;
-        const inner = project({ x: Math.cos(a) * 54, y: Math.sin(a) * 54, z: 0 }, rx, ry);
+        const inner = project({ x: Math.cos(a) * 104, y: Math.sin(a) * 104, z: 0 }, rx, ry);
         const outer = project(
           { x: Math.cos(a) * (i % 2 === 0 ? 166 : 158), y: Math.sin(a) * (i % 2 === 0 ? 166 : 158), z: 0 },
           rx,
@@ -213,7 +213,7 @@ export function ReadinessInstrument({
       if (target != null && Number.isFinite(target)) {
         const a = START + SWEEP * (Math.max(0, Math.min(4, target)) / 4);
         const zHalf = ((skills.length - 1) / 2) * GAP;
-        const from = project({ x: Math.cos(a) * 48, y: Math.sin(a) * 48, z: -zHalf }, rx, ry);
+        const from = project({ x: Math.cos(a) * 104, y: Math.sin(a) * 104, z: -zHalf }, rx, ry);
         const to = project({ x: Math.cos(a) * 172, y: Math.sin(a) * 172, z: zHalf }, rx, ry);
         ctx!.strokeStyle = targetCol;
         ctx!.globalAlpha = 0.8;
