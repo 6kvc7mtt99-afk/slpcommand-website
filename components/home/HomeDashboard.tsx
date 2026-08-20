@@ -18,6 +18,7 @@ import { displayOverallLevel, shouldShowProgressRing } from "@/lib/api/progress"
 import { TransitionBanner } from "./EstimatedSlpHero";
 import { EmptyState, LoadingState } from "@/components/ui/ProductState";
 import { TrainingPreview } from "@/components/skill/TrainingPreview";
+import { ReadinessInstrument, type InstrumentSkill } from "@/components/instrument/ReadinessInstrument";
 
 const SKILLS = ["reading", "listening", "writing", "speaking"] as const;
 
@@ -106,6 +107,23 @@ export function HomeDashboard({
 
   const blocks = today?.session.blocks ?? [];
 
+  // The instrument reads the same measured payload the ladder did. A skill
+  // the backend has not measured passes null and draws only its empty
+  // track — never a zero that could be mistaken for a score.
+  const instrumentSkills: InstrumentSkill[] = SKILLS.map((skill) => {
+    const row = initial.progress?.skills[skill];
+    const value = row?.available && row.level != null ? Number(row.level) : NaN;
+    return { key: skill, label: skill, level: Number.isFinite(value) ? value : null };
+  });
+  const overallNum = overall == null ? null : Number(overall);
+  // targetLevel is a string on the wire. Number("") is 0 and passes
+  // isFinite, which drew a target marker at zero on any account whose
+  // target the backend had not set — a scale reading that was simply
+  // false. Blank must mean "no target", not "target 0".
+  const targetRaw = (initial.progress?.targetLevel ?? "").toString().trim();
+  const targetParsed = targetRaw === "" ? NaN : Number(targetRaw);
+  const targetNum = Number.isFinite(targetParsed) && targetParsed > 0 ? targetParsed : null;
+
   return (
     <div className="home">
       <section className="p-hero" data-enter>
@@ -164,36 +182,14 @@ export function HomeDashboard({
           )}
         </div>
 
-        <aside className="p-status p-panel">
-          <p className="p-eyebrow">Skill standing</p>
-          {initial.progress ? (
-            <div className="p-ladder">
-              {(["reading", "listening", "writing", "speaking"] as const).map((skill) => {
-                const row = initial.progress!.skills[skill];
-                const level = row.available && row.level != null ? Number(row.level) : null;
-                const pct = level != null && Number.isFinite(level) ? Math.max(4, Math.min(100, (level / 4) * 100)) : 0;
-                return (
-                  <div key={skill} className="p-rung" data-skill={skill}>
-                    <span className="p-rung-name">{skill}</span>
-                    <span className="p-rung-bar">
-                      <i style={{ width: `${pct}%` }} />
-                    </span>
-                    {level != null ? (
-                      <span className="p-rung-val p-num">SLP {row.level}</span>
-                    ) : (
-                      <Link className="p-rung-val none" href={SKILL_HREF[skill]}>
-                        Start
-                      </Link>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="muted">Standing is unavailable right now.</p>
-          )}
-
-          <dl className="p-status-rows">
+        <aside className="p-instrument-bay" aria-label="Readiness">
+          <ReadinessInstrument
+            skills={instrumentSkills}
+            overall={overallNum}
+            target={targetNum}
+            size={430}
+          />
+          <dl className="p-status-rows p-instrument-rows">
             {initial.streak && initial.streak.current != null ? (
               <div>
                 <dt>Streak</dt>

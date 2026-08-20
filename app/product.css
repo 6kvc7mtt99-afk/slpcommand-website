@@ -93,6 +93,66 @@
   .skill-speaking { --p-skill: #4a3f6b; --p-skill-glow: rgba(74, 63, 107, 0.10); }
 }
 
+/* ── 1b. Typeface ──────────────────────────────────────────
+   Archivo for everything structural, IBM Plex Mono for every measured
+   value. Numbers set in the mono face is the detail that makes a level,
+   a clock or an evidence count read as an instrument reading rather
+   than as body copy.
+   ------------------------------------------------------------ */
+.app-shell {
+  --p-sans: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --p-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  font-family: var(--p-sans);
+  font-synthesis-weight: none;
+}
+.app-shell h1,
+.app-shell h2,
+.app-shell h3,
+.app-shell .p-hero-title,
+.app-shell .task-title,
+.app-shell button,
+.app-shell input,
+.app-shell select,
+.app-shell textarea { font-family: var(--p-sans); }
+
+/* Every measured value is an instrument reading. */
+.app-shell .p-num,
+.app-shell .p-eyebrow,
+.app-shell .section-eyebrow,
+.app-shell .home-kicker,
+.app-shell .p-dest-label,
+.app-shell .task-mode,
+.app-shell .task-progress-text,
+.app-shell .exam-timer,
+.app-shell .listen-clock,
+.app-shell .p-clock,
+.app-shell .p-status-level b,
+.app-shell .p-dial-center b,
+.app-shell .p-rung-val,
+.app-shell .p-figure,
+.app-shell .assessment-label,
+.app-shell .assessment-kind,
+.app-shell .writing-meter,
+.app-shell .p-status-rows dd,
+.app-shell .p-evidence dt,
+.app-shell .p-evidence dd,
+.app-shell .p-hero-stat b {
+  font-family: var(--p-mono);
+  font-variant-numeric: tabular-nums;
+}
+/* Plex Mono runs wide; uppercase labels need the tracking pulled back in. */
+.app-shell .p-eyebrow,
+.app-shell .section-eyebrow,
+.app-shell .home-kicker,
+.app-shell .p-dest-label,
+.app-shell .assessment-label,
+.app-shell .assessment-kind,
+.app-shell .task-mode { letter-spacing: 0.1em; font-weight: 600; }
+.app-shell .p-hero-title { font-weight: 700; letter-spacing: -0.035em; }
+.app-shell .p-status-level b,
+.app-shell .p-dial-center b,
+.app-shell .p-figure { font-weight: 600; letter-spacing: -0.03em; }
+
 /* ── 2. Canvas ───────────────────────────────────────────── */
 .app-shell {
   background: var(--p-bg);
@@ -945,3 +1005,170 @@ a.p-rung-val.none:hover { text-decoration: underline; }
   color: var(--p-muted);
 }
 .p-status-sub { display: block; font-size: 11.5px; font-weight: 500; color: var(--p-muted); margin-top: 2px; }
+
+/* ── 14. Material ─────────────────────────────────────────
+   Flat fills read as software; lit surfaces read as objects. Every panel
+   now carries a top-light gradient plus the existing edge highlight, so
+   a surface has a direction the light comes from. Two values, no images,
+   no blur cost.
+   ------------------------------------------------------------ */
+.app-shell .p-panel,
+.app-shell .p-dest,
+.app-shell .home-mission,
+.app-shell .skill-primary,
+.app-shell .academy-now,
+.app-shell .intel-hero,
+.app-shell .writing-editor,
+.app-shell .recorder {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--p-ink) 3%, transparent),
+    transparent 42%
+  );
+}
+@media (prefers-color-scheme: dark) {
+  .app-shell .p-panel,
+  .app-shell .p-dest,
+  .app-shell .home-mission,
+  .app-shell .skill-primary,
+  .app-shell .academy-now,
+  .app-shell .intel-hero,
+  .app-shell .writing-editor,
+  .app-shell .recorder {
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 46%);
+  }
+}
+
+/* Destination panels get real dimension on approach. */
+.p-destinations,
+.p-rail { perspective: 1400px; }
+a.p-dest {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+a.p-dest:hover {
+  transform: translateY(-4px) rotateX(1.6deg) scale(1.006);
+}
+
+/* ── 15. The readiness instrument ─────────────────────────── */
+.inst {
+  --inst-track: rgba(20, 22, 26, 0.09);
+  --inst-tick: rgba(20, 22, 26, 0.20);
+  --inst-target: #c8942a;
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+  max-width: 100%;
+  touch-action: pan-y;
+}
+@media (prefers-color-scheme: dark) {
+  .inst {
+    --inst-track: rgba(255, 255, 255, 0.075);
+    --inst-tick: rgba(255, 255, 255, 0.20);
+    --inst-target: #d9a53f;
+  }
+}
+.inst { width: 100%; aspect-ratio: 1; }
+.inst canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.inst-core {
+  position: relative;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 3px;
+  pointer-events: none;
+}
+.inst-core-label {
+  font-family: var(--p-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--p-muted);
+}
+.inst-core-value {
+  font-family: var(--p-mono);
+  font-size: 58px;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  color: var(--p-ink);
+  font-variant-numeric: tabular-nums;
+}
+.inst-core-empty {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--p-ink);
+}
+.inst-core-scale {
+  font-family: var(--p-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--p-muted);
+}
+.inst-legend {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+.inst-legend li { display: flex; align-items: center; gap: 6px; }
+.inst-legend i { width: 7px; height: 7px; border-radius: 50%; display: block; }
+.inst-legend span {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--p-muted);
+  font-weight: 600;
+}
+.inst-legend b { font-size: 11.5px; color: var(--p-ink); font-weight: 600; }
+@media (max-width: 640px) {
+  .inst-legend { gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .inst-legend span { display: none; }
+  .inst-core-value { font-size: 46px; }
+}
+.p-instrument-bay { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.p-instrument-rows { width: 100%; max-width: 380px; margin-top: 4px; }
+@media (max-width: 1080px) { .p-instrument-bay { margin-top: 8px; } }
+
+/* The instrument is taller than the mission copy beside it; without a cap
+   the centred row strands ~90px of dead space above and below the text. */
+.home .p-hero { padding-bottom: 8px; align-items: center; }
+.home .p-hero > div:first-child { padding: 8px 0; }
+.home .p-section:first-of-type { margin-top: 36px; }
+
+/* ── 16. Route choreography ───────────────────────────────
+   True shared-element morphing needs React's experimental ViewTransition
+   build, which is not something to ship on production. What is real and
+   free: the incoming route arrives as a staged sequence rather than a
+   single block fade — the eyebrow, then the headline, then the supporting
+   content, each on the same easing curve. Transform/opacity only, so it
+   stays on the compositor.
+   ------------------------------------------------------------ */
+.app-shell [data-enter] > * > .p-eyebrow,
+.app-shell [data-enter] > .p-eyebrow { animation: p-rise 420ms var(--p-ease) both; }
+.app-shell [data-enter] > * > .p-hero-title,
+.app-shell [data-enter] > .p-hero-title { animation: p-rise 520ms var(--p-ease) 60ms both; }
+.app-shell [data-enter] > * > .p-lead,
+.app-shell [data-enter] > .p-lead { animation: p-rise 520ms var(--p-ease) 110ms both; }
+.app-shell [data-enter] > * > .p-mission-blocks { animation: p-rise 520ms var(--p-ease) 155ms both; }
+.app-shell [data-enter] > * > .p-hero-actions { animation: p-rise 560ms var(--p-ease) 200ms both; }
+.app-shell [data-enter] > .p-status,
+.app-shell [data-enter] > .p-instrument-bay,
+.app-shell [data-enter] > .p-dial { animation: p-rise 620ms var(--p-ease) 180ms both; }
+
+/* The task stage arrives as one deliberate object, not a stagger — a task
+   should feel like a room you stepped into. */
+.task-stage { animation: task-enter 460ms var(--p-ease) both; }
+@keyframes task-enter {
+  from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.994); }
+  to   { opacity: 1; transform: none; }
+}
