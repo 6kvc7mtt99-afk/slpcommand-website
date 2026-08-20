@@ -11,7 +11,7 @@ export function isClientIdempotencyKey(value: string): boolean {
   return KEY_RE.test(value);
 }
 
-export function examIntentKey(userId: string, skill: "reading" | "listening", day = new Date()): string {
+export function examIntentKey(userId: string, skill: "reading" | "listening" | "speaking", day = new Date()): string {
   const y = day.getUTCFullYear();
   const m = String(day.getUTCMonth() + 1).padStart(2, "0");
   const d = String(day.getUTCDate()).padStart(2, "0");
