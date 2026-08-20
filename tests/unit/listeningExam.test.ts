@@ -49,6 +49,30 @@ describe("listening exam contract", () => {
     expect(decodePlayResult({ allowed: true }).allowed).toBe(true);
   });
 
+  it("EXAM-REAL-003 — decodes the global replay budget on start, defaulting the remaining count to the full budget", () => {
+    const start = decodeListeningExamStart({ ...startPayload, globalReplayBudget: 3 });
+    expect(start?.globalReplayBudget).toBe(3);
+    expect(start?.globalReplaysRemaining).toBe(3);
+  });
+
+  it("EXAM-REAL-003 — a legacy session (no global budget in the response) decodes both as null, not 0", () => {
+    const start = decodeListeningExamStart(startPayload);
+    expect(start?.globalReplayBudget).toBeNull();
+    expect(start?.globalReplaysRemaining).toBeNull();
+  });
+
+  it("EXAM-REAL-003 — decodes the global replay budget from a /exam/play response", () => {
+    const play = decodePlayResult({ allowed: true, globalReplayBudget: 3, globalReplaysRemaining: 2 });
+    expect(play.globalReplayBudget).toBe(3);
+    expect(play.globalReplaysRemaining).toBe(2);
+  });
+
+  it("EXAM-REAL-003 — a legacy /exam/play response (no global fields) decodes them as null", () => {
+    const play = decodePlayResult({ allowed: true, playsUsed: 1, maxPlays: 2 });
+    expect(play.globalReplayBudget).toBeNull();
+    expect(play.globalReplaysRemaining).toBeNull();
+  });
+
   it("keeps play/state/finish on the allowlist and recommendation denied", () => {
     expect(decidePolicy("POST", "/api/listening/slp/exam/play")).toEqual({ action: "forward" });
     expect(decidePolicy("GET", "/api/listening/slp/exam/state")).toEqual({ action: "forward" });
