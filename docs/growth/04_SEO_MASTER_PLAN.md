@@ -34,7 +34,7 @@ See `content/authority/pages.ts` for title, H1, keywords, FAQ, CTA.
 | URL | Why | When |
 |---|---|---|
 | `/guides/reading` | Complete four-skill cluster | Days 31–45 |
-| `/guides/speaking` | Five dimensions, public | Days 31–45 |
+| `/guides/speaking` | Four assessment criteria, public | Days 31–45 |
 | `/compare/stanag-vs-cefr` | Mapping with caveats | Days 46–60 |
 | `/glossary` | Entity terms | Days 46–60 |
 | `/guides/how-to-prepare` | Commercial how-to | Days 46–60 |

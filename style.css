@@ -336,6 +336,52 @@ body {
   font-size: 0.88rem;
   line-height: 1.5;
 }
+/* ─── GLOSSARY ─── */
+.glossary-list { margin: 0; }
+.glossary-entry {
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 24px;
+}
+.glossary-entry:first-child { border-top: none; padding-top: 4px; }
+.glossary-entry dt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.glossary-anchor { color: var(--ink); text-decoration: none; }
+.glossary-anchor:hover { text-decoration: underline; }
+.glossary-status {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--bg2);
+  white-space: nowrap;
+  cursor: help;
+}
+/* Official carries the standard's weight; the other two must not borrow it. */
+.glossary-status.is-official { color: var(--accent-dark); border-color: var(--accent); background: var(--accent-light); }
+.glossary-status.is-interpretation { color: var(--warn); border-color: var(--note-border); background: var(--note-bg); }
+.glossary-status.is-product { color: var(--ink2); }
+.glossary-entry dd { margin: 0; }
+.glossary-short { font-size: 15.5px; line-height: 1.65; margin: 0 0 10px; }
+.glossary-entry dd p { font-size: 15px; }
+.glossary-aka, .glossary-see { font-size: 13.5px; color: var(--muted); margin: 8px 0 0; }
+.glossary-see a { color: var(--accent); }
+@media (max-width: 600px) {
+  .glossary-entry dt { font-size: 16px; gap: 8px; }
+}
+
 .authority-related ul { list-style: none; padding-left: 0; }
 .authority-related li { margin: 8px 0; }
 
@@ -453,6 +499,9 @@ table.legal-table tr:last-child td { border-bottom: none; }
     --note-bg: #231e0a; --note-border: #52430d;
   }
   .note { color: #e0cc80; }
+  /* --warn is not re-declared for dark, so the interpretation badge would sit
+     dark-gold on near-black. Match what .note does above. */
+  .glossary-status.is-interpretation { color: #e0cc80; }
   .hero { background: var(--bg); }
   .site-footer { background: #000; }
   .disclaimer-strip { background: #1e1a08; border-color: #52430d; color: #c8a83a; }

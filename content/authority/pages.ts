@@ -1,3 +1,5 @@
+import { GLOSSARY, type GlossaryTerm } from "@/content/glossary";
+
 export type AuthoritySection = { h2: string; html: string };
 export type AuthorityFaq = { q: string; a: string };
 export type AuthorityRelated = { href: string; label: string };
@@ -32,6 +34,12 @@ export type AuthorityPageDef = {
   related: AuthorityRelated[];
   faq: AuthorityFaq[];
   sections: AuthoritySection[];
+  /**
+   * Definition entries, rendered as the page body and emitted as DefinedTermSet.
+   * Only the glossary uses this; an Article with a glossary field would be a
+   * category error, which is why schemaType has to agree.
+   */
+  glossary?: GlossaryTerm[];
   cta: { heading: string; body: string; href: string; label: string };
 };
 
@@ -93,7 +101,8 @@ export const AUTHORITY_PAGES = {
       { href: "/slp", label: "What SLP means" },
       { href: "/slp-2", label: "SLP 2 (functional)" },
       { href: "/slp-3", label: "SLP 3 (professional)" },
-      { href: "/exam", label: "Exam simulation" },
+      { href: "/glossary", label: "Glossary of terms" },
+      { href: "/guides", label: "All guides" },
     ],
     faq: [
       {
@@ -258,7 +267,8 @@ export const AUTHORITY_PAGES = {
     related: [
       { href: "/slp-3", label: "SLP 3" },
       { href: "/slp", label: "How to read an SLP" },
-      { href: "/guides/writing", label: "Writing" },
+      { href: "/guides", label: "Skill guides" },
+      { href: "/glossary#slp-2222", label: "What 2222 means" },
       { href: "/es/slp-2", label: "SLP 2 en español" },
     ],
     faq: [
@@ -318,8 +328,10 @@ export const AUTHORITY_PAGES = {
     sources: [SRC_BILC, SRC_JAPCC],
     related: [
       { href: "/slp-2", label: "SLP 2" },
-      { href: "/guides/writing", label: "Why writing fails" },
+      { href: "/guides/reading", label: "Reading at Level 3" },
       { href: "/guides/listening", label: "Listening" },
+      { href: "/guides/writing", label: "Why writing fails" },
+      { href: "/guides/speaking", label: "Speaking" },
       { href: "/es/slp-3", label: "SLP 3 en español" },
     ],
     faq: [
@@ -358,7 +370,7 @@ export const AUTHORITY_PAGES = {
     ],
     cta: {
       heading: "Train the constructs the rater can see",
-      body: "SLP Command scores writing on task as well as language, and speaking on five named dimensions — with the reason attached.",
+      body: "SLP Command scores writing on task as well as language, and speaking on the four assessment criteria — with the reason attached.",
       href: "/guides/writing",
       label: "Start with writing",
     },
@@ -590,9 +602,12 @@ export const AUTHORITY_PAGES = {
     funnel: "awareness",
     sources: [SRC_BILC],
     related: [
+      { href: "/guides/reading", label: "Reading" },
+      { href: "/guides/listening", label: "Listening" },
+      { href: "/guides/writing", label: "Writing" },
+      { href: "/guides/speaking", label: "Speaking" },
       { href: "/stanag-6001", label: "STANAG 6001" },
-      { href: "/slp", label: "SLP" },
-      { href: "/about", label: "About SLP Command" },
+      { href: "/glossary", label: "Glossary" },
     ],
     faq: [],
     sections: [
@@ -604,9 +619,13 @@ export const AUTHORITY_PAGES = {
 <li><a href="/stanag-6001">What STANAG 6001 is</a> — and is not.</li>
 <li><a href="/slp">How to read an SLP</a>, including why it is not speech therapy.</li>
 <li><a href="/slp-2">SLP 2</a> and <a href="/slp-3">SLP 3</a>.</li>
-<li><a href="/guides/writing">Writing: good English, wrong task</a>.</li>
+<li><a href="/guides/reading">Reading: Level 2 finds the fact, Level 3 rebuilds the argument</a>.</li>
 <li><a href="/guides/listening">Listening: where sittings are lost</a>.</li>
+<li><a href="/guides/writing">Writing: good English, wrong task</a>.</li>
+<li><a href="/guides/speaking">Speaking: what a rater is actually judging</a>.</li>
 <li><a href="/exam">What an exam simulation is for</a>.</li>
+<li><a href="/glossary">Glossary of STANAG 6001 and SLP terms</a>.</li>
+<li><a href="/method">How we measure, and what we will not claim</a>.</li>
 <li><a href="/es/examen-slp">Examen SLP en España</a>.</li>
 </ul>
 <p>Product training for Reading, Listening, Writing and Speaking lives in the iOS app — those URLs are the trainer, not these guides.</p>`,
@@ -635,8 +654,10 @@ export const AUTHORITY_PAGES = {
     funnel: "consideration",
     sources: [SRC_BILC],
     related: [
+      { href: "/guides/speaking", label: "Speaking" },
+      { href: "/guides/reading", label: "Reading" },
+      { href: "/glossary#task-achievement", label: "Task achievement" },
       { href: "/slp-3", label: "SLP 3" },
-      { href: "/guides/listening", label: "Listening" },
       { href: "/exam", label: "Exam simulation" },
     ],
     faq: [
@@ -688,6 +709,103 @@ export const AUTHORITY_PAGES = {
     },
   },
 
+  "guides-reading": {
+    path: "/guides/reading",
+    lang: "en",
+    title: "STANAG / SLP reading: Level 3 is inference, not vocabulary",
+    description:
+      "SLP reading is failed on inference and time, not on rare words. What separates Level 2 fact-finding from Level 3 argument reading, and how to train it.",
+    h1: "SLP reading: Level 2 finds the fact, Level 3 reconstructs the argument",
+    kicker: "Reading",
+    updated: UPDATED,
+    primaryKeyword: "STANAG 6001 reading",
+    secondaryKeywords: ["SLP reading", "STANAG level 3 reading", "SLP 3 reading inference"],
+    intent: "informational / commercial",
+    funnel: "consideration",
+    sources: [SRC_BILC],
+    related: [
+      { href: "/slp-3", label: "SLP 3" },
+      { href: "/guides/listening", label: "Listening" },
+      { href: "/glossary", label: "Glossary" },
+      { href: "/exam", label: "Exam simulation" },
+    ],
+    faq: [
+      {
+        q: "I knew every word and still got the question wrong. How?",
+        a: "Because the question was not asking what the text said. Level 3 items routinely ask what the author implies, concedes, or recommends — which can be true of a paragraph in which no single sentence states it.",
+      },
+      {
+        q: "Should I be learning more military vocabulary?",
+        a: "Only after inference and time are under control. A specialised word you do not know is usually recoverable from context; an argument you did not track is not.",
+      },
+      {
+        q: "Is reading the easiest skill?",
+        a: "It is the one candidates most often assume they have. That assumption is why it goes untrained and then caps a profile at 3323.",
+      },
+    ],
+    sections: [
+      {
+        h2: "Two different reading acts",
+        html: `${DISCLAIMER_EN}
+<p>Reading is one digit of your profile, but the levels ask for two genuinely different things.</p>
+<p>At <strong>Level 2</strong> the work is largely retrieval. The text is straightforward and mostly factual, and the question usually has an answer sitting somewhere in it. Your job is to find the right place and read it accurately.</p>
+<p>At <strong>Level 3</strong> the answer is often not in any one sentence. The text argues, concedes, qualifies and recommends, and you are asked what it means as a whole. Retrieval stops being enough — you have to hold the shape of the argument.</p>
+<p>Candidates who prepare by widening vocabulary are preparing for the first act. The sitting that gates a posting usually tests the second.</p>`,
+      },
+      {
+        h2: "What changes between the levels",
+        html: `<div class="legal-table-wrap"><table class="legal-table">
+<thead><tr><th></th><th>Level 2</th><th>Level 3</th></tr></thead>
+<tbody>
+<tr><td>Typical text</td><td>Notices, straightforward reports, factual correspondence on familiar topics</td><td>Analysis, editorial and professional prose, argument with caveats</td></tr>
+<tr><td>What is asked</td><td>What does the text state?</td><td>What does the text mean, imply, or recommend?</td></tr>
+<tr><td>Where the answer is</td><td>Usually locatable in one place</td><td>Often distributed, or carried by hedging and contrast</td></tr>
+<tr><td>Main failure</td><td>Misreading a detail; running out of time</td><td>Answering what the text says instead of what it argues</td></tr>
+</tbody>
+</table></div>
+<p class="note">The level descriptors are set by the standard; the contrast in this table is how testing practice and this site read them. It is not a quotation from STANAG 6001.</p>`,
+      },
+      {
+        h2: "Time is part of the construct",
+        html: `<p>Reading papers are not comprehension exercises with unlimited thinking. The clock is doing assessment work: at Level 3 you are expected to process professional prose at something like professional speed.</p>
+<p>This has a practical consequence most self-study ignores. If you read a passage three times, look up four words and then answer correctly, you have not demonstrated Level 3 reading — you have demonstrated that you could reach the answer eventually. An untimed 3 is not a timed 3.</p>
+<p>The same logic applies in the other direction. Candidates who rush to finish and answer from memory of the passage will fail inference items that require going back to a specific concession.</p>`,
+      },
+      {
+        h2: "Where marks are actually lost",
+        html: `<ul>
+<li><strong>Answering the topic, not the question.</strong> The option that mentions the subject you just read about is the most attractive wrong answer in the paper.</li>
+<li><strong>Missing polarity and concession.</strong> <em>Although</em>, <em>unless</em>, <em>failed to</em>, <em>is unlikely to</em> — one of these reverses a paragraph, and skimming loses it.</li>
+<li><strong>Treating a hedge as a claim.</strong> "The measure may prove insufficient" is not "the measure is insufficient". Level 3 items are built on exactly that gap.</li>
+<li><strong>Losing the referent.</strong> Long professional sentences carry <em>this</em>, <em>which</em> and <em>the latter</em> a long way from what they refer to.</li>
+<li><strong>Spending Level 3 time on a Level 2 item.</strong> The easy retrieval question is worth the same as the hard inference one.</li>
+</ul>`,
+      },
+      {
+        h2: "How to train it this week",
+        html: `<ol>
+<li>Take one piece of professional prose that argues something — an analysis piece, not a news summary.</li>
+<li>Give yourself a realistic clock and read it once.</li>
+<li>Before looking at any question, write in one sentence: <em>what is this author recommending, and what do they concede?</em></li>
+<li>Then answer the questions. If you got an inference item wrong, find the exact clause that carried the meaning — usually a hedge, a contrast or a concession.</li>
+<li>Only now look up unknown words, and only the ones that actually blocked the argument.</li>
+</ol>
+<p>Step 3 is the one that transfers. It trains the act Level 3 rates, and it is the step self-study nearly always skips.</p>`,
+      },
+      {
+        h2: "How SLP Command trains reading",
+        html: `<p>Reading practice is built to the level you chose, and every item returns an explanation rather than only a mark — because knowing which clause carried the meaning is the part that transfers to the next passage.</p>
+<p>Passages carry a genre descriptor, so you can see whether you are consistently losing marks on argumentative prose while doing well on factual reporting. That pattern is the useful signal; a single score is not.</p>`,
+      },
+    ],
+    cta: {
+      heading: "Find out which reading act you are actually good at",
+      body: "Reading practice and timed simulations at Level 2 and Level 3, with the reasoning attached to every item.",
+      href: "/exam",
+      label: "Exam simulation",
+    },
+  },
+
   "guides-listening": {
     path: "/guides/listening",
     lang: "en",
@@ -703,8 +821,10 @@ export const AUTHORITY_PAGES = {
     funnel: "consideration",
     sources: [SRC_BILC],
     related: [
-      { href: "/slp-3", label: "SLP 3" },
+      { href: "/guides/reading", label: "Reading" },
+      { href: "/guides/speaking", label: "Speaking" },
       { href: "/guides/writing", label: "Writing" },
+      { href: "/slp-3", label: "SLP 3" },
       { href: "/exam", label: "Exam simulation" },
     ],
     faq: [
@@ -749,6 +869,105 @@ export const AUTHORITY_PAGES = {
     },
   },
 
+  "guides-speaking": {
+    path: "/guides/speaking",
+    lang: "en",
+    title: "STANAG / SLP speaking: what a rater is actually judging",
+    description:
+      "SLP speaking is rated on what your speech accomplishes, not on accent. The four factors behind a rating, why the weakest one caps the level, and how to train it.",
+    h1: "SLP speaking is rated on what your speech does, not on how it sounds",
+    kicker: "Speaking",
+    updated: UPDATED,
+    primaryKeyword: "STANAG 6001 speaking",
+    secondaryKeywords: ["SLP speaking", "STANAG level 3 speaking", "SLP speaking criteria"],
+    intent: "informational / commercial",
+    funnel: "consideration",
+    sources: [SRC_BILC],
+    related: [
+      { href: "/slp-3", label: "SLP 3" },
+      { href: "/guides/writing", label: "Writing" },
+      { href: "/glossary#rating-factors", label: "The four rating factors" },
+      { href: "/exam", label: "Exam simulation" },
+    ],
+    faq: [
+      {
+        q: "Will my accent lower my score?",
+        a: "An accent is not itself a failing. What matters is whether it costs the listener effort — intelligibility is assessed, a particular accent is not the target.",
+      },
+      {
+        q: "I speak fluently. Why was I not credited at Level 3?",
+        a: "Fluency is one factor among several. A confident, fast answer that never attempts the reasoning the task called for can be credited below a slower answer that does.",
+      },
+      {
+        q: "Is it better to say less and be accurate, or say more and risk errors?",
+        a: "Neither strategy wins on its own, because the weakest factor caps the rating. Saying very little protects accuracy while failing on the tasks attempted; overreaching does the reverse.",
+      },
+    ],
+    sections: [
+      {
+        h2: "Speaking is a performance, not a pronunciation sample",
+        html: `${DISCLAIMER_EN}
+<p>Most candidates prepare for speaking as if the examiner were listening for mistakes. That is the wrong model, and it produces a recognisable failure: a careful, error-light answer that never attempts what the task asked for.</p>
+<p>A speaking rating asks whether your speech <em>did the job</em> — described, narrated, compared, justified, hedged, recommended — at the level's standard of precision. Accuracy is one input to that judgement. It is not the judgement.</p>`,
+      },
+      {
+        h2: "The four factors behind a rating",
+        html: `<p>Proficiency ratings in the STANAG/ILR family are usually read across four factors rather than as a single impression:</p>
+<div class="legal-table-wrap"><table class="legal-table">
+<thead><tr><th>Factor</th><th>The question it answers</th><th>Typical way it is lost</th></tr></thead>
+<tbody>
+<tr><td>Content</td><td>What subject matter could you actually handle?</td><td>Comfortable only on personal and routine topics when the level asks for abstract ones</td></tr>
+<tr><td>Tasks</td><td>What did your speech do — describe, narrate, argue, qualify?</td><td>Answering a "justify and recommend" prompt with a description</td></tr>
+<tr><td>Accuracy</td><td>Was it precise enough to be understood without effort?</td><td>Errors that force the listener to reinterpret, not occasional slips</td></tr>
+<tr><td>Text produced</td><td>What shape of speech came out — a phrase, a paragraph, a sustained argument?</td><td>Level 3 reasoning delivered as disconnected sentences</td></tr>
+</tbody>
+</table></div>
+<p class="note">This four-factor reading is standard testing practice and how SLP Command structures its own evaluation. It is an interpretive lens, not a sentence quoted from STANAG 6001.</p>`,
+      },
+      {
+        h2: "The weakest factor caps the rating",
+        html: `<p>These four are not averaged. A response with Level 3 content and Level 2 accuracy is not credited somewhere in between — the limiting factor decides.</p>
+<p>That single fact explains most results that feel unfair:</p>
+<ul>
+<li>The fluent speaker capped by precision, because errors keep costing the listener effort.</li>
+<li>The precise speaker capped by tasks, because they never attempted the reasoning the prompt required.</li>
+<li>The well-prepared speaker capped by content, fluent on their own unit and lost on an abstract policy question.</li>
+<li>The speaker capped by text produced, who has the argument but delivers it as fragments that never build.</li>
+</ul>
+<p>It also tells you what to train: not "speaking" in general, but the factor that is holding you.</p>`,
+      },
+      {
+        h2: "A worked contrast",
+        html: `<p><strong>Prompt (illustrative, not from a live official paper):</strong> Your unit has been offered additional training hours that must be taken from either maintenance or physical training. Recommend which, and justify it.</p>
+<p><strong>A confident answer that is capped:</strong> a fluent, accurate description of what maintenance involves and why physical training matters. Nothing wrong with the language. It described when it was asked to recommend — the task was not performed.</p>
+<p><strong>An answer that reaches the level:</strong> names the recommendation early, gives the reason that actually decides it, concedes the cost on the other side, and qualifies the conditions under which the answer would change.</p>
+<p>The second answer can contain more errors and still be the stronger performance, because the factor it is strong on is the one the prompt was testing.</p>`,
+      },
+      {
+        h2: "How to train it this week",
+        html: `<ol>
+<li>Take a prompt that requires a position, not a description — "recommend", "justify", "compare and decide".</li>
+<li>Record yourself answering under a clock, in one take. No restarts; restarts train a skill the sitting will not let you use.</li>
+<li>Before listening back, write down which of the four factors you think was weakest.</li>
+<li>Listen back once and check. Most people are wrong about which factor limited them — that is the point of the exercise.</li>
+<li>Train that factor specifically for a week. Precision drills will not fix a task problem, and task drills will not fix precision.</li>
+</ol>
+<p>Speaking to yourself without recording feels productive and teaches very little, because the factor you are weakest on is exactly the one you cannot hear while you are producing it.</p>`,
+      },
+      {
+        h2: "How SLP Command evaluates speaking",
+        html: `<p>Speaking evaluation returns each of the four factors as met or not met, with the evidence it used, and names the limiting factor when a task was not credited. A single task does not receive a decimal profile — one performance is not a rating.</p>
+<p>Sending audio for evaluation is a separate, explicit, revocable choice, and never a condition of using the rest of the product. The <a href="/ai-usage">Responsible AI policy</a> states what the model receives.</p>`,
+      },
+    ],
+    cta: {
+      heading: "Find out which factor is capping you",
+      body: "Speaking evaluation names the limiting factor and shows the evidence behind it, at the level you are training for.",
+      href: "/exam",
+      label: "Exam simulation",
+    },
+  },
+
   exam: {
     path: "/exam",
     lang: "en",
@@ -764,9 +983,10 @@ export const AUTHORITY_PAGES = {
     funnel: "consideration",
     sources: [SRC_BILC],
     related: [
-      { href: "/guides/writing", label: "Writing" },
-      { href: "/guides/listening", label: "Listening" },
+      { href: "/guides", label: "Skill guides" },
+      { href: "/slp-2", label: "SLP 2" },
       { href: "/slp-3", label: "SLP 3" },
+      { href: "/method", label: "What we will not claim" },
     ],
     faq: [
       {
@@ -797,6 +1017,147 @@ export const AUTHORITY_PAGES = {
     },
   },
 
+  glossary: {
+    path: "/glossary",
+    lang: "en",
+    schemaType: "CollectionPage" as const,
+    title: "Glossary of STANAG 6001 and SLP terms",
+    description:
+      "Plain definitions of STANAG 6001, SLP, levels 2 and 3, the four skills and the rating factors — each marked as official, interpretation, or a product decision.",
+    h1: "STANAG 6001 and SLP glossary",
+    kicker: "Glossary",
+    updated: UPDATED,
+    primaryKeyword: "STANAG 6001 glossary",
+    secondaryKeywords: ["SLP terms", "SLP meaning", "what does SLP 3333 mean"],
+    intent: "informational",
+    funnel: "awareness",
+    sources: [SRC_BILC, SRC_JAPCC],
+    glossary: GLOSSARY,
+    related: [
+      { href: "/stanag-6001", label: "STANAG 6001" },
+      { href: "/slp", label: "How to read an SLP" },
+      { href: "/guides", label: "All guides" },
+      { href: "/method", label: "How we measure" },
+    ],
+    faq: [
+      {
+        q: "Why is each definition labelled?",
+        a: "Because “the standard says so”, “testing practice reads it this way”, and “SLP Command decided this” are three different kinds of claim. Presenting them in one voice is how a product decision quietly becomes an exam requirement in someone else's citation.",
+      },
+      {
+        q: "Does SLP mean speech-language pathology?",
+        a: "Not here. In this field SLP is a Standardized Language Profile under STANAG 6001. The speech-language pathology profession is unrelated and dominates general search results for the bare acronym.",
+      },
+    ],
+    sections: [
+      {
+        h2: "How to read this page",
+        html: `${DISCLAIMER_EN}
+<p>Every entry below carries one of three labels. They are not decoration — they tell you how much weight a sentence can bear.</p>
+<ul>
+<li><strong>Official</strong> — stated by the standard or its custodian.</li>
+<li><strong>Educational interpretation</strong> — how testing practice and this site read the standard. Useful, but not a rule you can cite back to anyone.</li>
+<li><strong>SLP Command decision</strong> — a choice this product made. Nobody else is bound by it, least of all the body that runs your sitting.</li>
+</ul>
+<p>Administration — dates, eligibility, registration — is national and changes. Confirm it with the authority that convenes your exam, never with a glossary.</p>`,
+      },
+    ],
+    cta: {
+      heading: "The terms are the easy part",
+      body: "Knowing what 3333 means is not the same as holding it. Practice and timed simulations at Level 2 and Level 3.",
+      href: "/guides",
+      label: "Read the guides",
+    },
+  },
+
+  method: {
+    path: "/method",
+    lang: "en",
+    title: "How SLP Command measures, and what it refuses to claim",
+    description:
+      "The evidence standard behind every estimate, the limits of AI feedback, and the specific claims this product will not make — including a pass probability.",
+    h1: "How we measure, and what we will not claim",
+    kicker: "Method",
+    updated: UPDATED,
+    primaryKeyword: "SLP Command method",
+    secondaryKeywords: ["is SLP Command official", "SLP Command accuracy", "AI language assessment limits"],
+    intent: "informational / trust",
+    funnel: "consideration",
+    sources: [SRC_BILC, SRC_JAPCC],
+    related: [
+      { href: "/about", label: "About SLP Command" },
+      { href: "/trust-center", label: "Trust Center" },
+      { href: "/ai-usage", label: "Responsible AI policy" },
+      { href: "/glossary", label: "Glossary" },
+    ],
+    faq: [
+      {
+        q: "Is SLP Command an official STANAG 6001 assessment?",
+        a: "No. It is an independent educational trainer. It is not affiliated with NATO, BILC, any Ministry of Defence, or any examining body, and its AI feedback is indicative guidance, not an official rating.",
+      },
+      {
+        q: "Will it tell me my chance of passing?",
+        a: "No, and this is deliberate. A percentage would require calibration against official outcomes that this product does not hold. People book exams and make career decisions on that number, so inventing one would be the most damaging thing we could ship.",
+      },
+      {
+        q: "Can an AI really judge language proficiency?",
+        a: "It can judge some things usefully and others poorly. It is reasonable at task achievement, structure and consistency of accuracy. It is weaker on borderline judgements, unusual registers and anything requiring knowledge of your national paper. Where evidence is thin, the product is built to say so rather than produce a confident number.",
+      },
+    ],
+    sections: [
+      {
+        h2: "The standard we hold ourselves to",
+        html: `${DISCLAIMER_EN}
+<p>One rule sits under everything this product does: <strong>nothing is asserted about your English without measurement, and every recommendation names the evidence that produced it.</strong></p>
+<p>That is easy to write on a marketing page and expensive to keep. It rules out the features candidates most often ask for — a single motivating score, a countdown to readiness, a pass estimate — because none of them can be produced honestly from the evidence available.</p>`,
+      },
+      {
+        h2: "Three kinds of claim, kept apart",
+        html: `<p>Anywhere this site makes a statement about the exam, it belongs to one of three categories, and we try never to let them blur:</p>
+<div class="legal-table-wrap"><table class="legal-table">
+<thead><tr><th>Kind</th><th>What it means</th><th>How far you can take it</th></tr></thead>
+<tbody>
+<tr><td><strong>Official</strong></td><td>Stated by STANAG 6001 or its custodian, with a citation</td><td>Cite it; check the source we link</td></tr>
+<tr><td><strong>Educational interpretation</strong></td><td>How testing practice, teachers and this site read the standard</td><td>Useful for training. Not a rule anyone is bound by</td></tr>
+<tr><td><strong>Product decision</strong></td><td>A choice SLP Command made about its own trainer</td><td>Applies to this product only. Your national paper owes it nothing</td></tr>
+</tbody>
+</table></div>
+<p>The <a href="/glossary">glossary</a> labels every entry this way, for the same reason.</p>`,
+      },
+      {
+        h2: "What we will not claim",
+        html: `<p>These are not oversights waiting to be filled in. Each one is refused on purpose.</p>
+<ul>
+<li><strong>No official status.</strong> Not NATO, not BILC, not a Ministry of Defence, not an examining body, and not accredited by any of them.</li>
+<li><strong>No pass probability.</strong> No percentage, no traffic light, no "you are ready" — we hold no official outcomes to calibrate against.</li>
+<li><strong>No guarantee of any result.</strong> No product can promise you a language exam, and one that implies otherwise is telling you something about itself.</li>
+<li><strong>No claim that our estimate is your profile.</strong> An estimate from practice evidence is not a rating from a board.</li>
+<li><strong>No superlatives we cannot substantiate.</strong> Never "the best" and never "the only" — those are marketing positions, not measurements.</li>
+<li><strong>No endorsement by anyone.</strong> No unit, headquarters, school or officer has endorsed this product.</li>
+</ul>
+<p>These constraints are written down in an internal claims registry and enforced by an automated test that scans every public page, in English and Spanish, before it can ship. That is not a promise of good intentions; it is a build step that fails.</p>`,
+      },
+      {
+        h2: "What the AI actually does, and where it is weak",
+        html: `<p>AI evaluates Writing and Speaking. It is used because it can give a candidate a reasoned response in seconds where a teacher cannot, and it is constrained because it is not a rater.</p>
+<p><strong>Reasonable at:</strong> whether a response performed the task set, how a text is organised, whether accuracy is consistent enough to stop costing the reader effort, and producing an improved version beside yours so the difference is visible.</p>
+<p><strong>Weak at:</strong> borderline calls between adjacent levels, unusual registers and humour, anything depending on the specific conventions of your national paper, and any judgement that needs more evidence than one response contains.</p>
+<p>Where the evidence is thin, the product is designed to say "limited evidence" rather than produce a confident number. An estimate that admits uncertainty is worth more than one that does not, even though it satisfies less.</p>`,
+      },
+      {
+        h2: "Why the sources are on the page",
+        html: `<p>Every explanatory page here carries the works it relies on, with a note on what each one says. That is unusual for a commercial site and it is the point: a claim about a defence language standard that cannot show its source is a claim you should discount.</p>
+<p>Where something is publicly described but not officially confirmed — national registration routes, sitting windows — we say so and tell you to verify it with the body that convenes your exam. We would rather be less convenient than wrong about a date someone plans a career around.</p>`,
+      },
+    ],
+    cta: {
+      heading: "Measurement you can argue with",
+      body: "Every estimate names its evidence, and says when there is not enough of it. Start on the free plan and see what it refuses to tell you.",
+      href: "/trust-center",
+      label: "Trust Center",
+    },
+  },
+
   about: {
     path: "/about",
     lang: "en",
@@ -813,9 +1174,10 @@ export const AUTHORITY_PAGES = {
     sources: [SRC_BILC],
     related: [
       { href: "/stanag-6001", label: "STANAG 6001" },
+      { href: "/method", label: "How we measure" },
       { href: "/disclaimer", label: "Institutional disclaimer" },
       { href: "/trust-center", label: "Trust Center" },
-      { href: "/#pricing", label: "Pricing" },
+      { href: "/glossary", label: "Glossary" },
     ],
     faq: [
       {

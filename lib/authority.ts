@@ -42,6 +42,12 @@ export function authorityOgImage(page: AuthorityPageDef): { url: string; alt: st
       alt: "SLP Command — guides to what SLP examiners actually rate.",
     };
   }
+  if (page.path === "/glossary") {
+    return {
+      url: "/assets/og/og-stanag.png",
+      alt: "SLP Command — STANAG 6001 and SLP terms, defined.",
+    };
+  }
   if (page.path === "/slp-2" || page.path === "/slp-3") {
     return {
       url: "/assets/og/og-levels.png",
@@ -137,6 +143,38 @@ export function articleJsonLd(id: AuthorityId) {
           })),
         }
       : {}),
+  };
+}
+
+/**
+ * DefinedTermSet for the glossary.
+ *
+ * An Article describing sixteen definitions is not the same object as a set of
+ * sixteen defined terms, and only the second is machine-answerable. Each term
+ * carries its own canonical anchor so an answer engine can cite the definition
+ * rather than the page.
+ */
+export function glossaryJsonLd(id: AuthorityId) {
+  const page = getAuthorityPage(id);
+  if (!page.glossary?.length) return null;
+  const url = `${SITE_ORIGIN}${page.path}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "DefinedTermSet",
+    // Its own fragment: the page entity already owns the bare URL.
+    "@id": `${url}#terms`,
+    name: page.h1,
+    description: page.description,
+    inLanguage: "en",
+    url,
+    hasDefinedTerm: page.glossary.map((term) => ({
+      "@type": "DefinedTerm",
+      "@id": `${url}#${term.id}`,
+      name: term.term,
+      description: term.short,
+      inDefinedTermSet: `${url}#terms`,
+      ...(term.aka?.length ? { alternateName: term.aka } : {}),
+    })),
   };
 }
 

@@ -4,9 +4,11 @@ import {
   breadcrumbJsonLd,
   breadcrumbTrail,
   faqJsonLd,
+  glossaryJsonLd,
   type AuthorityId,
   getAuthorityPage,
 } from "@/lib/authority";
+import { GLOSSARY_STATUS_LABEL, GLOSSARY_STATUS_NOTE } from "@/content/glossary";
 import { conversionCta } from "@/lib/conversion";
 import { JsonLd } from "./JsonLd";
 import { SiteFooter, SiteHeader } from "./SiteChrome";
@@ -46,6 +48,43 @@ export function AuthorityPage({ id }: { id: AuthorityId }) {
             <div dangerouslySetInnerHTML={{ __html: section.html }} />
           </section>
         ))}
+
+        {page.glossary?.length ? (
+          <section className="glossary">
+            <h2>Terms</h2>
+            <dl className="glossary-list">
+              {page.glossary.map((term) => (
+                <div key={term.id} id={term.id} className="glossary-entry">
+                  <dt>
+                    <a className="glossary-anchor" href={`#${term.id}`}>
+                      {term.term}
+                    </a>
+                    <span className={`glossary-status is-${term.status}`} title={GLOSSARY_STATUS_NOTE[term.status]}>
+                      {GLOSSARY_STATUS_LABEL[term.status]}
+                    </span>
+                  </dt>
+                  <dd>
+                    <p className="glossary-short">{term.short}</p>
+                    {term.body ? <div dangerouslySetInnerHTML={{ __html: term.body }} /> : null}
+                    {term.aka?.length ? (
+                      <p className="glossary-aka">Also written: {term.aka.join(" · ")}</p>
+                    ) : null}
+                    {term.see?.length ? (
+                      <p className="glossary-see">
+                        {term.see.map((link, index) => (
+                          <span key={link.href}>
+                            {index > 0 ? <span aria-hidden="true"> · </span> : null}
+                            <Link href={link.href}>{link.label}</Link>
+                          </span>
+                        ))}
+                      </p>
+                    ) : null}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ) : null}
 
         {page.faq.length > 0 ? (
           <section>
@@ -106,6 +145,7 @@ export function AuthorityPage({ id }: { id: AuthorityId }) {
       <JsonLd data={articleJsonLd(id)} />
       <JsonLd data={breadcrumbJsonLd(id)} />
       <JsonLd data={faqJsonLd(id)} />
+      <JsonLd data={glossaryJsonLd(id)} />
     </>
   );
 }

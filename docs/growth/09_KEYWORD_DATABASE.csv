@@ -28,7 +28,14 @@ esame JFLT,it,commercial,UNKNOWN,NEEDS_DATA,medium,medium,medium,P2,later IT,
 SLP,en,hazard,UNKNOWN,NEEDS_DATA,very high,low,none,NEVER,none,Speech-language pathology
 STANAG,en,hazard,UNKNOWN,NEEDS_DATA,very high,low,none,NEVER,none,Magazines/ammo
 SLP Command,brand,transactional,UNKNOWN,NEEDS_DATA,none,high,high,P0,/,
-how to prepare for STANAG 6001,en,informational,UNKNOWN,NEEDS_DATA,medium,high,high,P1,future article,
+how to prepare for STANAG 6001,en,informational,UNKNOWN,NEEDS_DATA,medium,high,high,P1,/guides,
 cómo aprobar el SLP 3333,es,commercial,UNKNOWN,NEEDS_DATA,low,high,high,P1,future article,
 STANAG 6001 vs CEFR,en,comparison,UNKNOWN,NEEDS_DATA,low,medium,medium,P2,future article,
 convalidar SLP EOI,es,informational,UNKNOWN,NEEDS_DATA,low,medium,medium,P2,admin — link official
+STANAG 6001 reading,en,informational,UNKNOWN,NEEDS_DATA,low,very high,very high,P0,/guides/reading,Level 3 is inference not vocabulary
+STANAG level 3 reading,en,informational,UNKNOWN,NEEDS_DATA,low,very high,high,P0,/guides/reading,
+STANAG 6001 speaking,en,informational,UNKNOWN,NEEDS_DATA,low,very high,very high,P0,/guides/speaking,
+SLP speaking criteria,en,informational,UNKNOWN,NEEDS_DATA,low,high,high,P0,/guides/speaking,Four rating factors
+STANAG 6001 glossary,en,informational,UNKNOWN,NEEDS_DATA,low,high,high,P1,/glossary,Extractable for AI answers
+SLP meaning,en,informational,UNKNOWN,NEEDS_DATA,medium,high,medium,P1,/glossary,Disambiguation vs speech pathology
+is SLP Command official,en,trust,UNKNOWN,NEEDS_DATA,none,high,high,P1,/method,Adversarial query — answer it ourselves

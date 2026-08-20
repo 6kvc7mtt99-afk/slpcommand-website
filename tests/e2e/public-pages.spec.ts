@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { allAuthorityPages } from "../../lib/authority";
 
 const PAGES = [
   "/",
@@ -16,18 +17,7 @@ const PAGES = [
   "/support",
   "/contact",
   "/trust-center",
-  "/stanag-6001",
-  "/slp",
-  "/slp-2",
-  "/slp-3",
-  "/es/examen-slp",
-  "/es/slp-2",
-  "/es/slp-3",
-  "/guides",
-  "/guides/writing",
-  "/guides/listening",
-  "/exam",
-  "/about",
+  ...allAuthorityPages().map((page) => page.path),
 ];
 
 test("public pages return 200 and keep legal titles", async ({ page }) => {
@@ -54,20 +44,12 @@ test("robots disallows admin and app", async ({ request }) => {
   expect(body).toContain("Disallow: /spike");
 });
 
-const AUTHORITY_PATHS = [
-  "/stanag-6001",
-  "/slp",
-  "/slp-2",
-  "/slp-3",
-  "/es/examen-slp",
-  "/es/slp-2",
-  "/es/slp-3",
-  "/guides",
-  "/guides/writing",
-  "/guides/listening",
-  "/exam",
-  "/about",
-];
+/**
+ * Derived, not hand-listed. This list and the one above were both hardcoded and
+ * both silently missed four pages the day they shipped — which is precisely the
+ * coverage gap an authority-page suite exists to close.
+ */
+const AUTHORITY_PATHS = allAuthorityPages().map((page) => page.path);
 
 test("every authority page ships a canonical and a 1200x630 social card", async ({ page, request }) => {
   const seen = new Set<string>();

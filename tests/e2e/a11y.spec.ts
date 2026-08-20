@@ -21,7 +21,16 @@ test("login and a legal page have no serious axe violations", async ({ page }) =
  * coverage at all. One page per template shape: the pillar, a Spanish page
  * (different `lang`), the index, and a guide.
  */
-const AUTHORITY = ["/stanag-6001", "/es/slp-3", "/guides", "/guides/writing"];
+const AUTHORITY = [
+  "/stanag-6001",
+  "/es/slp-3",
+  "/guides",
+  "/guides/writing",
+  // The glossary is its own template shape — a definition list with status
+  // badges and per-term anchors — so it needs its own check rather than
+  // inheriting confidence from the article pages.
+  "/glossary",
+];
 
 test("authority pages have no serious axe violations", async ({ page }) => {
   for (const path of AUTHORITY) {

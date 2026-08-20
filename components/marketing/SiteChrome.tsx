@@ -59,9 +59,12 @@ const FOOTER_GROUPS: { heading: string; links: { href: string; label: string }[]
       { href: "/slp", label: "What SLP means" },
       { href: "/slp-2", label: "SLP 2" },
       { href: "/slp-3", label: "SLP 3" },
-      { href: "/guides/writing", label: "Writing" },
+      { href: "/guides/reading", label: "Reading" },
       { href: "/guides/listening", label: "Listening" },
+      { href: "/guides/writing", label: "Writing" },
+      { href: "/guides/speaking", label: "Speaking" },
       { href: "/exam", label: "Exam simulation" },
+      { href: "/glossary", label: "Glossary" },
     ],
   },
   {
@@ -86,6 +89,7 @@ const FOOTER_GROUPS: { heading: string; links: { href: string; label: string }[]
     heading: "Trust",
     links: [
       { href: "/trust-center", label: "Trust Center" },
+      { href: "/method", label: "How we measure" },
       { href: "/disclaimer", label: "Disclaimer" },
       { href: "/privacy", label: "Privacy" },
       { href: "/terms", label: "Terms" },
