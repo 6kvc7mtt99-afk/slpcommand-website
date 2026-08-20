@@ -8,6 +8,33 @@ export function skillClass(skill: string): string {
   return "";
 }
 
+/** Modes that are a real assessment, not a browsing surface. */
+function isExam(mode: string): boolean {
+  const m = mode.trim().toLowerCase();
+  return m.startsWith("exam") || m.startsWith("prompt ");
+}
+
+/**
+ * The assessment environment.
+ *
+ * Every training screen in the product — reading/listening/writing/speaking,
+ * practice and exam — renders through here, so this is the one place that
+ * decides what taking a task feels like. Previously it emitted a bare
+ * eyebrow + heading and let each screen stack its own content underneath,
+ * which is why a task looked like a page with questions on it rather than
+ * a session you had entered.
+ *
+ * It now frames the work: a sticky task bar that states the mode, the
+ * skill, how far through you are and how long you have; the content as a
+ * dedicated stage; and a way out that does not require the sidebar. The
+ * app chrome recedes while a task is open (see .task-env in task.css), so
+ * the exercise is the only thing on screen.
+ *
+ * PRACTICE and EXAM are deliberately different objects: practice carries
+ * the skill's own colour and stays calm, exam switches to the assessment
+ * accent and shows a live clock. A learner should never have to read text
+ * to know which one they are in.
+ */
 export function ExerciseShell({
   skill,
   mode,
@@ -15,6 +42,10 @@ export function ExerciseShell({
   children,
   layout = "page",
   showTitle = false,
+  progress,
+  toolbar,
+  exitHref,
+  exitLabel,
 }: {
   skill: string;
   mode: string;
@@ -22,25 +53,50 @@ export function ExerciseShell({
   children: React.ReactNode;
   layout?: "page" | "stage";
   showTitle?: boolean;
+  /** Position in a multi-item task. Rendered only when the screen knows it. */
+  progress?: { current: number; total: number } | null;
+  /** Live controls that belong in the bar — an exam clock, typically. */
+  toolbar?: React.ReactNode;
+  exitHref?: string;
+  exitLabel?: string;
 }) {
-  if (layout === "stage") {
-    return (
-      <section className={`exercise page-skill ${skillClass(skill)}`}>
-        <div className="stage-meta">
-          <span>{skill}</span>
-          <span>{mode}</span>
-        </div>
-        <h1 className={showTitle ? undefined : "visually-hidden"}>{title}</h1>
-        {children}
-      </section>
-    );
-  }
+  const key = skill.trim().toLowerCase();
+  const exam = isExam(mode);
+  const backHref = exitHref ?? (["reading", "listening", "writing", "speaking"].includes(key) ? `/${key}` : "/dashboard");
+
   return (
-    <section className={`exercise page-skill ${skillClass(skill)}`}>
-      <p className="section-eyebrow">{skill}</p>
-      <p className="home-kicker">{mode}</p>
-      <h1>{title}</h1>
-      {children}
+    <section className={`task-env ${skillClass(skill)} ${exam ? "is-exam" : "is-practice"}`}>
+      <header className="task-bar">
+        <div className="task-bar-lead">
+          <Link className="task-exit" href={backHref}>
+            <span className="task-exit-glyph" aria-hidden="true">←</span>
+            <span>{exitLabel ?? `Exit ${key}`}</span>
+          </Link>
+          <span className="task-mode">
+            <span className="task-mode-dot" aria-hidden="true" />
+            {exam ? "Exam" : "Practice"}
+          </span>
+          <span className="task-skill">{skill}</span>
+        </div>
+        <div className="task-bar-trail">
+          {progress && progress.total > 0 ? (
+            <span className="task-progress">
+              <span className="task-progress-text p-num">
+                {progress.current} <i>/</i> {progress.total}
+              </span>
+              <span className="task-progress-track" aria-hidden="true">
+                <i style={{ width: `${Math.min(100, (progress.current / progress.total) * 100)}%` }} />
+              </span>
+            </span>
+          ) : null}
+          {toolbar}
+        </div>
+      </header>
+
+      <div className={`task-stage ${layout === "stage" ? "is-bleed" : ""}`}>
+        <h1 className={showTitle ? "task-title" : "visually-hidden"}>{title}</h1>
+        {children}
+      </div>
     </section>
   );
 }

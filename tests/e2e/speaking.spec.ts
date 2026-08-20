@@ -17,9 +17,13 @@ test("speaking home has practice and exam but not coach", async ({ page }) => {
   const requests: string[] = [];
   page.on("request", (req) => requests.push(req.url()));
   await page.goto("/speaking");
-  await expect(page.getByRole("heading", { name: "Speaking" })).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByRole("link", { name: "Practice" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Exam" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 20_000 });
+  // Practice and Exam are each reachable from two places now — the hero CTA
+  // and the destination panel — so these assert the panels specifically
+  // rather than a bare accessible name that matches both.
+  await expect(page.locator('a.p-dest[href="/speaking/practice"]')).toBeVisible();
+  await expect(page.locator('a.p-dest[href="/speaking/exam"]')).toBeVisible();
+  await expect(page.getByRole("link", { name: "Start practice", exact: true })).toBeVisible();
   await expect(page.locator("body")).not.toContainText("ElevenLabs");
   expect(requests.some((url) => url.includes("/speaking/coach"))).toBe(false);
 });

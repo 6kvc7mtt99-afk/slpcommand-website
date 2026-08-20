@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   displayOverallLevel,
   firstConfidenceScale,
@@ -59,10 +60,17 @@ export function EstimatedSlpHero({ progress }: { progress: ProgressResponse | nu
         {SKILLS.map((skill) => {
           const row = progress.skills[skill];
           const level = formatLevel(row.level);
+          const measured = row.available && level;
           return (
             <div key={skill} className="home-skill-mini">
               <span className="home-skill-name">{skill}</span>
-              <strong>{row.available && level ? `SLP ${level}` : "Not yet"}</strong>
+              {measured ? (
+                <strong>{`SLP ${level}`}</strong>
+              ) : (
+                <Link className="home-skill-mini-cta" href={`/${skill}/practice`}>
+                  Start {skill}
+                </Link>
+              )}
             </div>
           );
         })}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { PriorityAction } from "@/components/training/PriorityAction";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
@@ -23,48 +24,94 @@ export default async function WritingAcademyPage() {
   const readiness = isRecord(data.readiness) ? data.readiness : {};
   const sessions = Array.isArray(data.sessions) ? data.sessions : [];
   const lessonId = asString(lesson.id, asString(isRecord(lesson.lesson) ? lesson.lesson.id : ""));
+  const lessonTitle = asString(lesson.title, asString(isRecord(lesson.lesson) ? lesson.lesson.title : "Lesson"));
+  // `focus.reasons` was fetched but never rendered anywhere in the previous
+  // version of this page. Its shape isn't documented, so this reads it the
+  // same defensive way `sessions` already is below: render it if it turns
+  // out to be a real string list, render nothing if it isn't.
+  const reasons = Array.isArray(focus.reasons) ? focus.reasons.map((r) => asString(r)).filter(Boolean) : [];
+
+  const weakN = Number(asString(readiness.weak, "0")) || 0;
+  const untestedN = Number(asString(readiness.untested, "0")) || 0;
+  const evidenceLine = [
+    weakN > 0 ? `${weakN} ${weakN === 1 ? "task needs" : "tasks need"} work` : null,
+    untestedN > 0 ? `${untestedN} untested` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <section className="exercise page-skill skill-writing">
-      <header className="page-head">
-        <p className="section-eyebrow">Writing Academy</p>
-        <h1>{asString(focus.title, asString(coach.headline, "Writing Academy"))}</h1>
-        <p>{asString(coach.detail, asString(focus.reasons ? "" : "The backend composed today’s materials."))}</p>
+    <div className="academy page-skill skill-writing">
+      <header className="academy-masthead" data-enter>
+        <p className="p-eyebrow is-skill">Writing Academy</p>
+        <h1 className="p-hero-title">{asString(coach.headline, asString(focus.title, "Writing Academy"))}</h1>
+        <p className="p-lead">{asString(coach.detail, "The backend composed today’s materials from your submissions.")}</p>
       </header>
+
       {lessonId ? (
-        <article className="academy-now">
-          <p className="home-kicker">Today’s class</p>
-          <h2>{asString(lesson.title, asString(isRecord(lesson.lesson) ? lesson.lesson.title : "Lesson"))}</h2>
-          <p className="muted">{asString(lesson.reason)}</p>
-          <Link className="btn btn-primary" href={`/writing/academy/lesson/${encodeURIComponent(lessonId)}`}>
-            Open the class
-          </Link>
-        </article>
+        <PriorityAction
+          eyebrow="Today’s class"
+          title={lessonTitle}
+          detail={asString(lesson.reason) || undefined}
+          evidence={evidenceLine || undefined}
+          href={`/writing/academy/lesson/${encodeURIComponent(lessonId)}${evidenceLine ? `?why=${encodeURIComponent(evidenceLine)}` : ""}`}
+          ctaLabel="Open today’s class"
+          secondaryHref="/writing/practice"
+          secondaryLabel="Straight to practice"
+        />
       ) : null}
-      <article className="home-card">
-        <p className="home-kicker">Coverage</p>
-        <p className="coverage-row">
-          <span>Sustained {asString(readiness.mastered, "0")}</span>
-          <span>Developing {asString(readiness.emerging, "0")}</span>
-          <span>Needs work {asString(readiness.weak, "0")}</span>
-          <span>Not asked {asString(readiness.untested, "0")}</span>
-        </p>
-      </article>
-      {sessions.filter(isRecord).map((session) => (
-        <article key={asString(session.id, asString(session.title))} className="academy-unit">
-          <h2>{asString(session.title)}</h2>
-          <p className="muted">
-            {asString(session.subtitle)} {session.minutes != null ? `· ${asString(session.minutes)} min` : ""}
-          </p>
-        </article>
-      ))}
-      <p>
-        <Link href="/writing/academy/search">Library search</Link>
+
+      {reasons.length ? (
+        <section className="p-section" data-reveal>
+          <p className="p-eyebrow">Why this class</p>
+          <ul className="academy-reasons">
+            {reasons.map((r, i) => (
+              <li key={i}>{r}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <section className="p-section" data-reveal>
+        <p className="p-eyebrow">Where you stand</p>
+        <CoverageBar
+          segments={[
+            { label: "Sustained", value: Number(asString(readiness.mastered, "0")) || 0, tone: "ok" },
+            { label: "Developing", value: Number(asString(readiness.emerging, "0")) || 0, tone: "accent" },
+            { label: "Needs work", value: weakN, tone: "warn" },
+            { label: "Not asked", value: untestedN, tone: "muted" },
+          ]}
+        />
+      </section>
+
+      {sessions.filter(isRecord).length ? (
+        <section className="p-section" aria-label="Today's writing plan">
+          <div className="p-section-head" data-reveal>
+            <div>
+              <h2>Today’s plan</h2>
+              <p>The Academy sequenced these for today’s submission, in order.</p>
+            </div>
+          </div>
+          <ol className="academy-sessions">
+            {sessions.filter(isRecord).map((session, i) => (
+              <li key={asString(session.id, asString(session.title))} style={{ ["--i" as string]: i }}>
+                <span className="academy-session-no p-num">{String(i + 1).padStart(2, "0")}</span>
+                <div>
+                  <strong>{asString(session.title)}</strong>
+                  {asString(session.subtitle) ? <p>{asString(session.subtitle)}</p> : null}
+                </div>
+                {session.minutes != null ? <span className="academy-session-min p-num">{asString(session.minutes)} min</span> : null}
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+
+      <p className="academy-links">
+        <Link href="/writing/academy/search">Search the library</Link>
         {" · "}
-        <Link href="/writing/tools">Writing Tools</Link>
-        {" · "}
-        <Link href="/writing/practice">Practice</Link>
+        <Link href="/writing/tools">Writing tools</Link>
       </p>
-    </section>
+    </div>
   );
 }

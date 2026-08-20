@@ -2,8 +2,14 @@ import { AcademyLessonView, EmptyAcademy } from "@/components/academy/AcademyLes
 import { decodeAcademyLesson } from "@/lib/api/academy";
 import { backendJson } from "@/lib/server/backend";
 
-export default async function ReadingLessonPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function ReadingLessonPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ why?: string }>;
+}) {
+  const [{ id }, { why }] = await Promise.all([params, searchParams]);
   const result = await backendJson<unknown>({
     path: `/api/reading/academy/lesson/${encodeURIComponent(id)}`,
     cache: "no-store",
@@ -12,5 +18,5 @@ export default async function ReadingLessonPage({ params }: { params: Promise<{ 
   if (!lesson) {
     return <EmptyAcademy title="Lesson" body="No such lesson." />;
   }
-  return <AcademyLessonView skill="Reading" lesson={lesson} practiceHref="/reading/practice" />;
+  return <AcademyLessonView skill="Reading" lesson={lesson} practiceHref="/reading/practice" why={why} />;
 }

@@ -102,8 +102,9 @@
   min-height: 0;
   padding-top: clamp(24px, 6vh, 64px);
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.65fr);
-  gap: 40px 64px;
+  grid-template-columns: minmax(0, 480px) minmax(260px, 360px);
+  gap: 40px 56px;
+  justify-content: start;
   align-items: start;
 }
 .skill-brief h1 {
@@ -211,12 +212,6 @@
   text-align: left;
 }
 
-.write-stage {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  min-height: calc(100vh - 120px);
-}
-.write-task { max-width: 62ch; margin-bottom: 16px; }
 /*
   audience/time-limit and the self-check checklist exist on every real prompt
   but were discarded by the decoder (see lib/api/writing.ts). Styled as part
@@ -269,17 +264,27 @@
 .writing-result-body { font-size: 17px; line-height: 1.7; }
 .writing-result-body p { margin: 0 0 16px; }
 .writing-result .btn { margin-top: 8px; }
-.write-stage .writing-editor {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  flex: 1;
+.speaking-result { max-width: 62ch; margin-top: 8px; }
+.criteria-list { list-style: none; margin: 16px 0 0; padding: 0; }
+.criteria-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
 }
-.write-stage .writing-editor textarea {
-  min-height: calc(100vh - 320px);
-  font-size: 18px;
-  line-height: 1.7;
+.criteria-status {
+  flex: 0 0 auto;
+  min-width: 64px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
+.criteria-status.met { color: var(--ok); }
+.criteria-status.unmet { color: var(--bad); }
+.criteria-body strong { display: block; font-size: 15px; }
+.criteria-body p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 
 .speak-stage {
   min-height: calc(100vh - 160px);

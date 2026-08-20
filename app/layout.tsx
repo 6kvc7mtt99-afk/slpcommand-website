@@ -3,7 +3,25 @@ import "./globals.css";
 import "../style.css";
 import "./design-system.css";
 import "./experience.css";
+import "./product.css";
+import "./task.css";
+import "./intel.css";
+import "./lesson.css";
+import "./settings.css";
+import "./records.css";
 import { SentryInit } from "./sentry-init";
+
+/**
+ * The product had no typeface of its own — public site and app both ran on
+ * the OS default, which is the loudest possible "generic web app" signal.
+ * Archivo gives the display and UI real authority at size; IBM Plex Mono is
+ * the instrument face used for every measured value (levels, clocks,
+ * evidence counts) so data reads as data. Scoped to .app-shell in
+ * product.css, so the marketing stylesheet owned by another session is
+ * untouched.
+ */
+const FONT_HREF =
+  "https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://slpcommand.com"),
@@ -60,6 +78,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="stylesheet" href={FONT_HREF} />
+      </head>
       <body>
         <SentryInit />
         {children}

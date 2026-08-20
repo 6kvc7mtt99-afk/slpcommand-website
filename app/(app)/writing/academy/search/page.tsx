@@ -9,20 +9,38 @@ export default async function WritingAcademySearchPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
+
+  const form = (
+    <form className="records-search" role="search">
+      <label className="sr-only" htmlFor="q">
+        Search writing lessons
+      </label>
+      <input id="q" name="q" type="search" placeholder="Search the writing library" defaultValue={q ?? ""} />
+      <button className="btn btn-primary" type="submit">
+        Search
+      </button>
+    </form>
+  );
+
   if (!q) {
     return (
-      <section className="exercise">
-        <h1>Writing library</h1>
-        <form>
-          <label htmlFor="q">Search lessons</label>
-          <input id="q" name="q" defaultValue="" />
-          <button className="btn btn-primary" type="submit" style={{ marginTop: 12 }}>
-            Search
-          </button>
-        </form>
-      </section>
+      <div className="records page-skill skill-writing">
+        <header className="records-head" data-enter>
+          <p className="p-eyebrow is-skill">Writing Academy</p>
+          <h1 className="p-hero-title">Writing library</h1>
+          <p className="p-lead">
+            Every writing class in the curriculum, searchable. The Academy already picks one for you each day — this is
+            for when you want a specific one.
+          </p>
+          {form}
+        </header>
+        <p className="records-back">
+          <Link href="/writing/academy">Back to Writing Academy</Link>
+        </p>
+      </div>
     );
   }
+
   const result = await backendJson<Record<string, unknown>>({
     path: "/api/writing/academy/search",
     search: `?q=${encodeURIComponent(q)}`,
@@ -31,18 +49,50 @@ export default async function WritingAcademySearchPage({
   if (result.status >= 400 || !result.data) {
     return <EmptyAcademy title="Writing library" body="Search is unavailable right now." />;
   }
-  const lessons = Array.isArray(result.data.lessons) ? result.data.lessons : [];
+  const lessons = (Array.isArray(result.data.lessons) ? result.data.lessons : []).filter(isRecord);
+  const count = Number(asString(result.data.count, String(lessons.length))) || lessons.length;
+
   return (
-    <section className="exercise">
-      <h1>Writing library</h1>
-      <p className="muted">{asString(result.data.count, String(lessons.length))} matches</p>
-      <ul>
-        {lessons.filter(isRecord).map((lesson) => (
-          <li key={asString(lesson.id)}>
-            <Link href={`/writing/academy/lesson/${encodeURIComponent(asString(lesson.id))}`}>{asString(lesson.title)}</Link>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <div className="records page-skill skill-writing">
+      <header className="records-head" data-enter>
+        <p className="p-eyebrow is-skill">Writing Academy</p>
+        <h1 className="p-hero-title">Writing library</h1>
+        <p className="p-lead">
+          {count === 0
+            ? `Nothing in the curriculum matches “${q}”.`
+            : `${count} ${count === 1 ? "class matches" : "classes match"} “${q}”.`}
+        </p>
+        {form}
+      </header>
+
+      {lessons.length ? (
+        <section className="records-group" data-reveal>
+          <ul className="records-list">
+            {lessons.map((lesson) => {
+              const id = asString(lesson.id);
+              const objective = asString(lesson.learningObjective, asString(lesson.objective));
+              return (
+                <li className="records-row" key={id}>
+                  <div className="records-row-main">
+                    <strong>
+                      <Link href={`/writing/academy/lesson/${encodeURIComponent(id)}`}>{asString(lesson.title)}</Link>
+                    </strong>
+                    {objective ? <p className="records-meta">{objective}</p> : null}
+                  </div>
+                  <Link className="records-row-go" href={`/writing/academy/lesson/${encodeURIComponent(id)}`}>
+                    Open the class
+                    <span className="p-arrow" aria-hidden="true">→</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+
+      <p className="records-back">
+        <Link href="/writing/academy">Back to Writing Academy</Link>
+      </p>
+    </div>
   );
 }

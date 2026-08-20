@@ -107,7 +107,19 @@ export function ListeningExam() {
   }
 
   return (
-    <ExerciseShell skill="Listening" mode="Exam" title="Exam simulation">
+    <ExerciseShell
+      skill="Listening"
+      mode="Exam"
+      title="Exam simulation"
+      progress={phase === "live" && exam ? { current: index + 1, total: exam.items.length } : null}
+      toolbar={
+        phase === "live" && exam ? (
+          <div className="exam-toolbar">
+            <ExamTimer seconds={exam.timeLimitSeconds} onExpire={expire} />
+          </div>
+        ) : null
+      }
+    >
       <p className="muted">No transcript — just like the real exam. Seeking is disabled.</p>
       {phase === "gate" ? (
         <ExamDisclaimerGate skill="listening" onAccept={() => void begin()} onCancel={() => router.push("/listening")} />
@@ -123,8 +135,7 @@ export function ListeningExam() {
       {phase === "live" && exam && item ? (
         <div className="exam-live">
           <div className="exam-toolbar">
-            <ExamTimer seconds={exam.timeLimitSeconds} onExpire={expire} />
-            <p className="muted">{index + 1} / {exam.items.length}</p>
+            <p className="exam-count muted">Question {index + 1} of {exam.items.length}</p>
           </div>
           <article className="audio-stage">
             <p className="home-kicker">Audio</p>

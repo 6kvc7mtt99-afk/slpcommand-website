@@ -44,25 +44,35 @@ export function WritingResultCard({
 }) {
   const paragraphs = paragraphsOf(result.correction);
   return (
-    <article className="writing-result">
-      <p className="section-eyebrow">{result.formative ? "Indicative feedback" : "Evaluation"}</p>
-      {note ? <p className="muted">{note}</p> : null}
+    <article className="assessment">
+      <header className="assessment-head">
+        <p className="assessment-kind">{result.formative ? "Indicative assessment" : "Writing assessment"}</p>
+        <h2>Your submission has been assessed</h2>
+        {note ? <p className="assessment-note">{note}</p> : null}
+      </header>
+
       {result.taskFulfilment ? (
-        <div className="writing-result-verdict">
-          <p className="home-kicker">Task fulfilment</p>
-          <p>{result.taskFulfilment}</p>
-        </div>
+        <section className="assessment-verdict">
+          <p className="assessment-label">Task fulfilment</p>
+          <p className="assessment-verdict-text">{result.taskFulfilment}</p>
+        </section>
       ) : null}
+
       {paragraphs.length ? (
-        <div className="writing-result-body">
+        <section className="assessment-body">
+          <p className="assessment-label">Examiner’s report</p>
           {paragraphs.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
-        </div>
+        </section>
       ) : null}
-      <button className={primaryAction ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={onNext}>
-        {nextLabel}
-      </button>
+
+      <footer className="assessment-next">
+        <p className="assessment-label">Next</p>
+        <button className={primaryAction ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={onNext}>
+          {nextLabel}
+        </button>
+      </footer>
     </article>
   );
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { stateLabel } from "@/lib/api/academy";
 import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { RecordState } from "@/components/academy/RecordState";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
@@ -18,31 +18,57 @@ export default async function ReadingAcademyMapPage() {
     return <EmptyAcademy title="Reading map" body="The competency map is unavailable right now." />;
   }
   const branches = Array.isArray(result.data.branches) ? result.data.branches : [];
+  const total = branches
+    .filter(isRecord)
+    .reduce((n, b) => n + (Array.isArray(b.competencies) ? b.competencies.length : 0), 0);
+
   return (
-    <section className="exercise">
-      <p className="section-eyebrow">Reading Academy</p>
-      <h1>Competency map</h1>
-      {branches.filter(isRecord).map((branch) => (
-        <article key={asString(branch.id, asString(branch.name))} className="home-card">
-          <h2>{asString(branch.name, asString(branch.title))}</h2>
-          <ul>
-            {(Array.isArray(branch.competencies) ? branch.competencies : []).filter(isRecord).map((item) => (
-              <li key={asString(item.competencyId, asString(item.id))}>
-                {asString(item.name, asString(item.title))} · {stateLabel(asString(item.state))}
-                {asString(item.lessonId) ? (
-                  <>
-                    {" "}
-                    <Link href={`/reading/academy/lesson/${encodeURIComponent(asString(item.lessonId))}`}>Lesson</Link>
-                  </>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </article>
-      ))}
-      <p>
-        <Link href="/reading/academy">Back to Academy</Link>
+    <div className="records page-skill skill-reading">
+      <header className="records-head" data-enter>
+        <p className="p-eyebrow is-skill">Reading Academy</p>
+        <h1 className="p-hero-title">Competency map</h1>
+        <p className="p-lead">
+          {total > 0
+            ? `Every reading competency the backend tracks, and where each one currently stands.`
+            : "No competencies are being tracked for your target level yet."}
+        </p>
+      </header>
+
+      {branches.filter(isRecord).map((branch) => {
+        const items = (Array.isArray(branch.competencies) ? branch.competencies : []).filter(isRecord);
+        if (!items.length) return null;
+        return (
+          <section className="records-group" key={asString(branch.id, asString(branch.name))} data-reveal>
+            <h2 className="records-group-title">{asString(branch.name, asString(branch.title))}</h2>
+            <ul className="records-list">
+              {items.map((item) => {
+                const lessonId = asString(item.lessonId);
+                const name = asString(item.name, asString(item.title));
+                return (
+                  <li className="records-row" key={asString(item.competencyId, asString(item.id, name))}>
+                    <div className="records-row-main">
+                      <strong>{name}</strong>
+                      <p className="records-meta">
+                        <RecordState state={asString(item.state)} />
+                      </p>
+                    </div>
+                    {lessonId ? (
+                      <Link className="records-row-go" href={`/reading/academy/lesson/${encodeURIComponent(lessonId)}`}>
+                        Open the class
+                        <span className="p-arrow" aria-hidden="true">→</span>
+                      </Link>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        );
+      })}
+
+      <p className="records-back">
+        <Link href="/reading/academy">Back to Reading Academy</Link>
       </p>
-    </section>
+    </div>
   );
 }

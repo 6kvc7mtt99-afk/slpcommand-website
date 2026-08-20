@@ -18,13 +18,13 @@ const server = http.createServer((req, res) => {
   if (url.pathname === "/api/entitlements") {
     res.end(JSON.stringify({
       ok: true,
-      plan: { key: "free", name: "Free" },
+      plan: { key: "free", name: "SLP Command Free", description: "Core practice with weekly limits." },
       features: [
-        { key: "reading_practice", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } },
-        { key: "listening_practice", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } },
+        { key: "reading_practice", name: "Reading practice", description: "One passage, one question.", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } },
+        { key: "listening_practice", name: "Listening practice", description: "One clip, one question.", enabled: true, quota: { period: "weekly", limit: 10, remaining: 4 } },
         { key: "writing_ai_feedback", enabled: true, quota: { period: "monthly", limit: 3, remaining: 2 } },
         { key: "speaking_ai_feedback", enabled: true, quota: { period: "monthly", limit: 3, remaining: 2 } },
-        { key: "reading_exam_simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
+        { key: "reading_exam_simulation", name: "Reading exam simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
         { key: "listening_exam_simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
         { key: "academy_access", enabled: true },
         { key: "intelligence_dashboard", enabled: true },
@@ -144,7 +144,17 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === "/api/reading/academy/lesson/rl-1") {
-    res.end(JSON.stringify({ lesson: { id: "rl-1", title: "Inference in orders", learningObjective: "Spot implied meaning.", conceptExplanation: "The answer is what follows.", strategy: "Ask so what.", successCriteria: ["Name the implication"] } }));
+    res.end(JSON.stringify({ lesson: {
+      id: "rl-1", title: "Inference in orders", module: "Core", unit: "Inference", level: "3",
+      learningObjective: "Spot implied meaning in an operational order without it being stated outright.",
+      estimatedMinutes: 12, difficulty: "moderate",
+      conceptExplanation: "An order rarely spells out its full intent. The answer is what follows from the stated facts, not a restatement of them — you are looking for the one conclusion the wording forces, not any conclusion it merely allows.",
+      strategy: "Ask 'so what does this require of me?' after every sentence, not just at the end.",
+      commonMisconception: "Treating the most literal restatement as the safest answer — at Level 3 the literal option is usually the distractor.",
+      successCriteria: ["Name the implication in one sentence.", "Trace it back to the exact clause that forces it.", "Reject options that are true but not implied."],
+      reflectionQuestions: ["What single word in the order carried the implication?", "Could the order support a different implication? Why not?"],
+      competencyId: "c1", competencyTitle: "Reading between the lines",
+    } }));
     return;
   }
   if (url.pathname === "/api/reading/intelligence/readiness") {
@@ -184,11 +194,31 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === "/api/writing/academy/home" && req.method === "POST") {
-    res.end(JSON.stringify({ coach: { headline: "Rewrite the opening", detail: "Task coverage first." }, todaysFocus: { title: "Openings" }, lesson: { id: "wl-1", title: "Openings", reason: "weak openings" }, readiness: { mastered: 0, emerging: 1, weak: 1, untested: 4 }, sessions: [] }));
+    res.end(JSON.stringify({
+      coach: { headline: "Rewrite the opening", detail: "Your last three openings buried the claim in the second sentence." },
+      todaysFocus: { title: "Openings", reasons: ["Two of your last three submissions lost task-fulfilment points on the opening line.", "SLP3 examiners weight the first sentence heavily — it sets the claim they grade against."] },
+      lesson: { id: "wl-1", title: "Openings", reason: "weak openings" },
+      readiness: { mastered: 0, emerging: 1, weak: 1, untested: 4 },
+      sessions: [
+        { id: "s1", title: "Warm-up: claim in one sentence", subtitle: "Rewrite three prompts' opening lines only.", minutes: 8 },
+        { id: "s2", title: "Full task under time", subtitle: "One complete SLP3 task, timed.", minutes: 35 },
+        { id: "s3", title: "Review the examiner's report", subtitle: "Read the correction against your own draft.", minutes: 10 },
+      ],
+    }));
     return;
   }
   if (url.pathname === "/api/writing/academy/lesson/wl-1") {
-    res.end(JSON.stringify({ lesson: { id: "wl-1", title: "Openings", learningObjective: "State the issue first.", conceptExplanation: "Do not delay the claim." } }));
+    res.end(JSON.stringify({ lesson: {
+      id: "wl-1", title: "Openings", module: "Structure", level: "3",
+      learningObjective: "State the issue first, in one sentence an examiner can grade against.",
+      estimatedMinutes: 15, difficulty: "moderate",
+      conceptExplanation: "Your opening line is the claim the rest of the text has to support. An examiner reads it before anything else and forms an expectation from it — bury the claim in sentence two and everything that follows is graded against the wrong expectation.",
+      strategy: "Write the claim first, in one plain sentence, before you write anything else — then build the paragraph around it.",
+      commonMisconception: "Believing a longer, more elaborate opening sounds more competent — examiners mark clarity, not length.",
+      successCriteria: ["The claim appears in the first sentence.", "A reader could state your position from that sentence alone.", "Nothing before it needs to be read first."],
+      reflectionQuestions: ["Could your opening sentence stand alone as a summary of your position?"],
+      competencyId: "c2", competencyTitle: "Task structure",
+    } }));
     return;
   }
   if (url.pathname === "/api/writing/orchestrator/next" && req.method === "POST") {

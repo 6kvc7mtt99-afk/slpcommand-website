@@ -1,0 +1,287 @@
+/* ============================================================
+   SLP Command — Settings / account (Phase 4).
+   Loaded after lesson.css. Scoped under .app-shell / .settings.
+
+   The previous Profile screen was a 2x2 grid of legacy .home-card
+   panels with four controls in it. This is an information
+   architecture, not a card wall: a sticky section rail on desktop,
+   grouped rows, and destructive actions quarantined at the end.
+   ============================================================ */
+
+.settings { max-width: 1080px; }
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 0 56px;
+  align-items: start;
+  margin-top: 34px;
+}
+
+/* ── Section rail ──────────────────────────────────────────
+   Anchor links, not JS tabs: every section stays in the DOM, so
+   the page remains printable, searchable (ctrl-F) and linkable,
+   and it degrades to a plain list of jump links without script. */
+.settings-rail {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.settings-rail a {
+  display: block;
+  padding: 9px 12px;
+  border-radius: var(--p-r);
+  border-left: 2px solid transparent;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--p-muted);
+  text-decoration: none;
+  transition: color var(--p-t-fast) var(--p-ease), background var(--p-t-fast) var(--p-ease);
+}
+.settings-rail a:hover {
+  color: var(--p-ink);
+  background: var(--p-elevated);
+  text-decoration: none;
+}
+.settings-rail a.is-danger { color: color-mix(in srgb, var(--p-bad) 74%, var(--p-muted)); }
+
+.settings-body { display: flex; flex-direction: column; }
+
+/* ── Group ─────────────────────────────────────────────────── */
+.settings-group { padding: 0 0 40px; scroll-margin-top: 24px; }
+.settings-group + .settings-group { padding-top: 40px; border-top: 1px solid var(--p-line); }
+.settings-group-head { margin-bottom: 22px; }
+.settings-group-head h2 {
+  margin: 0 0 5px;
+  font-size: 21px;
+  font-weight: 640;
+  letter-spacing: -0.025em;
+}
+.settings-group-head p { margin: 0; font-size: 14px; color: var(--p-muted); max-width: 62ch; }
+
+/* ── Row ───────────────────────────────────────────────────
+   Label + description on the left, the control on the right,
+   stacking under 720px. Rows carry the rules, so a group never
+   needs a card to look composed. */
+.settings-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px 32px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--p-line);
+}
+.settings-row:last-child { border-bottom: 0; }
+.settings-row-text strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
+}
+.settings-row-text p { margin: 0; font-size: 13.5px; color: var(--p-muted); max-width: 58ch; line-height: 1.5; }
+.settings-row-control { display: flex; align-items: center; gap: 10px; justify-self: end; }
+.settings-row-control input[type="date"],
+.settings-row-control input[type="number"],
+.settings-row-control select {
+  min-width: 150px;
+  min-height: 40px;
+  padding: 8px 11px;
+  border-radius: var(--p-r);
+  border: 1px solid var(--p-line-strong);
+  background: var(--p-elevated);
+  color: var(--p-ink);
+  font: inherit;
+  font-size: 14px;
+}
+.settings-row-control input:focus-visible,
+.settings-row-control select:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 1px;
+}
+
+/* Segmented control — the target-level choice is the single most
+   consequential setting here, so it reads as a switch, not a pair
+   of buttons that happen to sit together. */
+.settings-seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: calc(var(--p-r) + 3px);
+  border: 1px solid var(--p-line-strong);
+  background: var(--p-elevated);
+}
+.settings-seg button {
+  min-height: 34px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--p-r);
+  background: transparent;
+  color: var(--p-muted);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 640;
+  cursor: pointer;
+  transition: background var(--p-t-fast) var(--p-ease), color var(--p-t-fast) var(--p-ease);
+}
+.settings-seg button:hover { color: var(--p-ink); }
+.settings-seg button[aria-pressed="true"] {
+  background: var(--p-accent);
+  color: #fff;
+}
+.settings-seg button:focus-visible { outline: 2px solid var(--p-accent); outline-offset: 2px; }
+
+/* ── Plan header ───────────────────────────────────────────── */
+.settings-plan {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 20px 22px;
+  border-radius: var(--p-r-lg);
+  border: 1px solid var(--p-line);
+  background: var(--p-elevated);
+  background-image: linear-gradient(135deg, var(--p-skill-glow), transparent 60%);
+  box-shadow: var(--p-edge), var(--p-shadow-1);
+  margin-bottom: 22px;
+}
+.settings-plan strong { font-size: 19px; font-weight: 650; letter-spacing: -0.02em; }
+.settings-plan span { font-size: 13.5px; color: var(--p-muted); }
+
+/* ── Quota meters ──────────────────────────────────────────
+   `remaining` / `limit` are real per-feature fields on the
+   entitlements response that the old Profile fetched and threw
+   away. A feature with no quota object is unmetered and says so;
+   nothing here is inferred from a missing number. */
+.settings-quotas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.settings-quota {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px 108px;
+  align-items: center;
+  gap: 14px 22px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--p-line);
+}
+.settings-quota:last-child { border-bottom: 0; }
+.settings-quota-name { font-size: 14.5px; font-weight: 600; }
+.settings-quota-name em {
+  display: block;
+  font-style: normal;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--p-muted);
+  margin-top: 2px;
+}
+.settings-meter {
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--p-ink) 11%, transparent);
+  overflow: hidden;
+}
+.settings-meter i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--p-accent);
+  transform-origin: left;
+  animation: p-sweep 640ms var(--p-ease) both;
+}
+.settings-meter.is-out i { background: var(--p-bad); }
+.settings-quota-val { font-size: 13px; color: var(--p-muted); text-align: right; }
+.settings-quota-val b { color: var(--p-ink); font-weight: 650; }
+.settings-off {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px;
+  background: color-mix(in srgb, var(--p-ink) 8%, transparent);
+  color: var(--p-muted);
+}
+
+/* ── Honest gaps ───────────────────────────────────────────
+   Named rather than hidden: a settings screen that silently omits
+   what it cannot do reads as incomplete, one that says so reads
+   as deliberate. */
+.settings-note {
+  margin: 6px 0 0;
+  padding: 14px 16px;
+  border-left: 2px solid var(--p-line-strong);
+  font-size: 13px;
+  color: var(--p-muted);
+  line-height: 1.55;
+  max-width: 64ch;
+}
+
+/* ── Danger ────────────────────────────────────────────────── */
+.settings-group.is-danger { border-top-color: color-mix(in srgb, var(--p-bad) 34%, var(--p-line)); }
+.settings-group.is-danger .settings-group-head h2 { color: var(--p-bad); }
+.settings-danger-confirm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.settings-danger-confirm input {
+  min-height: 40px;
+  width: 150px;
+  padding: 8px 11px;
+  border-radius: var(--p-r);
+  border: 1px solid color-mix(in srgb, var(--p-bad) 40%, var(--p-line-strong));
+  background: var(--p-elevated);
+  color: var(--p-ink);
+  font: inherit;
+  font-size: 14px;
+}
+.btn.btn-danger {
+  border-color: color-mix(in srgb, var(--p-bad) 52%, transparent);
+  color: var(--p-bad);
+  background: transparent;
+}
+.btn.btn-danger:hover { background: color-mix(in srgb, var(--p-bad) 12%, transparent); }
+/* Deleting an account is gated on typing DELETE, so the control stays
+   visibly inert until the confirmation actually matches. */
+.btn.btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: transparent;
+}
+
+.settings-status {
+  position: sticky;
+  bottom: 16px;
+  align-self: flex-start;
+  margin: 8px 0 0;
+  padding: 10px 16px;
+  border-radius: var(--p-r);
+  border: 1px solid var(--p-line-strong);
+  background: var(--p-elevated);
+  box-shadow: var(--p-edge), var(--p-shadow-2);
+  font-size: 13.5px;
+  color: var(--p-ink);
+}
+
+@media (max-width: 900px) {
+  .settings-layout { grid-template-columns: 1fr; gap: 0; }
+  /* The rail becomes a horizontal scroller above the content — still
+     real anchors, just laid out for a thumb instead of a cursor. */
+  .settings-rail {
+    position: static;
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--p-line);
+    scrollbar-width: none;
+  }
+  .settings-rail::-webkit-scrollbar { display: none; }
+  .settings-rail a { flex: none; border-left: 0; padding: 8px 13px; background: var(--p-elevated); }
+}
+@media (max-width: 720px) {
+  .settings-row { grid-template-columns: 1fr; align-items: start; }
+  .settings-row-control { justify-self: start; }
+  .settings-row-control input[type="date"],
+  .settings-row-control input[type="number"],
+  .settings-row-control select { min-width: 0; width: 100%; }
+  .settings-quota { grid-template-columns: minmax(0, 1fr) 92px; }
+  .settings-quota .settings-meter { grid-column: 1 / -1; order: 3; }
+}

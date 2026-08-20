@@ -17,6 +17,10 @@ import {
 import { displayOverallLevel, shouldShowProgressRing } from "@/lib/api/progress";
 import { TransitionBanner } from "./EstimatedSlpHero";
 import { EmptyState, LoadingState } from "@/components/ui/ProductState";
+import { TrainingPreview } from "@/components/skill/TrainingPreview";
+import { ReadinessInstrument, type InstrumentSkill } from "@/components/instrument/ReadinessInstrument";
+
+const SKILLS = ["reading", "listening", "writing", "speaking"] as const;
 
 const SKILL_HREF: Record<string, string> = {
   reading: "/reading/practice",
@@ -101,126 +105,192 @@ export function HomeDashboard({
     ? "SLP Command Professional"
     : "SLP Command Free";
 
+  const blocks = today?.session.blocks ?? [];
+
+  // The instrument reads the same measured payload the ladder did. A skill
+  // the backend has not measured passes null and draws only its empty
+  // track — never a zero that could be mistaken for a score.
+  const instrumentSkills: InstrumentSkill[] = SKILLS.map((skill) => {
+    const row = initial.progress?.skills[skill];
+    const value = row?.available && row.level != null ? Number(row.level) : NaN;
+    return { key: skill, label: skill, level: Number.isFinite(value) ? value : null };
+  });
+  const overallNum = overall == null ? null : Number(overall);
+  // targetLevel is a string on the wire. Number("") is 0 and passes
+  // isFinite, which drew a target marker at zero on any account whose
+  // target the backend had not set — a scale reading that was simply
+  // false. Blank must mean "no target", not "target 0".
+  const targetRaw = (initial.progress?.targetLevel ?? "").toString().trim();
+  const targetParsed = targetRaw === "" ? NaN : Number(targetRaw);
+  const targetNum = Number.isFinite(targetParsed) && targetParsed > 0 ? targetParsed : null;
+
   return (
-    <div className="home briefing">
-      <div>
-        <p className="briefing-hello">
-          {hello}
-          {name ? `, ${name}` : ""}
-        </p>
-        {today ? (
-          <section className="briefing-mission">
-            <p className="section-eyebrow">Today’s mission</p>
-            <h1>
-              <span className="visually-hidden">
+    <div className="home">
+      <section className="p-hero" data-enter>
+        <div>
+          <p className="p-eyebrow">
+            {hello}
+            {name ? `, ${name}` : ""}
+          </p>
+          {today ? (
+            <>
+              <h1 className="p-hero-title">{today.mission.headline || "Today’s session"}</h1>
+              {today.mission.reason ? <p className="p-lead">{today.mission.reason}</p> : null}
+              {blocks.length ? (
+                <div className="p-mission-blocks">
+                  {blocks.map((item, index) => (
+                    <span key={`${item.skill}-${index}`} className="p-block" data-skill={item.skill}>
+                      <span className="p-block-dot" aria-hidden="true" />
+                      <b>{item.skill}</b>
+                      {item.minutes != null ? <span>{item.minutes} min</span> : null}
+                      {item.posture ? <span className="p-block-posture">{item.posture}</span> : null}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <div className="p-hero-actions">
+                {href && block ? (
+                  <Link className="btn btn-primary btn-hero" href={href}>
+                    Start with {block.skill}
+                    <span className="p-arrow" aria-hidden="true">→</span>
+                  </Link>
+                ) : null}
+                {initial.progress && showRing && overall != null ? (
+                  <p className="p-hero-stat">
+                    <b aria-label={`Estimated SLP ${overall}`}>SLP {overall}</b>
+                    <span>estimated · all skills</span>
+                  </p>
+                ) : null}
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="p-hero-title">
                 {hello}
                 {name ? `, ${name}` : ""}
-              </span>
-              {today.mission.headline || "Today’s session"}
-            </h1>
-            {today.mission.reason ? <p className="briefing-dek">{today.mission.reason}</p> : null}
-            <div className="briefing-spec">
-              {today.session.blocks.map((item, index) => (
-                <span key={`${item.skill}-${index}`} className="home-block-head">
-                  <strong className="home-skill-name">{item.skill}</strong>
-                  {item.minutes != null ? <span className="home-chip">{item.minutes} min</span> : null}
-                  {item.posture ? <span className="home-chip">{item.posture}</span> : null}
-                </span>
-              ))}
-            </div>
-            {block?.why ? <p>{block.why}</p> : null}
-            {block?.focus ? <p className="muted">Focus: {block.focus}</p> : null}
-            {today.mission.coachLine.headline ? (
-              <p className="muted">
-                <strong>{today.mission.coachLine.headline}</strong>
-                {today.mission.coachLine.why ? ` — ${today.mission.coachLine.why}` : ""}
-                {today.mission.coachLine.focus ? ` · ${today.mission.coachLine.focus}` : ""}
+              </h1>
+              <p className="p-lead">
+                No mission was composed for today. Pick any skill below — your standing and plan stay available.
               </p>
-            ) : null}
-            {href && block ? (
-              <Link className="btn btn-primary btn-command" href={href}>
-                Open {block.skill}
-              </Link>
-            ) : null}
-          </section>
-        ) : (
-          <header className="briefing-mission">
-            <p className="section-eyebrow">Today</p>
-            <h1>
-              {hello}
-              {name ? `, ${name}` : ""}
-            </h1>
-            <p className="muted">No mission card today. Progress and plan stay available.</p>
-          </header>
-        )}
-
-        <div className="briefing-support">
-          <TransitionBanner progress={initial.progress} />
-          {/*
-            Verified against a real account on the deployed preview: the backend
-            already writes the skill name into `text` as a natural sentence
-            ("Reading: 8 more answers behind the estimate."). Prepending
-            `skillLabel(item.skill)` here produced "Reading. Reading: 8 more…" on
-            every certainty and projection. The backend contract is unchanged —
-            `item.skill` still exists for the `key` and for callers that need it
-            structured — this only stops the frontend re-stating what the
-            sentence already says.
-          */}
-          {today?.expectedOutcome.certainties.map((item, index) => (
-            <p key={`c-${item.skill}-${index}`}>{item.text}</p>
-          ))}
-          {today?.expectedOutcome.projections.map((item, index) => (
-            <p key={`p-${item.skill}-${index}`} className="muted">
-              {item.text}
-            </p>
-          ))}
-          {flagsDown ? <p className="muted">Some skill modules are temporarily off.</p> : null}
-        </div>
-      </div>
-
-      <aside className="briefing-instruments">
-        {initial.progress && showRing && overall != null ? (
-          <div className="briefing-meter">
-            <div>
-              <p className="home-kicker">Estimated SLP</p>
-              <p className="muted">Overall · all skills</p>
-            </div>
-            <strong aria-label={`Estimated SLP ${overall}`}>SLP {overall}</strong>
-          </div>
-        ) : null}
-        {initial.progress ? (
-          <div className="home-skill-minis">
-            {(["reading", "listening", "writing", "speaking"] as const).map((skill) => {
-              const row = initial.progress!.skills[skill];
-              const level = row.level == null ? null : String(row.level);
-              return (
-                <div key={skill} className="home-skill-mini">
-                  <span className="home-skill-name">{skill}</span>
-                  <strong>{row.available && level ? `SLP ${level}` : "Not yet"}</strong>
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
-        {initial.streak && (initial.streak.current != null || initial.streak.longest != null) ? (
-          <div>
-            <p className="home-kicker">Streak</p>
-            <p className="home-stat">{initial.streak.current ?? 0} {(initial.streak.current ?? 0) === 1 ? "day" : "days"}</p>
-            {initial.streak.longest != null ? <p className="muted">Longest: {initial.streak.longest}</p> : null}
-          </div>
-        ) : null}
-        <div>
-          <p className="home-kicker">Current plan</p>
-          <p><strong>{plan}</strong></p>
-          {initial.entitlements.status === "ready" && initial.entitlements.isPro ? (
-            <p className="muted">Subscriptions are managed in the iOS app.</p>
-          ) : (
-            <p className="muted">
-              <strong>SLP Command Professional</strong> — unlimited practice, feedback and exams in the iOS app.
-            </p>
+              <div className="p-hero-actions">
+                <Link className="btn btn-primary btn-hero" href="/reading/practice">
+                  Start reading
+                  <span className="p-arrow" aria-hidden="true">→</span>
+                </Link>
+              </div>
+            </>
           )}
         </div>
-      </aside>
+
+        <aside className="p-instrument-bay" aria-label="Readiness">
+          <ReadinessInstrument
+            skills={instrumentSkills}
+            overall={overallNum}
+            target={targetNum}
+            size={430}
+          />
+          <dl className="p-status-rows p-instrument-rows">
+            {initial.streak && initial.streak.current != null ? (
+              <div>
+                <dt>Streak</dt>
+                <dd className="p-num">
+                  {initial.streak.current} {initial.streak.current === 1 ? "day" : "days"}
+                  {initial.streak.longest != null ? (
+                    <span className="p-status-sub">Longest: {initial.streak.longest}</span>
+                  ) : null}
+                </dd>
+              </div>
+            ) : null}
+            {initial.progress?.totalExercises ? (
+              <div>
+                <dt>Evidence</dt>
+                <dd className="p-num">{initial.progress.totalExercises} recorded</dd>
+              </div>
+            ) : null}
+            <div>
+              <dt>Plan</dt>
+              <dd>{plan}</dd>
+            </div>
+          </dl>
+        </aside>
+      </section>
+
+      {today && (today.expectedOutcome.certainties.length > 0 || today.expectedOutcome.projections.length > 0 || block?.why) ? (
+        <section className="p-section" data-reveal>
+          <div className="p-section-head">
+            <div>
+              <h2>What this session should move</h2>
+              <p>Composed by the backend from your evidence — not a generic plan.</p>
+            </div>
+          </div>
+          <div className="p-outcomes">
+            {block?.why ? (
+              <p className="p-outcome-lead">
+                {block.why}
+                {block.focus ? <span className="p-outcome-focus">Focus · {block.focus}</span> : null}
+              </p>
+            ) : null}
+            {/*
+              The backend already writes the skill name into `text` as a
+              natural sentence ("Reading: 8 more answers behind the
+              estimate."), so nothing here re-states it.
+            */}
+            {today.expectedOutcome.certainties.map((item, index) => (
+              <p key={`c-${item.skill}-${index}`} className="p-outcome">
+                <span className="p-outcome-mark is-certain" aria-hidden="true" />
+                {item.text}
+              </p>
+            ))}
+            {today.expectedOutcome.projections.map((item, index) => (
+              <p key={`p-${item.skill}-${index}`} className="p-outcome is-soft">
+                <span className="p-outcome-mark" aria-hidden="true" />
+                {item.text}
+              </p>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="p-section" aria-label="Training modes">
+        <div className="p-section-head" data-reveal style={{ ["--i" as string]: 0 }}>
+          <div>
+            <h2>Continue training</h2>
+            <p>Four skills, each with its own practice, exam, curriculum and evidence.</p>
+          </div>
+        </div>
+        <div className="p-rail">
+          {SKILLS.map((skill, index) => {
+            const row = initial.progress?.skills[skill];
+            const measured = row?.available && row.level != null;
+            return (
+              <Link
+                key={skill}
+                href={`/${skill}`}
+                className={`p-dest skill-${skill}`}
+                data-reveal
+                style={{ ["--i" as string]: index + 1 }}
+              >
+                <div className="p-dest-stage">
+                  <TrainingPreview kind={skill} />
+                </div>
+                <div className="p-dest-body">
+                  <p className="p-dest-label">{measured ? `SLP ${row!.level}` : "No level yet"}</p>
+                  <h3 style={{ textTransform: "capitalize" }}>{skill}</h3>
+                  <p className="p-dest-go">
+                    Open {skill}
+                    <span className="p-arrow" aria-hidden="true">→</span>
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="briefing-support">
+        <TransitionBanner progress={initial.progress} />
+        {flagsDown ? <p className="muted">Some skill modules are temporarily off.</p> : null}
+      </div>
 
       <details className="briefing-details">
         <summary>Pace and evidence</summary>

@@ -1,0 +1,647 @@
+/* ============================================================
+   SLP Command — the assessment environment.
+
+   Loaded after product.css. Governs what taking a task feels like:
+   reading/listening/writing/speaking, practice and exam. Scoped under
+   .app-shell / .task-env so the marketing site is untouched.
+   ============================================================ */
+
+/* ── Focus mode ────────────────────────────────────────────
+   While a task is open the workspace chrome recedes: the sidebar is
+   removed and the content column goes full-bleed, so the exercise is
+   the only thing on screen. Exit lives in the task bar instead. Uses
+   :has() with no JS; on a browser without it the sidebar simply stays,
+   which is the old behaviour rather than a broken one.
+   ------------------------------------------------------------ */
+.app-shell:has(.task-env) .app-sidebar { display: none; }
+.app-shell:has(.task-env) .app-main {
+  padding: 0;
+  max-width: none;
+}
+@media (max-width: 960px) {
+  .app-shell:has(.task-env) .app-topbar { display: none; }
+}
+
+.task-env {
+  --task-accent: var(--p-skill, var(--p-accent));
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--p-bg);
+}
+/* An exam is a different object from practice: it drops the skill's own
+   colour for a single assessment accent, so the mode is legible at a
+   glance without reading a word. */
+.task-env.is-exam { --task-accent: #c2710c; }
+@media (prefers-color-scheme: dark) {
+  .task-env.is-exam { --task-accent: #e0932f; }
+}
+
+/* ── Task bar ──────────────────────────────────────────────── */
+.task-bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 28px;
+  height: 60px;
+  background: color-mix(in srgb, var(--p-bg) 86%, transparent);
+  backdrop-filter: saturate(1.7) blur(16px);
+  -webkit-backdrop-filter: saturate(1.7) blur(16px);
+  border-bottom: 1px solid var(--p-line);
+}
+.task-bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--task-accent), transparent 60%);
+  opacity: 0.85;
+}
+.task-bar-lead,
+.task-bar-trail { display: flex; align-items: center; gap: 18px; min-width: 0; }
+
+.task-exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 560;
+  color: var(--p-muted);
+  text-decoration: none;
+  padding: 7px 11px 7px 8px;
+  margin-left: -8px;
+  border-radius: var(--p-r-sm);
+  transition: color var(--p-t-fast) var(--p-ease), background var(--p-t-fast) var(--p-ease);
+  white-space: nowrap;
+}
+.task-exit:hover {
+  color: var(--p-ink);
+  background: color-mix(in srgb, var(--p-ink) 6%, transparent);
+  text-decoration: none;
+}
+.task-exit-glyph { transition: transform var(--p-t) var(--p-ease); }
+.task-exit:hover .task-exit-glyph { transform: translateX(-3px); }
+
+.task-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--task-accent);
+  padding-left: 18px;
+  border-left: 1px solid var(--p-line);
+  white-space: nowrap;
+}
+.task-mode-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--task-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--task-accent) 22%, transparent);
+}
+/* The exam indicator breathes — the one piece of ambient motion in the
+   product, and it exists to say "this is being assessed", not to decorate. */
+.task-env.is-exam .task-mode-dot { animation: task-pulse 2.4s var(--p-ease-io) infinite; }
+@keyframes task-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--task-accent) 22%, transparent); }
+  50%      { box-shadow: 0 0 0 7px color-mix(in srgb, var(--task-accent) 6%, transparent); }
+}
+.task-skill {
+  font-size: 13.5px;
+  font-weight: 560;
+  color: var(--p-ink2);
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.task-progress { display: flex; align-items: center; gap: 11px; }
+.task-progress-text { font-size: 13px; font-weight: 620; color: var(--p-ink); white-space: nowrap; }
+.task-progress-text i { font-style: normal; color: var(--p-muted); font-weight: 400; margin: 0 1px; }
+.task-progress-track {
+  display: block;
+  width: 88px;
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--p-ink) 12%, transparent);
+  overflow: hidden;
+}
+.task-progress-track i {
+  display: block;
+  height: 100%;
+  background: var(--task-accent);
+  border-radius: 2px;
+  transition: width var(--p-t-slow) var(--p-ease);
+}
+
+/* The exam clock, promoted into the bar as a real instrument. */
+.task-env .exam-toolbar {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  background: transparent;
+}
+.task-env .exam-timer {
+  font-size: 15px;
+  font-weight: 660;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--p-ink);
+  padding: 6px 12px;
+  border-radius: var(--p-r-sm);
+  background: color-mix(in srgb, var(--task-accent) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--task-accent) 34%, transparent);
+}
+
+/* ── Stage ─────────────────────────────────────────────────── */
+.task-stage {
+  flex: 1;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 28px 96px;
+  animation: p-rise var(--p-t-slow) var(--p-ease) both;
+}
+/* `stage` means "this screen composes its own full-width layout", but only
+   Reading actually bleeds to the viewport edge (paper + rail). Listening,
+   Writing and Speaking still need the normal reading measure and gutters,
+   so the bleed is scoped to the layout that wants it. */
+.task-stage.is-bleed:has(.doc-stage) { max-width: none; padding: 0; }
+.task-title {
+  font-size: clamp(24px, 2.6vw, 32px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+  margin: 0 0 22px;
+  color: var(--p-ink);
+  text-wrap: balance;
+}
+.task-stage.is-bleed:has(.doc-stage) .task-title { padding: 32px 28px 0; max-width: 1180px; margin: 0 auto 4px; }
+
+/* ── Reading paper ─────────────────────────────────────────
+   CRITICAL FIX. `.doc-paper` hard-coded background:#f6f1e6 — a warm
+   light cream — while its text inherited `var(--ink)`. In dark mode
+   --ink is near-white, so the passage rendered as pale text on cream:
+   the core content of the core product was effectively unreadable.
+   The paper is now theme-aware and always pins its own ink, so the
+   passage keeps its document character in both themes and the contrast
+   can never invert again.
+   ------------------------------------------------------------ */
+.task-env .doc-paper,
+.app-shell .doc-paper {
+  --paper-bg: #f7f3ea;
+  --paper-ink: #1a1712;
+  --paper-ink2: #4a4238;
+  --paper-line: #ddd4c2;
+  background: var(--paper-bg);
+  color: var(--paper-ink);
+}
+@media (prefers-color-scheme: dark) {
+  .task-env .doc-paper,
+  .app-shell .doc-paper {
+    --paper-bg: #16181c;
+    --paper-ink: #eceef2;
+    --paper-ink2: #aeb5c0;
+    --paper-line: #2b3038;
+  }
+}
+.app-shell .doc-paper .doc-title,
+.app-shell .doc-paper h1,
+.app-shell .doc-paper h2,
+.app-shell .doc-paper strong { color: var(--paper-ink); }
+.app-shell .doc-paper .passage-body { color: var(--paper-ink); }
+.app-shell .doc-paper .muted,
+.app-shell .doc-paper .section-eyebrow,
+.app-shell .doc-paper .home-kicker { color: var(--paper-ink2); }
+.app-shell .doc-paper .home-chip,
+.app-shell .doc-paper .doc-chip {
+  border-color: var(--paper-line);
+  color: var(--paper-ink2);
+}
+
+.app-shell .doc-stage {
+  grid-template-columns: minmax(0, 1fr) 380px;
+  min-height: calc(100vh - 60px);
+  margin: 0;
+}
+.app-shell .doc-paper {
+  padding: 56px 64px 96px;
+  display: flex;
+  flex-direction: column;
+}
+.app-shell .doc-paper .passage-body {
+  font-size: 19.5px;
+  line-height: 1.8;
+  max-width: 64ch;
+}
+.app-shell .doc-rail {
+  border-left: 1px solid var(--p-line);
+  background: var(--p-bg);
+  padding: 40px 32px 56px;
+  min-height: calc(100vh - 60px);
+}
+
+/* ── Answer options ────────────────────────────────────────
+   The single most-used control in the product. Given a real state
+   system: rest, hover, focus, selected, correct, incorrect.
+   ------------------------------------------------------------ */
+.app-shell .option-list { display: flex; flex-direction: column; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+.app-shell .option-list button,
+.app-shell .option-row {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  padding: 15px 17px;
+  min-height: 56px;
+  border: 1px solid var(--p-line);
+  border-radius: var(--p-r);
+  background: var(--p-elevated);
+  color: var(--p-ink);
+  font-size: 15.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+  box-shadow: var(--p-edge);
+  transition:
+    border-color var(--p-t-fast) var(--p-ease),
+    background var(--p-t-fast) var(--p-ease),
+    transform var(--p-t-fast) var(--p-ease),
+    box-shadow var(--p-t-fast) var(--p-ease);
+}
+.app-shell .option-list button:hover:not(:disabled) {
+  border-color: var(--task-accent, var(--p-accent));
+  transform: translateY(-1px);
+  box-shadow: var(--p-edge), var(--p-shadow-1);
+}
+.app-shell .option-list button:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+}
+.app-shell .option-list button[aria-pressed="true"],
+.app-shell .option-list button.is-selected {
+  border-color: var(--task-accent, var(--p-accent));
+  background: color-mix(in srgb, var(--task-accent, var(--p-accent)) 12%, var(--p-elevated));
+}
+.app-shell .option-list button .opt-key,
+.app-shell .option-list button > span:first-child:not(.opt-text) {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--p-ink) 8%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--p-ink2);
+  transition: background var(--p-t-fast) var(--p-ease), color var(--p-t-fast) var(--p-ease);
+}
+.app-shell .option-list button[aria-pressed="true"] > span:first-child {
+  background: var(--task-accent, var(--p-accent));
+  color: #fff;
+}
+.app-shell .option-list button:disabled { cursor: default; opacity: 0.75; }
+
+/* ── Command bar ──────────────────────────────────────────
+   The primary action of a task is never a small link. Buttons that sit
+   directly in a task stage are promoted.
+   ------------------------------------------------------------ */
+.task-env .btn-primary {
+  min-height: 50px;
+  padding: 13px 26px;
+  font-size: 15.5px;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 6px 22px var(--p-glow);
+}
+.task-env .doc-rail .btn-primary,
+.task-env .listen-question .btn-primary { width: 100%; }
+
+/* ── Listening transport ──────────────────────────────────── */
+.task-env .listen-stage { padding: 48px 0 16px; }
+.app-shell .listen-play {
+  width: 108px;
+  height: 108px;
+  background: var(--p-ink);
+  color: var(--p-bg);
+  box-shadow: 0 8px 34px rgba(0, 0, 0, 0.28);
+  transition: transform var(--p-t) var(--p-ease), box-shadow var(--p-t) var(--p-ease);
+}
+.app-shell .listen-play:hover { transform: scale(1.04); }
+.app-shell .listen-play:active { transform: scale(0.98); }
+.app-shell .listen-play[aria-pressed="true"] {
+  background: var(--task-accent, var(--p-accent));
+  color: #fff;
+}
+.app-shell .listen-clock {
+  font-size: 34px;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  color: var(--p-ink);
+}
+.app-shell .listen-track {
+  width: min(460px, 82vw);
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--p-ink) 13%, transparent);
+  overflow: hidden;
+}
+.app-shell .listen-track > span { background: var(--task-accent, var(--p-accent)); border-radius: 2px; }
+
+/* ── Feedback ─────────────────────────────────────────────── */
+.app-shell .feedback-banner {
+  border-radius: var(--p-r);
+  padding: 16px 18px;
+  border: 1px solid var(--p-line);
+  border-left: 3px solid var(--p-line-strong);
+  background: var(--p-surface);
+  animation: p-rise var(--p-t) var(--p-ease) both;
+}
+.app-shell .feedback-banner.ok { border-left-color: var(--p-ok); background: color-mix(in srgb, var(--p-ok) 9%, var(--p-surface)); }
+.app-shell .feedback-banner.bad { border-left-color: var(--p-bad); background: color-mix(in srgb, var(--p-bad) 9%, var(--p-surface)); }
+.app-shell .feedback-banner strong { display: block; margin-bottom: 4px; font-size: 15px; }
+.app-shell .feedback-banner.ok strong { color: var(--p-ok); }
+.app-shell .feedback-banner.bad strong { color: var(--p-bad); }
+
+/* ── Writing workspace inside a task ──────────────────────── */
+.task-env .writing-workspace {
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+  gap: 32px 44px;
+}
+.task-env .writing-task {
+  position: sticky;
+  top: 88px;
+  align-self: start;
+}
+.task-env .writing-editor { padding: 22px 24px 16px; }
+.task-env .writing-editor textarea { min-height: 44vh; font-size: 17px; line-height: 1.7; }
+
+/* ── Speaking stage ───────────────────────────────────────── */
+.task-env .speak-stage { min-height: auto; padding-top: 8px; gap: 22px; }
+.app-shell .recorder-ring { box-shadow: 0 0 0 8px color-mix(in srgb, var(--task-accent, var(--p-accent)) 8%, transparent); }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 1000px) {
+  .app-shell .doc-stage { grid-template-columns: 1fr; }
+  .app-shell .doc-rail { border-left: 0; border-top: 1px solid var(--p-line); min-height: 0; }
+  .task-env .writing-workspace { grid-template-columns: 1fr; }
+  .task-env .writing-task { position: static; }
+}
+@media (max-width: 700px) {
+  .task-bar { padding: 0 16px; height: 56px; gap: 10px; }
+  .task-skill { display: none; }
+  .task-exit span:not(.task-exit-glyph) { display: none; }
+  .task-exit { padding: 8px; margin-left: -4px; }
+  .task-mode { padding-left: 12px; }
+  .task-progress-track { width: 54px; }
+  .task-stage { padding: 26px 16px 88px; }
+  .task-stage.is-bleed:has(.doc-stage) .task-title { padding: 24px 16px 0; }
+  .app-shell .doc-paper { padding: 30px 20px 48px; }
+  .app-shell .doc-paper .passage-body { font-size: 18px; }
+  .app-shell .doc-rail { padding: 26px 16px 48px; }
+  .app-shell .listen-play { width: 92px; height: 92px; }
+}
+
+/* The answer stack and its confirm control are two different things; the
+   rail was rendering them as one continuous block. */
+.app-shell .doc-rail .btn,
+.app-shell .listen-question .btn { margin-top: 20px; }
+.app-shell .option-list + .btn { margin-top: 20px; }
+
+/* Keep the dark passage recognisably a document rather than another panel. */
+@media (prefers-color-scheme: dark) {
+  .app-shell .doc-paper { --paper-bg: #191b20; }
+}
+
+/* ── Scrub control ─────────────────────────────────────────
+   The seek bar was a default <input type="range"> — a blue thumb on a
+   white groove, i.e. the browser's widget rather than the product's.
+   Restyled in both tracks so the transport reads as one designed
+   instrument. Keyboard behaviour and the native element are unchanged.
+   ------------------------------------------------------------ */
+.app-shell input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-height: 0;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.app-shell input[type="range"]:focus { box-shadow: none; outline: none; }
+.app-shell input[type="range"]:focus-visible { outline: 2px solid var(--p-accent); outline-offset: 4px; border-radius: 4px; }
+.app-shell input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--p-ink) 15%, transparent);
+}
+.app-shell input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--p-ink) 15%, transparent);
+}
+.app-shell input[type="range"]::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--task-accent, var(--p-accent));
+}
+.app-shell input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--p-ink);
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: transform var(--p-t-fast) var(--p-ease);
+}
+.app-shell input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--p-ink);
+  border: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.app-shell input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.18); }
+.app-shell input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.05); }
+.app-shell .audio-player { gap: 14px; }
+
+/* ── The exam threshold ────────────────────────────────────
+   Starting an assessment is a decision, so it is composed as one: the
+   gate is centred in the stage, given air, and reads as a door rather
+   than as the first card on a page.
+   ------------------------------------------------------------ */
+.task-env .exam-live .exam-count { margin: 0 0 16px; font-variant-numeric: tabular-nums; }
+.task-env .skill-primary {
+  max-width: 560px;
+  margin: clamp(24px, 9vh, 88px) auto 0;
+  padding: 36px 38px 32px;
+  text-align: left;
+  border-radius: var(--p-r-lg);
+  box-shadow: var(--p-edge), var(--p-shadow-2);
+}
+.task-env .skill-primary .home-kicker { color: var(--task-accent); margin-bottom: 14px; }
+.task-env .skill-primary h2 {
+  font-size: clamp(24px, 2.8vw, 32px);
+  letter-spacing: -0.035em;
+  font-weight: 650;
+  margin-bottom: 12px;
+}
+.task-env .skill-primary > p { font-size: 16px; line-height: 1.55; }
+.task-env .skill-primary .cta-row { margin-top: 24px; gap: 12px; }
+.task-env .skill-primary .cta-row .btn-primary { flex: 1 1 auto; }
+
+/* ── Assessment report ─────────────────────────────────────
+   The evaluator returns exactly two content fields — a task-fulfilment
+   verdict and a prose report. No score, no strengths/weaknesses arrays
+   exist, so none are invented here. What changes is that those two real
+   fields are now composed as an assessment document — masthead, ruled
+   verdict, the examiner's report at a reading measure, and one next
+   action — instead of a card with a paragraph in it.
+   ------------------------------------------------------------ */
+.assessment {
+  max-width: 720px;
+  margin: 8px auto 0;
+  animation: p-rise var(--p-t-slow) var(--p-ease) both;
+}
+.assessment-head { padding-bottom: 22px; border-bottom: 2px solid var(--p-ink); }
+.assessment-kind {
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--task-accent, var(--p-accent));
+  margin: 0 0 10px;
+}
+.assessment-head h2 {
+  font-size: clamp(24px, 2.6vw, 31px);
+  letter-spacing: -0.035em;
+  font-weight: 650;
+  margin: 0;
+  color: var(--p-ink);
+}
+.assessment-note { margin: 12px 0 0; font-size: 13.5px; color: var(--p-muted); }
+.assessment-label {
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--p-muted);
+  margin: 0 0 10px;
+}
+.assessment-verdict { padding: 24px 0; border-bottom: 1px solid var(--p-line); }
+.assessment-verdict-text {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--p-ink);
+  letter-spacing: -0.015em;
+}
+.assessment-body { padding: 26px 0; border-bottom: 1px solid var(--p-line); }
+.assessment-body p:not(.assessment-label) {
+  margin: 0 0 16px;
+  font-size: 16.5px;
+  line-height: 1.75;
+  color: var(--p-ink2);
+}
+.assessment-body p:last-child { margin-bottom: 0; }
+.assessment-next { padding-top: 24px; }
+@media (max-width: 700px) {
+  .assessment-head { padding-bottom: 18px; }
+  .assessment-verdict-text { font-size: 17.5px; }
+  .assessment-next .btn { width: 100%; }
+}
+
+/* ── The speaking instrument ──────────────────────────────
+   The recorder already carried a real state machine (idle / requesting /
+   recording / stopped / denied / interrupted); it just rendered them as
+   a small ring with a border-colour change. Each state now reads at a
+   glance, and recording is unmistakable — the one place in the product
+   where continuous motion is the correct answer, because it is the only
+   way to show that capture is live.
+   ------------------------------------------------------------ */
+.task-env .recorder { padding: 34px 32px 28px; width: min(560px, 100%); margin: 0 auto; text-align: center; }
+.task-env .recorder .home-kicker { justify-content: center; }
+.app-shell .recorder-face { display: grid; place-items: center; gap: 18px; }
+.app-shell .recorder-ring {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  border: 2px solid var(--p-line-strong);
+  display: grid;
+  place-items: center;
+  transition: border-color var(--p-t) var(--p-ease), box-shadow var(--p-t) var(--p-ease), transform var(--p-t) var(--p-ease);
+}
+.app-shell .recorder-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--p-muted);
+  transition: background var(--p-t) var(--p-ease), width var(--p-t) var(--p-ease), height var(--p-t) var(--p-ease), border-radius var(--p-t) var(--p-ease);
+}
+.app-shell .recorder.is-idle .recorder-dot { background: var(--p-bad); opacity: 0.55; }
+.app-shell .recorder.is-requesting .recorder-ring { border-color: var(--p-accent); }
+.app-shell .recorder.is-requesting .recorder-dot { background: var(--p-accent); }
+
+/* Live capture: the ring emits, and the dot becomes a stop square. */
+.app-shell .recorder.is-recording .recorder-ring {
+  border-color: var(--p-bad);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--p-bad) 42%, transparent);
+  animation: rec-emit 1.9s var(--p-ease-io) infinite;
+}
+.app-shell .recorder.is-recording .recorder-dot {
+  background: var(--p-bad);
+  width: 26px; height: 26px; border-radius: 5px;
+}
+@keyframes rec-emit {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--p-bad) 40%, transparent); }
+  70%  { box-shadow: 0 0 0 22px color-mix(in srgb, var(--p-bad) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--p-bad) 0%, transparent); }
+}
+.app-shell .recorder.is-stopped .recorder-ring { border-color: var(--p-ok); }
+.app-shell .recorder.is-stopped .recorder-dot { background: var(--p-ok); width: 26px; height: 26px; border-radius: 6px; }
+.app-shell .recorder.is-denied .recorder-ring { border-color: var(--p-bad); }
+.app-shell .recorder.is-denied .recorder-dot { background: var(--p-bad); }
+
+.app-shell .recorder-clock {
+  font-family: var(--p-mono);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--p-ink2);
+  margin: 0;
+}
+.app-shell .recorder.is-recording .recorder-clock { color: var(--p-ink); }
+.task-env .recorder .admin-row { justify-content: center; gap: 12px; }
+.task-env .recorder .btn { min-width: 190px; }
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .recorder.is-recording .recorder-ring { animation: none; box-shadow: 0 0 0 8px color-mix(in srgb, var(--p-bad) 22%, transparent); }
+}
+.speak-brief { width: min(680px, 100%); margin: 0 auto 8px; text-align: center; }
+.speak-brief .p-eyebrow { justify-content: center; }
+.speak-brief .p-eyebrow::after { display: none; }
+.speak-instruction {
+  font-size: clamp(19px, 2vw, 24px);
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+  color: var(--p-ink);
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.speak-alt { margin-top: 4px; }

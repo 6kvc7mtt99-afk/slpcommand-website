@@ -31,17 +31,23 @@ export function SpeakingPractice({ userId, level }: { userId: string; level: "2"
   if (!consent) {
     return (
       <ExerciseShell skill="Speaking" mode="Practice" title="Speaking AI consent" layout="stage">
-        <p>Audio is sent to the backend for transcription and evaluation. This consent is separate from Coach.</p>
-        <button
-          className="btn btn-primary"
-          type="button"
-          onClick={() => {
-            localStorage.setItem(CONSENT(userId), "1");
-            setConsent(true);
-          }}
-        >
-          I agree
-        </button>
+        <article className="skill-primary">
+          <p className="home-kicker">Before you start</p>
+          <h2>Audio consent</h2>
+          <p>Audio is sent to the backend for transcription and evaluation. This consent is separate from Coach.</p>
+          <div className="cta-row">
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={() => {
+                localStorage.setItem(CONSENT(userId), "1");
+                setConsent(true);
+              }}
+            >
+              I agree
+            </button>
+          </div>
+        </article>
       </ExerciseShell>
     );
   }
@@ -83,12 +89,10 @@ export function SpeakingPractice({ userId, level }: { userId: string; level: "2"
   return (
     <ExerciseShell skill="Speaking" mode="Practice" title={prompt?.title ?? "Speaking practice"} layout="stage">
       <div className="speak-stage">
-      <p>{prompt?.instruction}</p>
-      <p className="muted">No local score is computed. A single task never shows a decimal band.</p>
-      <div className="admin-row" style={{ margin: "12px 0" }}>
-        <button className="btn btn-outline" type="button" onClick={() => setIndex((value) => (value + 1) % prompts.length)}>
-          Next prompt
-        </button>
+      <div className="speak-brief">
+        <p className="p-eyebrow">Your task</p>
+        <p className="speak-instruction">{prompt?.instruction}</p>
+        <p className="muted">No local score is computed. A single task never shows a decimal band.</p>
       </div>
       <SpeakingRecorder
         maxSeconds={180}
@@ -102,6 +106,13 @@ export function SpeakingPractice({ userId, level }: { userId: string; level: "2"
       {phase === "quota" ? <CommercialCard title="Speaking AI feedback is not available on your current plan." /> : null}
       {phase === "error" ? <p className="err" role="alert">{message}</p> : null}
       {phase === "result" && result ? <SpeakingResultCard result={result} /> : null}
+      {phase !== "evaluating" && phase !== "result" ? (
+        <div className="speak-alt">
+          <button className="btn btn-ghost" type="button" onClick={() => setIndex((value) => (value + 1) % prompts.length)}>
+            Try a different prompt
+          </button>
+        </div>
+      ) : null}
       {blob && phase !== "evaluating" && phase !== "result" ? (
         confirm ? (
           <div>
@@ -121,19 +132,34 @@ export function SpeakingPractice({ userId, level }: { userId: string; level: "2"
   );
 }
 
+const CRITERIA_LABEL: Record<"content" | "tasks" | "accuracy" | "textProduced", string> = {
+  content: "Content",
+  tasks: "Task fulfilment",
+  accuracy: "Accuracy",
+  textProduced: "Text produced",
+};
+
 export function SpeakingResultCard({ result }: { result: SpeakingEvaluateResult }) {
   const rating = result.rating;
   return (
-    <article className="home-card">
-      <p className="home-kicker">Result</p>
-      <h2>{rating.credited ? `This task met Level ${rating.levelAttempted}` : `This task did not meet Level ${rating.levelAttempted}`}</h2>
+    <article className="speaking-result">
+      <p className="section-eyebrow">Speaking assessment</p>
+      <div className="writing-result-verdict">
+        <p className="home-kicker">Verdict</p>
+        <p>{rating.credited ? `This task met Level ${rating.levelAttempted}` : `This task did not meet Level ${rating.levelAttempted}`}</p>
+      </div>
       <p className="muted">No band yet. A single task does not receive a decimal SLP.</p>
-      {!rating.ratable ? <p>{rating.ratableReason || "Insufficient evidence to rate this attempt."}</p> : null}
-      <ul>
+      {!rating.ratable ? <p className="err">{rating.ratableReason || "Insufficient evidence to rate this attempt."}</p> : null}
+      <ul className="criteria-list">
         {(["content", "tasks", "accuracy", "textProduced"] as const).map((key) => (
           <li key={key}>
-            {key}: {rating.criteria[key].met ? "met" : "not met"}
-            {rating.criteria[key].note ? ` — ${rating.criteria[key].note}` : ""}
+            <span className={`criteria-status ${rating.criteria[key].met ? "met" : "unmet"}`}>
+              {rating.criteria[key].met ? "Met" : "Not met"}
+            </span>
+            <span className="criteria-body">
+              <strong>{CRITERIA_LABEL[key]}</strong>
+              {rating.criteria[key].note ? <p>{rating.criteria[key].note}</p> : null}
+            </span>
           </li>
         ))}
       </ul>
