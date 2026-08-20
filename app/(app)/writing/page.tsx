@@ -42,6 +42,15 @@ export default async function WritingHome() {
       cta: "Open Academy",
     },
     {
+      href: "/writing/intelligence",
+      mode: "learn",
+      kind: "Understand",
+      label: "Intelligence",
+      detail: "The competencies blocking your target level, and why — from the same evidence Academy uses.",
+      preview: "intelligence",
+      cta: "View Intelligence",
+    },
+    {
       href: "/writing/tools",
       mode: "review",
       kind: "Sharpen",
