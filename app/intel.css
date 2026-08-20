@@ -90,37 +90,63 @@
 .intel-finding-go { flex: none; color: var(--p-muted); transition: transform var(--p-t) var(--p-ease), color var(--p-t) var(--p-ease); }
 .intel-finding:hover .intel-finding-go { transform: translateX(4px); color: var(--p-skill, var(--p-accent)); }
 
-/* Priority — the single most important thing on the page */
-.intel-priority {
+/* ── Priority object ───────────────────────────────────────
+   The single most important decision on the page. Shared between
+   Intelligence's top mission and Academy's recommended lesson — see
+   components/training/PriorityAction.tsx. One large linked body (title,
+   real evidence sentence, inline CTA) plus an optional secondary exit,
+   as two distinct focusable targets rather than a link nested in a link.
+   ------------------------------------------------------------ */
+.priority-action {
   position: relative;
-  display: flex; align-items: center; gap: 24px;
-  padding: 26px 28px;
   border-radius: var(--p-r-lg);
   border: 1px solid color-mix(in srgb, var(--p-skill, var(--p-accent)) 40%, var(--p-line));
   background: var(--p-elevated);
   background-image: linear-gradient(135deg, var(--p-skill-glow), transparent 58%);
   box-shadow: var(--p-edge), var(--p-shadow-1);
-  text-decoration: none; color: inherit;
   overflow: hidden;
   transition: transform var(--p-t) var(--p-ease), box-shadow var(--p-t) var(--p-ease);
 }
-.intel-priority:hover { transform: translateY(-3px); box-shadow: var(--p-edge), var(--p-shadow-2); text-decoration: none; }
-.intel-priority-mark {
-  flex: none; width: 10px; height: 10px; border-radius: 50%;
+.priority-action:hover,
+.priority-action:focus-within { transform: translateY(-3px); box-shadow: var(--p-edge), var(--p-shadow-2); }
+.priority-mark {
+  position: absolute;
+  left: 30px; top: 33px;
+  width: 10px; height: 10px; border-radius: 50%;
   background: var(--p-skill, var(--p-accent));
   box-shadow: 0 0 0 6px var(--p-skill-glow);
 }
-.intel-priority-body { flex: 1; min-width: 0; }
-.intel-priority-body .p-eyebrow { margin-bottom: 8px; color: var(--p-skill, var(--p-accent)); }
-.intel-priority-body strong { display: block; font-size: clamp(21px, 2.2vw, 27px); font-weight: 650; letter-spacing: -0.03em; margin-bottom: 8px; }
-.intel-priority-body p { margin: 0; font-size: 15px; color: var(--p-ink2); max-width: 58ch; }
-.intel-priority-why { margin-top: 6px !important; font-size: 13px !important; color: var(--p-muted) !important; }
-.intel-priority-go {
-  flex: none; display: inline-flex; align-items: center; gap: 8px;
+.priority-body {
+  display: block;
+  padding: 28px 30px 24px 56px;
+  text-decoration: none; color: inherit;
+}
+.priority-body .p-eyebrow { margin-bottom: 8px; color: var(--p-skill, var(--p-accent)); }
+.priority-body strong {
+  display: block; font-size: clamp(22px, 2.4vw, 29px); font-weight: 650;
+  letter-spacing: -0.03em; margin-bottom: 8px;
+}
+.priority-body p { margin: 0 0 4px; font-size: 15px; color: var(--p-ink2); max-width: 60ch; }
+.priority-why { font-size: 13px !important; color: var(--p-muted) !important; }
+.priority-go {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
   font-size: 15px; font-weight: 640; color: var(--p-accent);
 }
-.intel-priority:hover .intel-priority-go .p-arrow { transform: translateX(4px); }
-.intel-priority-go .p-arrow { transition: transform var(--p-t) var(--p-ease); }
+.priority-action:hover .priority-go .p-arrow,
+.priority-body:focus-visible .priority-go .p-arrow { transform: translateX(4px); }
+.priority-go .p-arrow { transition: transform var(--p-t) var(--p-ease); }
+.priority-alt {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 30px 16px 56px;
+  border-top: 1px solid var(--p-line);
+  font-size: 13.5px; font-weight: 600; color: var(--p-muted);
+  text-decoration: none;
+  transition: color var(--p-t-fast) var(--p-ease);
+}
+.priority-alt:hover { color: var(--p-skill, var(--p-accent)); text-decoration: none; }
+.priority-alt .p-arrow { transition: transform var(--p-t) var(--p-ease); }
+.priority-alt:hover .p-arrow { transform: translateX(4px); }
+
 .intel-queue { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .intel-queue li { font-size: 14px; padding: 10px 0; border-top: 1px solid var(--p-line); }
 
@@ -150,8 +176,9 @@
   .intel-bars li { grid-template-columns: 1fr 48px; }
   .intel-bar-track { grid-column: 1 / -1; order: 3; }
   .intel-exits { grid-template-columns: 1fr; }
-  .intel-priority { flex-wrap: wrap; gap: 16px; }
-  .intel-priority-go { width: 100%; }
+  .priority-body { padding: 24px 22px 20px 48px; }
+  .priority-alt { padding: 13px 22px 15px 48px; }
+  .priority-mark { left: 22px; top: 29px; }
 }
 @media (max-width: 700px) {
   .intel-step { margin-top: 40px; }
@@ -250,3 +277,8 @@ a.path-lesson-body:hover .path-go { transform: translateX(3px); color: var(--p-s
 }
 .intel-gauge-bay { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .intel-gauge-note { margin: 0; font-size: 12.5px; color: var(--p-muted); text-align: center; max-width: 30ch; }
+
+/* Academy masthead — header only, no side panel; the priority object
+   below carries the visual weight the old aside used to. */
+.academy-masthead { max-width: 76ch; padding: 24px 0 4px; }
+.academy-masthead .p-lead { margin-bottom: 0; }

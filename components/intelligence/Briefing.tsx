@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { MissionItem, ReadinessCard, WeaknessItem } from "@/lib/api/intelligence";
 import { ReadinessGauge } from "./ReadinessGauge";
+import { PriorityAction } from "@/components/training/PriorityAction";
 
 /**
  * The intelligence briefing.
@@ -175,19 +176,16 @@ export function IntelligenceBriefing({
           {missionsLocked ? (
             <p className="muted">Recommended missions are not available on your current plan.</p>
           ) : priority ? (
-            <Link href={missionHref(priority)} className="intel-priority">
-              <span className="intel-priority-mark" aria-hidden="true" />
-              <span className="intel-priority-body">
-                <span className="p-eyebrow">Priority</span>
-                <strong>{priority.title}</strong>
-                {priority.description ? <p>{priority.description}</p> : null}
-                {priority.reason ? <p className="intel-priority-why">Why: {priority.reason}</p> : null}
-              </span>
-              <span className="intel-priority-go">
-                Start
-                <span className="p-arrow" aria-hidden="true">→</span>
-              </span>
-            </Link>
+            <PriorityAction
+              eyebrow="Priority"
+              title={priority.title}
+              detail={priority.description || undefined}
+              evidence={priority.reason ? `Why: ${priority.reason}` : undefined}
+              href={missionHref(priority)}
+              ctaLabel="Start"
+              secondaryHref={practiceHref}
+              secondaryLabel="Straight to practice"
+            />
           ) : null}
           {missions.length > 1 ? (
             <ul className="intel-queue">

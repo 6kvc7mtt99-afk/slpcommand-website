@@ -2,6 +2,7 @@ import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
 import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { AcademyPath, type PathUnit } from "@/components/academy/AcademyPath";
+import { PriorityAction } from "@/components/training/PriorityAction";
 import {
   LISTENING_ACADEMY_CATEGORIES,
   isListeningTopicLocked,
@@ -32,28 +33,47 @@ export default async function ListeningAcademyPage() {
   // catalog so the path marks the right node, and leave it unmarked when
   // the key matches no topic rather than guessing one.
   const targetKey = asString(isRecord(decision.target) ? decision.target.key : "");
-  const targetTopicId = targetKey ? topicForSkillOrSubSkill(targetKey)?.id : undefined;
+  const targetTopic = targetKey ? topicForSkillOrSubSkill(targetKey) : undefined;
+  const targetTopicId = targetTopic?.id;
   const practiceHref =
     nextStep === "exam"
       ? "/listening/exam"
       : `/listening/practice${asString(isRecord(decision.target) ? decision.target.key : "") ? `?focusSkill=${encodeURIComponent(asString(isRecord(decision.target) ? decision.target.key : ""))}` : ""}`;
 
+  const ctaLabel =
+    nextStep === "exam" ? "Enter SLP assessment" : nextStep === "prerequisite" ? "Train the prerequisite" : decision.hasEvidence ? "Train this weakness" : "Record a baseline";
+
   return (
     <div className="academy page-skill skill-listening">
-      <section className="p-hero academy-hero" data-enter>
-        <div>
-          <p className="p-eyebrow is-skill">Listening Academy</p>
-          <h1 className="p-hero-title">{asString(reason.headline, "Listening Academy")}</h1>
-          <p className="p-lead">{asString(reason.detail, "Cloud standing plus the catalog. A free plan does not unlock every topic.")}</p>
-          <div className="p-hero-actions">
-            <Link className="btn btn-primary btn-hero" href={practiceHref}>
-              {nextStep === "exam" ? "Take the exam" : nextStep === "prerequisite" ? "Train the prerequisite" : decision.hasEvidence ? "Start training" : "Record a baseline"}
-              <span className="p-arrow" aria-hidden="true">→</span>
-            </Link>
-          </div>
+      <header className="academy-masthead" data-enter>
+        <p className="p-eyebrow is-skill">Listening Academy</p>
+        <h1 className="p-hero-title">{asString(reason.headline, "Listening Academy")}</h1>
+        <p className="p-lead">{asString(reason.detail, "Cloud standing plus the catalog. A free plan does not unlock every topic.")}</p>
+      </header>
+
+      {targetTopic ? (
+        <PriorityAction
+          eyebrow="Recommended training"
+          title={targetTopic.title}
+          detail={targetTopic.whyItMatters || targetTopic.description || undefined}
+          href={`/listening/academy/topic/${targetTopic.id}`}
+          ctaLabel={ctaLabel}
+          secondaryHref={practiceHref}
+          secondaryLabel="Straight to practice"
+        />
+      ) : (
+        <div className="p-hero-actions">
+          <Link className="btn btn-primary btn-hero" href={practiceHref}>
+            {ctaLabel}
+            <span className="p-arrow" aria-hidden="true">→</span>
+          </Link>
         </div>
-        <aside className="academy-objective p-panel">
-          <p className="p-eyebrow">Coverage</p>
+      )}
+
+      {result.status >= 400 ? <EmptyAcademy title="Cloud standing" body="Cloud Academy standing is unavailable. The catalog below still follows the free-set rule." /> : null}
+
+      <section className="p-section" data-reveal>
+        <p className="p-eyebrow">Where you stand</p>
         <CoverageBar
           segments={[
             { label: "Sustained", value: Number(asString(counts.mastered, "0")) || 0, tone: "ok" },
@@ -63,9 +83,8 @@ export default async function ListeningAcademyPage() {
             { label: "Waiting", value: Number(asString(counts.blocked, "0")) || 0, tone: "muted" },
           ]}
         />
-        </aside>
       </section>
-      {result.status >= 400 ? <EmptyAcademy title="Cloud standing" body="Cloud Academy standing is unavailable. The catalog below still follows the free-set rule." /> : null}
+
       <section className="p-section" aria-label="Training path">
         <div className="p-section-head" data-reveal>
           <div>

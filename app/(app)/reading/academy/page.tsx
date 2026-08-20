@@ -2,6 +2,7 @@ import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
 import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { AcademyPath, type PathUnit } from "@/components/academy/AcademyPath";
+import { PriorityAction } from "@/components/training/PriorityAction";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
@@ -25,6 +26,17 @@ export default async function ReadingAcademyPage() {
   const summary = isRecord(state.summary) ? state.summary : {};
   const curriculum = Array.isArray(data.curriculum) ? data.curriculum : [];
 
+  // A real sentence built only from the coverage counts the backend
+  // already returned — never a claim about the lesson itself.
+  const weakN = Number(asString(summary.weak, "0")) || 0;
+  const untestedN = Number(asString(summary.untested, "0")) || 0;
+  const evidenceLine = [
+    weakN > 0 ? `${weakN} ${weakN === 1 ? "class needs" : "classes need"} work` : null,
+    untestedN > 0 ? `${untestedN} untested` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   const units: PathUnit[] = curriculum.filter(isRecord).map((unit) => ({
     id: asString(unit.id, asString(unit.title)),
     title: asString(unit.title),
@@ -37,31 +49,27 @@ export default async function ReadingAcademyPage() {
 
   return (
     <div className="academy page-skill skill-reading">
-      <section className="p-hero academy-hero" data-enter>
-        <div>
-          <p className="p-eyebrow is-skill">Reading Academy</p>
-          <h1 className="p-hero-title">{asString(reason.headline, "Start here")}</h1>
-          <p className="p-lead">{asString(reason.detail, "The backend chose this next class from your evidence.")}</p>
-          {asString(lesson.id) ? (
-            <div className="p-hero-actions">
-              <Link className="btn btn-primary btn-hero" href={`/reading/academy/lesson/${encodeURIComponent(asString(lesson.id))}`}>
-                Open the class
-                <span className="p-arrow" aria-hidden="true">→</span>
-              </Link>
-              <Link className="btn btn-outline" href="/reading/practice">Go to practice</Link>
-            </div>
-          ) : null}
-        </div>
-        {asString(lesson.id) ? (
-          <aside className="academy-objective p-panel">
-            <p className="p-eyebrow">Current objective</p>
-            <h2>{asString(lesson.title)}</h2>
-            <p>{asString(lesson.learningObjective)}</p>
-          </aside>
-        ) : null}
-      </section>
+      <header className="academy-masthead" data-enter>
+        <p className="p-eyebrow is-skill">Reading Academy</p>
+        <h1 className="p-hero-title">{asString(reason.headline, "Start here")}</h1>
+        <p className="p-lead">{asString(reason.detail, "The backend chose this next class from your evidence.")}</p>
+      </header>
+
+      {asString(lesson.id) ? (
+        <PriorityAction
+          eyebrow="Recommended training"
+          title={asString(lesson.title)}
+          detail={asString(lesson.learningObjective) || undefined}
+          evidence={evidenceLine || undefined}
+          href={`/reading/academy/lesson/${encodeURIComponent(asString(lesson.id))}`}
+          ctaLabel="Train this weakness"
+          secondaryHref="/reading/practice"
+          secondaryLabel="Straight to practice"
+        />
+      ) : null}
+
       <section className="p-section" data-reveal>
-        <p className="p-eyebrow">Coverage</p>
+        <p className="p-eyebrow">Where you stand</p>
         <CoverageBar
           segments={[
             { label: "Sustained", value: Number(asString(summary.mastered, "0")) || 0, tone: "ok" },
