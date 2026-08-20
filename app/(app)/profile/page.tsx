@@ -116,12 +116,14 @@ export default function ProfilePage() {
 
   return (
     <section className="exercise">
-      <header className="page-head profile-identity">
-        <p className="section-eyebrow">Training profile</p>
-        <h1>{displayName ?? "Profile"}</h1>
-        <p className="muted">
-          {email ?? "—"} · {plan}
-        </p>
+      <header className="p-hero p-profile-hero" data-enter>
+        <div>
+          <p className="p-eyebrow">Training profile</p>
+          <h1 className="p-hero-title">{displayName ?? "Profile"}</h1>
+          <p className="p-lead">
+            {email ?? "—"} · {plan}
+          </p>
+        </div>
       </header>
       <div className="profile-grid">
       <div>

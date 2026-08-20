@@ -1,43 +1,65 @@
-import { SkillLaunch } from "@/components/exercise/ExerciseShell";
+import { SkillHub, type Destination } from "@/components/skill/SkillHub";
 import { featureAccess } from "@/lib/entitlements";
-import { loadEntitlements } from "@/lib/server/home";
+import { loadEntitlements, loadProgress } from "@/lib/server/home";
 
 export default async function ReadingHome() {
-  const entitlements = await loadEntitlements();
+  const [entitlements, progress] = await Promise.all([loadEntitlements(), loadProgress()]);
   const practice = featureAccess(entitlements, "reading_practice");
   const exam = featureAccess(entitlements, "reading_exam_simulation");
+  const planNote = "Not available on your current plan. Subscriptions are managed in the iOS app.";
+
+  const destinations: Destination[] = [
+    {
+      href: "/reading/practice",
+      kind: "Train",
+      label: "Practice",
+      detail: "One passage, one question, immediate feedback. Costs one credit per text.",
+      preview: "reading",
+      cta: "Start practice",
+      disabled: !practice.usable,
+      disabledReason: planNote,
+    },
+    {
+      href: "/reading/exam",
+      kind: "Assess",
+      label: "Exam simulation",
+      detail: "A timed STANAG-style paper built from the same item pool. Educational only.",
+      preview: "reading-exam",
+      cta: "Start exam",
+      disabled: !exam.usable,
+      disabledReason: planNote,
+    },
+    {
+      href: "/reading/academy",
+      kind: "Learn",
+      label: "Academy",
+      detail: "The class the backend chose from your evidence, inside the full curriculum.",
+      preview: "academy",
+      cta: "Open Academy",
+    },
+    {
+      href: "/reading/intelligence",
+      kind: "Understand",
+      label: "Intelligence",
+      detail: "Where you stand, what the evidence supports, and what to train next.",
+      preview: "intelligence",
+      cta: "View Intelligence",
+    },
+  ];
 
   return (
-    <SkillLaunch
+    <SkillHub
       skill="Reading"
-      title="Reading"
-      lead="One passage, one question. Academy and Intelligence read the same evidence, so neither invents a second opinion."
-      actions={[
-        {
-          href: "/reading/academy",
-          label: "Academy",
-          detail: "Structured classes from the live curriculum. No second syllabus.",
-        },
-        {
-          href: "/reading/practice",
-          label: "Practice",
-          detail: "Immediate feedback. One credit per text.",
-          disabled: !practice.usable,
-          disabledReason: "Reading practice is not available on your current plan. Manage subscriptions in the iOS app.",
-        },
-        {
-          href: "/reading/exam",
-          label: "Exam",
-          detail: "STANAG-style simulation. Educational only — not an official result.",
-          disabled: !exam.usable,
-          disabledReason: "Reading exam simulation is not available on your current plan. Manage subscriptions in the iOS app.",
-        },
-        {
-          href: "/reading/intelligence",
-          label: "Intelligence",
-          detail: "Where you stand, and what to train next.",
-        },
-      ]}
+      title="Read like the exam reads you."
+      lead="One passage, one question at a time. Academy and Intelligence read the same evidence, so neither invents a second opinion."
+      primary={
+        practice.usable
+          ? { href: "/reading/practice", label: "Start practice" }
+          : { href: "/reading/academy", label: "Open Academy", disabled: false }
+      }
+      progress={progress}
+      practiceHref="/reading/practice"
+      destinations={destinations}
     />
   );
 }

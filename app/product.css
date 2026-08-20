@@ -1,0 +1,947 @@
+/* ============================================================
+   SLP Command — Product art direction (Phase 3)
+   "Instrument Panel": aviation-grade precision, Apple-grade craft.
+
+   Imported last, after design-system.css and experience.css, so this
+   layer wins without any of those files needing a rewrite. Everything
+   here is scoped to .app-shell (the authenticated product root) so the
+   public marketing site — owned by a concurrent session in style.css —
+   is never touched.
+   ============================================================ */
+
+/* ── 1. Depth tokens ───────────────────────────────────────
+   The previous dark palette put --surface at #16161c and --elevated at
+   #1c1c24: six points of luminance apart, which reads as one flat plane
+   and forces every boundary to be drawn with a border. That is the
+   single biggest reason the product looked like "text on a dark
+   background". This introduces a real five-step surface ladder plus an
+   edge-highlight so panels catch light at their top edge the way
+   physical instrument bezels do.
+   ------------------------------------------------------------ */
+.app-shell {
+  --p-bg: #f4f2ed;
+  --p-bg-deep: #ebe8e1;
+  --p-surface: #fbfaf7;
+  --p-elevated: #ffffff;
+  --p-raised: #ffffff;
+  --p-line: #ddd9d0;
+  --p-line-strong: #c3bdb1;
+  --p-ink: #14161a;
+  --p-ink2: #3c4149;
+  --p-muted: #6c7078;
+  --p-accent: #2d5be3;
+  --p-accent-hi: #1e46bd;
+  --p-accent-wash: rgba(45, 91, 227, 0.09);
+  --p-accent-ink: #ffffff;
+  --p-ok: #1b6b45;
+  --p-warn: #8a6a12;
+  --p-bad: #b42318;
+  --p-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --p-shadow-1: 0 1px 2px rgba(20, 22, 26, 0.05), 0 2px 8px rgba(20, 22, 26, 0.04);
+  --p-shadow-2: 0 2px 4px rgba(20, 22, 26, 0.06), 0 12px 32px rgba(20, 22, 26, 0.08);
+  --p-glow: rgba(45, 91, 227, 0.10);
+
+  --p-r-sm: 8px;
+  --p-r: 12px;
+  --p-r-lg: 18px;
+
+  --p-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --p-ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --p-t-fast: 160ms;
+  --p-t: 280ms;
+  --p-t-slow: 520ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  .app-shell {
+    --p-bg: #0a0b0e;
+    --p-bg-deep: #060709;
+    --p-surface: #14171d;
+    --p-elevated: #1a1e26;
+    --p-raised: #222732;
+    --p-line: #252a33;
+    --p-line-strong: #39404d;
+    --p-ink: #eef1f6;
+    --p-ink2: #b8bfcc;
+    --p-muted: #848c9a;
+    --p-accent: #5182ff;
+    --p-accent-hi: #7ba1ff;
+    --p-accent-wash: rgba(81, 130, 255, 0.15);
+    --p-accent-ink: #ffffff;
+    --p-ok: #43c98b;
+    --p-warn: #e3b451;
+    --p-bad: #ff7b72;
+    --p-edge: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+    --p-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.28);
+    --p-shadow-2: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 44px rgba(0, 0, 0, 0.42);
+    --p-glow: rgba(81, 130, 255, 0.16);
+  }
+}
+
+/* Skill signatures. Each hub carries its own atmosphere so moving
+   between Reading and Listening feels like changing instrument, not
+   changing URL. */
+.app-shell { --p-skill: var(--p-accent); --p-skill-glow: var(--p-glow); }
+.skill-reading  { --p-skill: #c08a4a; --p-skill-glow: rgba(192, 138, 74, 0.16); }
+.skill-listening{ --p-skill: #4a9ec0; --p-skill-glow: rgba(74, 158, 192, 0.16); }
+.skill-writing  { --p-skill: #6aa87e; --p-skill-glow: rgba(106, 168, 126, 0.16); }
+.skill-speaking { --p-skill: #9b8ad4; --p-skill-glow: rgba(155, 138, 212, 0.16); }
+@media (prefers-color-scheme: light) {
+  .skill-reading  { --p-skill: #8a6a3a; --p-skill-glow: rgba(138, 106, 58, 0.10); }
+  .skill-listening{ --p-skill: #2a5a6e; --p-skill-glow: rgba(42, 90, 110, 0.10); }
+  .skill-writing  { --p-skill: #3d4a3a; --p-skill-glow: rgba(61, 74, 58, 0.10); }
+  .skill-speaking { --p-skill: #4a3f6b; --p-skill-glow: rgba(74, 63, 107, 0.10); }
+}
+
+/* ── 2. Canvas ───────────────────────────────────────────── */
+.app-shell {
+  background: var(--p-bg);
+  color: var(--p-ink);
+}
+.app-shell .app-main {
+  background: transparent;
+  padding: 40px 48px 96px;
+  max-width: 1240px;
+}
+.app-shell .app-sidebar {
+  background: var(--p-bg-deep);
+  border-right: 1px solid var(--p-line);
+}
+.app-shell .app-topbar {
+  background: color-mix(in srgb, var(--p-bg) 88%, transparent);
+  backdrop-filter: saturate(1.6) blur(14px);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
+  border-bottom: 1px solid var(--p-line);
+}
+
+/* Sidebar nav — the active row becomes a real surface, not a hairline. */
+.app-shell .app-sidebar nav a {
+  transition: color var(--p-t-fast) var(--p-ease), background var(--p-t-fast) var(--p-ease);
+  border-radius: var(--p-r-sm);
+}
+.app-shell .app-sidebar nav a:hover {
+  background: color-mix(in srgb, var(--p-ink) 6%, transparent);
+  color: var(--p-ink);
+}
+.app-shell .app-sidebar nav a.active {
+  background: color-mix(in srgb, var(--p-ink) 8%, transparent);
+  color: var(--p-ink);
+}
+.app-shell .app-sidebar nav a.active::before {
+  left: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+}
+.app-shell .logo-mark {
+  background: var(--p-accent);
+  color: #fff;
+  box-shadow: 0 2px 10px var(--p-glow);
+}
+
+/* ── 3. Motion ───────────────────────────────────────────── */
+@keyframes p-rise {
+  from { opacity: 0; transform: translate3d(0, 16px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes p-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes p-sweep {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Route entrance. Replaces design-system's blanket `.app-main > *`
+   rule with one deliberate, staged reveal. */
+.app-shell .app-main > * { animation: none; }
+.app-shell [data-enter] {
+  animation: p-rise var(--p-t-slow) var(--p-ease) both;
+}
+
+/* Scroll reveal. Elements start hidden only once JS has confirmed it
+   will observe them (`.reveal-armed` is set by the observer), so a
+   no-JS or failed-hydration render shows everything. */
+.reveal-armed[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+}
+.reveal-armed[data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--p-t-slow) var(--p-ease),
+    transform var(--p-t-slow) var(--p-ease);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+  .reveal-armed[data-reveal] { opacity: 1; transform: none; }
+}
+
+/* ── 4. Typography ───────────────────────────────────────── */
+.app-shell {
+  --p-fs-hero: clamp(42px, 5.6vw, 76px);
+  --p-fs-display: clamp(30px, 3.4vw, 46px);
+  --p-fs-title: clamp(21px, 1.9vw, 26px);
+}
+.p-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--p-muted);
+  margin: 0 0 14px;
+}
+.p-eyebrow::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--p-line-strong), transparent);
+}
+.p-eyebrow.is-skill { color: var(--p-skill); }
+.p-hero-title {
+  font-size: var(--p-fs-hero);
+  line-height: 0.94;
+  letter-spacing: -0.045em;
+  font-weight: 660;
+  margin: 0 0 18px;
+  text-wrap: balance;
+  color: var(--p-ink);
+}
+.p-lead {
+  font-size: clamp(17px, 1.5vw, 20px);
+  line-height: 1.5;
+  color: var(--p-ink2);
+  max-width: 46ch;
+  margin: 0 0 26px;
+}
+.p-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.035em;
+}
+
+/* ── 5. Surfaces ─────────────────────────────────────────── */
+.p-panel {
+  position: relative;
+  background: var(--p-elevated);
+  border: 1px solid var(--p-line);
+  border-radius: var(--p-r);
+  box-shadow: var(--p-edge), var(--p-shadow-1);
+}
+.p-section {
+  margin-top: 56px;
+}
+.p-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.p-section-head h2 {
+  font-size: var(--p-fs-title);
+  letter-spacing: -0.025em;
+  font-weight: 640;
+  margin: 0;
+}
+.p-section-head p { margin: 4px 0 0; color: var(--p-muted); font-size: 14px; }
+
+/* ── 6. Hero with instrument glow ────────────────────────── */
+.p-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 48px 64px;
+  align-items: center;
+  padding: 24px 0 44px;
+  isolation: isolate;
+}
+.p-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -18%;
+  top: -60%;
+  width: 78%;
+  height: 220%;
+  background: radial-gradient(closest-side, var(--p-skill-glow), transparent 72%);
+  pointer-events: none;
+  animation: p-fade 1.2s var(--p-ease) both;
+}
+.p-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+}
+
+/* Primary action — the product's most important control. */
+.app-shell .btn-hero {
+  min-height: 54px;
+  padding: 15px 30px;
+  font-size: 16px;
+  font-weight: 640;
+  letter-spacing: -0.015em;
+  border-radius: 10px;
+  background: var(--p-accent);
+  border-color: var(--p-accent);
+  color: var(--p-accent-ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 8px 26px var(--p-glow);
+  transition: transform var(--p-t-fast) var(--p-ease), box-shadow var(--p-t-fast) var(--p-ease), background var(--p-t-fast) var(--p-ease);
+}
+.app-shell .btn-hero:hover {
+  background: var(--p-accent-hi);
+  border-color: var(--p-accent-hi);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 14px 38px var(--p-glow);
+}
+.app-shell .btn-hero:active { transform: translateY(0) scale(0.99); }
+.app-shell .btn-hero .p-arrow { transition: transform var(--p-t) var(--p-ease); }
+.app-shell .btn-hero:hover .p-arrow { transform: translateX(4px); }
+
+/* Live stat beside the hero CTA — real backend value or nothing. */
+.p-hero-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-left: 18px;
+  border-left: 1px solid var(--p-line-strong);
+}
+.p-hero-stat b {
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  color: var(--p-ink);
+}
+.p-hero-stat span { font-size: 12.5px; color: var(--p-muted); }
+
+/* Skill standing instrument — the hero's right column. */
+.p-status { padding: 24px 26px 22px; }
+.p-status .p-eyebrow { margin-bottom: 16px; }
+.p-status-level {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--p-muted);
+  letter-spacing: -0.01em;
+}
+.p-status-level b {
+  display: inline-block;
+  font-size: 44px;
+  font-weight: 660;
+  letter-spacing: -0.045em;
+  color: var(--p-ink);
+  margin-left: 4px;
+  line-height: 1;
+}
+.p-status-level.is-empty { font-size: 24px; font-weight: 620; color: var(--p-ink); letter-spacing: -0.03em; }
+.p-status-conf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  color: var(--p-ink2);
+}
+.p-dotmark {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--p-skill);
+  flex: none;
+  box-shadow: 0 0 0 3px var(--p-skill-glow);
+}
+.p-status-rows { margin: 20px 0 0; display: flex; flex-direction: column; gap: 0; }
+.p-status-rows > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 0;
+  border-top: 1px solid var(--p-line);
+}
+.p-status-rows dt { font-size: 12.5px; color: var(--p-muted); margin: 0; }
+.p-status-rows dd { margin: 0; font-size: 14px; font-weight: 600; color: var(--p-ink); }
+.p-status-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 18px;
+  font-size: 14px;
+  font-weight: 620;
+  color: var(--p-accent);
+  text-decoration: none;
+}
+.p-status-link:hover { text-decoration: underline; }
+.p-status-link .p-arrow { transition: transform var(--p-t) var(--p-ease); }
+.p-status-link:hover .p-arrow { transform: translateX(4px); }
+
+/* ── 7. Destination panels ───────────────────────────────
+   Practice / Exam / Academy / Intelligence stop being small text links
+   and become the four visible destinations of the skill. Each carries a
+   preview of the real interface behind it.
+   ------------------------------------------------------------ */
+.p-destinations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.p-dest {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--p-elevated);
+  border: 1px solid var(--p-line);
+  border-radius: var(--p-r-lg);
+  box-shadow: var(--p-edge), var(--p-shadow-1);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform var(--p-t) var(--p-ease),
+    border-color var(--p-t) var(--p-ease),
+    box-shadow var(--p-t) var(--p-ease);
+}
+a.p-dest:hover {
+  transform: translateY(-3px);
+  border-color: var(--p-line-strong);
+  box-shadow: var(--p-edge), var(--p-shadow-2);
+  text-decoration: none;
+}
+a.p-dest:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 3px;
+}
+.p-dest-stage {
+  position: relative;
+  height: 148px;
+  background: var(--p-surface);
+  border-bottom: 1px solid var(--p-line);
+  overflow: hidden;
+}
+.p-dest-body { padding: 20px 22px 22px; display: flex; flex-direction: column; flex: 1; gap: 6px; }
+.p-dest-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--p-skill);
+}
+.p-dest h3 {
+  font-size: 19px;
+  font-weight: 640;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--p-ink);
+}
+.p-dest p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--p-muted); }
+.p-dest-go {
+  margin-top: auto;
+  padding-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 620;
+  color: var(--p-accent);
+}
+a.p-dest:hover .p-dest-go .p-arrow { transform: translateX(4px); }
+.p-dest-go .p-arrow { transition: transform var(--p-t) var(--p-ease); }
+
+/* Locked / unavailable destination. Reads as deliberate, not broken. */
+.p-dest.is-locked { opacity: 1; }
+.p-dest.is-locked .p-dest-stage { filter: saturate(0.25); opacity: 0.5; }
+.p-dest.is-locked .p-dest-label { color: var(--p-muted); }
+.p-dest-locked {
+  margin-top: auto;
+  padding-top: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--p-muted);
+}
+.p-lock-chip {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--p-ink) 8%, transparent);
+  color: var(--p-muted);
+}
+
+/* ── 8. Training previews ────────────────────────────────
+   Abstract renderings of each real interface, drawn in CSS. Never a
+   screenshot, never invented data — a schematic of the actual screen
+   the destination opens.
+   ------------------------------------------------------------ */
+.p-prev { position: absolute; inset: 0; padding: 20px 22px; }
+.p-prev-line {
+  height: 7px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--p-ink) 13%, transparent);
+  margin-bottom: 9px;
+}
+.p-prev-line.hi { background: color-mix(in srgb, var(--p-skill) 55%, transparent); }
+.p-prev-chip {
+  display: inline-block;
+  height: 22px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--p-ink) 9%, transparent);
+  border: 1px solid var(--p-line);
+  margin: 0 6px 6px 0;
+}
+.p-prev-chip.on {
+  background: var(--p-accent-wash);
+  border-color: color-mix(in srgb, var(--p-accent) 45%, transparent);
+}
+
+/* Listening: a real waveform, deterministic bar heights. */
+.p-wave { display: flex; align-items: center; gap: 3px; height: 56px; }
+.p-wave i {
+  display: block;
+  flex: 1;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--p-skill) 48%, transparent);
+  height: var(--h);
+}
+.p-wave i.past { background: var(--p-skill); }
+.p-transport {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+.p-play {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--p-ink);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.p-play::before {
+  content: "";
+  border-left: 8px solid var(--p-bg);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  margin-left: 2px;
+}
+.p-track { flex: 1; height: 3px; border-radius: 2px; background: color-mix(in srgb, var(--p-ink) 14%, transparent); overflow: hidden; }
+.p-track i { display: block; height: 100%; width: 38%; background: var(--p-skill); }
+.p-clock { font-size: 11px; font-variant-numeric: tabular-nums; color: var(--p-muted); flex: none; }
+
+/* Speaking: concentric record ring. */
+.p-rec { display: grid; place-items: center; height: 100%; gap: 12px; }
+.p-rec-ring {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--p-skill) 45%, transparent);
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.p-rec-ring::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--p-skill) 22%, transparent);
+}
+.p-rec-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--p-bad); }
+.p-levels { display: flex; align-items: flex-end; gap: 3px; height: 22px; }
+.p-levels i { width: 3px; border-radius: 2px; background: color-mix(in srgb, var(--p-skill) 60%, transparent); height: var(--h); }
+
+/* Writing: editor with caret and a word-count meter. */
+.p-caret {
+  display: inline-block;
+  width: 2px;
+  height: 13px;
+  background: var(--p-accent);
+  vertical-align: -2px;
+  margin-left: 2px;
+}
+.p-meter { margin-top: 12px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--p-ink) 12%, transparent); overflow: hidden; }
+.p-meter i { display: block; height: 100%; width: 62%; background: var(--p-skill); }
+.p-meta { display: flex; justify-content: space-between; margin-top: 7px; font-size: 10.5px; color: var(--p-muted); font-variant-numeric: tabular-nums; }
+
+/* Academy: the training path. */
+.p-path { display: flex; flex-direction: column; gap: 13px; padding-top: 6px; }
+.p-path-row { display: flex; align-items: center; gap: 11px; }
+.p-node {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid var(--p-line-strong);
+  background: var(--p-elevated);
+  flex: none;
+}
+.p-node.done { background: var(--p-ok); border-color: var(--p-ok); }
+.p-node.now { background: var(--p-skill); border-color: var(--p-skill); box-shadow: 0 0 0 4px var(--p-skill-glow); }
+.p-path-row .p-prev-line { flex: 1; margin: 0; }
+
+/* Intelligence: evidence bars. */
+.p-bars { display: flex; align-items: flex-end; gap: 8px; height: 62px; }
+.p-bars i { flex: 1; border-radius: 3px 3px 0 0; background: color-mix(in srgb, var(--p-skill) 40%, transparent); height: var(--h); }
+.p-bars i.peak { background: var(--p-skill); }
+
+/* Exam: timer chip over the passage. */
+.p-timer {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 9px;
+  border-radius: 5px;
+  background: var(--p-raised);
+  border: 1px solid var(--p-line-strong);
+  color: var(--p-ink2);
+}
+
+/* ── 9. Home command centre ──────────────────────────────── */
+.p-mission-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 26px;
+}
+.p-block {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--p-line);
+  background: var(--p-surface);
+  font-size: 13px;
+  color: var(--p-ink2);
+}
+.p-block b { font-weight: 620; text-transform: capitalize; color: var(--p-ink); }
+.p-block span { color: var(--p-muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+.p-block-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.p-block[data-skill="reading"] .p-block-dot { background: #c08a4a; }
+.p-block[data-skill="listening"] .p-block-dot { background: #4a9ec0; }
+.p-block[data-skill="writing"] .p-block-dot { background: #6aa87e; }
+.p-block[data-skill="speaking"] .p-block-dot { background: #9b8ad4; }
+
+/* Instrument column */
+.p-instruments { display: flex; flex-direction: column; gap: 0; }
+.p-instrument {
+  padding: 18px 0;
+  border-top: 1px solid var(--p-line);
+}
+.p-instrument:first-child { border-top: 0; padding-top: 0; }
+.p-instrument .p-eyebrow { margin-bottom: 10px; }
+.p-figure {
+  font-size: 34px;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin: 0;
+  color: var(--p-ink);
+}
+.p-figure-sub { margin: 6px 0 0; font-size: 13px; color: var(--p-muted); }
+
+/* Skill ladder — four real levels, compared at a glance. */
+.p-ladder { display: flex; flex-direction: column; gap: 11px; }
+.p-rung { display: grid; grid-template-columns: 74px 1fr auto; align-items: center; gap: 12px; }
+.p-rung-name { font-size: 12px; text-transform: capitalize; color: var(--p-ink2); }
+.p-rung-bar { display: block; width: 100%; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--p-ink) 10%, transparent); overflow: hidden; }
+.p-rung-bar i { display: block; height: 100%; border-radius: 3px; background: var(--p-fill, var(--p-accent)); transform-origin: left; animation: p-sweep var(--p-t-slow) var(--p-ease) both; }
+.p-rung[data-skill="reading"] { --p-fill: #c08a4a; }
+.p-rung[data-skill="listening"] { --p-fill: #4a9ec0; }
+.p-rung[data-skill="writing"] { --p-fill: #6aa87e; }
+.p-rung[data-skill="speaking"] { --p-fill: #9b8ad4; }
+.p-rung-val { font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--p-ink); font-weight: 600; min-width: 52px; text-align: right; }
+.p-rung-val.none { color: var(--p-muted); font-weight: 500; }
+a.p-rung-val.none { color: var(--p-accent); text-decoration: none; font-weight: 600; }
+a.p-rung-val.none:hover { text-decoration: underline; }
+
+/* Home skill rail — four skills, four previews, one row. */
+.p-rail { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.p-rail .p-dest-stage { height: 118px; }
+.p-rail .p-dest-body { padding: 16px 18px 18px; gap: 4px; }
+.p-rail .p-dest h3 { font-size: 17px; }
+.p-rail .p-dest-go { padding-top: 10px; font-size: 13.5px; }
+@media (max-width: 1080px) { .p-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .p-rail { grid-template-columns: 1fr; } }
+
+/* Session outcomes — what today's work should move. */
+.p-outcomes { display: flex; flex-direction: column; gap: 0; max-width: 68ch; }
+.p-outcome-lead {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--p-ink);
+  margin: 0 0 18px;
+}
+.p-outcome-focus {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 650;
+  color: var(--p-skill, var(--p-accent));
+}
+.p-outcome {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  margin: 0;
+  padding: 13px 0;
+  border-top: 1px solid var(--p-line);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--p-ink2);
+}
+.p-outcome.is-soft { color: var(--p-muted); }
+.p-outcome-mark {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1.5px solid var(--p-line-strong);
+  transform: translateY(-2px);
+}
+.p-outcome-mark.is-certain { background: var(--p-accent); border-color: var(--p-accent); }
+
+/* ── 10. Progress ────────────────────────────────────────── */
+.p-progress-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 48px;
+  align-items: center;
+}
+.p-dial { position: relative; display: grid; place-items: center; }
+.p-dial svg { display: block; width: 100%; max-width: 260px; height: auto; }
+.p-dial-track { fill: none; stroke: color-mix(in srgb, var(--p-ink) 11%, transparent); stroke-width: 10; }
+.p-dial-fill {
+  fill: none;
+  stroke: var(--p-accent);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.1s var(--p-ease);
+}
+.p-dial-center { position: absolute; text-align: center; }
+.p-dial-center b { display: block; font-size: 40px; font-weight: 650; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; line-height: 1; }
+.p-dial-center span { display: block; margin-top: 6px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--p-muted); font-weight: 650; }
+
+.p-dial-scale {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 250px;
+  margin-top: -14px;
+  font-size: 11px;
+  color: var(--p-muted);
+  font-variant-numeric: tabular-nums;
+}
+.p-dial-scale span:nth-child(2) { letter-spacing: 0.08em; text-transform: uppercase; font-weight: 650; }
+
+/* Per-skill breakdown table */
+.p-skill-table { display: flex; flex-direction: column; }
+.p-skill-row {
+  display: grid;
+  grid-template-columns: 150px minmax(90px, 1fr) minmax(0, 1.1fr) 130px;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 0;
+  border-top: 1px solid var(--p-line);
+}
+.p-skill-row:last-child { border-bottom: 1px solid var(--p-line); }
+.p-skill-row-id { display: flex; align-items: center; gap: 11px; }
+.p-skill-row-id strong { font-size: 16px; font-weight: 620; text-transform: capitalize; letter-spacing: -0.02em; }
+.p-skill-row-bar .p-rung-bar { height: 6px; }
+.p-skill-row-meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--p-muted); }
+.p-skill-row-val { text-align: right; }
+.p-skill-row-val strong { font-size: 18px; font-weight: 640; letter-spacing: -0.03em; }
+.p-skill-row-val .p-status-link { margin-top: 0; font-size: 13.5px; }
+@media (max-width: 860px) {
+  .p-skill-row { grid-template-columns: 1fr auto; gap: 10px 16px; }
+  .p-skill-row-bar { grid-column: 1 / -1; order: 3; }
+  .p-skill-row-meta { grid-column: 1 / -1; order: 4; }
+  .p-skill-row-val { order: 2; }
+}
+
+.p-evidence { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--p-line); border: 1px solid var(--p-line); border-radius: var(--p-r); overflow: hidden; }
+.p-evidence > div { background: var(--p-elevated); padding: 16px 18px; }
+.p-evidence dt { font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--p-muted); margin-bottom: 7px; }
+.p-evidence dd { margin: 0; font-size: 17px; font-weight: 620; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+
+/* ── 11. Microinteractions ───────────────────────────────── */
+.app-shell .btn {
+  transition:
+    background var(--p-t-fast) var(--p-ease),
+    border-color var(--p-t-fast) var(--p-ease),
+    color var(--p-t-fast) var(--p-ease),
+    transform var(--p-t-fast) var(--p-ease);
+}
+.app-shell .btn-primary {
+  background: var(--p-accent);
+  border-color: var(--p-accent);
+  color: var(--p-accent-ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.14);
+}
+.app-shell .btn-primary:hover {
+  background: var(--p-accent-hi);
+  border-color: var(--p-accent-hi);
+  transform: translateY(-1px);
+}
+.app-shell .btn-outline { border-color: var(--p-line-strong); color: var(--p-ink2); }
+.app-shell .btn-outline:hover { border-color: var(--p-ink2); color: var(--p-ink); background: color-mix(in srgb, var(--p-ink) 5%, transparent); }
+.app-shell a:focus-visible,
+.app-shell button:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.p-arrow { display: inline-block; }
+
+/* ── 12. Responsive art direction ────────────────────────── */
+@media (max-width: 1080px) {
+  .p-hero { grid-template-columns: 1fr; gap: 34px; }
+  .p-progress-hero { grid-template-columns: 1fr; gap: 32px; }
+  .p-dial svg { max-width: 210px; }
+}
+@media (max-width: 960px) {
+  .app-shell .app-main { padding: 26px 20px 88px; }
+}
+@media (max-width: 700px) {
+  .p-destinations { grid-template-columns: 1fr; gap: 14px; }
+  .p-dest-stage { height: 128px; }
+  .p-hero { padding: 12px 0 30px; }
+  .p-hero::before { left: -30%; width: 130%; }
+  .p-section { margin-top: 40px; }
+  .p-hero-stat { padding-left: 0; border-left: 0; border-top: 1px solid var(--p-line-strong); padding-top: 12px; width: 100%; }
+  .p-hero-actions { gap: 14px; }
+  .app-shell .btn-hero { width: 100%; }
+  .p-rung { grid-template-columns: 68px 1fr auto; }
+  .p-evidence { grid-template-columns: 1fr 1fr; }
+}
+
+/* Profile — identity first, settings second. */
+.p-profile-hero { grid-template-columns: 1fr; padding-bottom: 30px; }
+.p-profile-hero .p-lead { margin-bottom: 0; }
+.app-shell .profile-grid { gap: 0 56px; }
+.app-shell .profile-grid .home-card { border-top-color: var(--p-line); padding: 24px 0; }
+.app-shell .profile-danger { border-top-color: color-mix(in srgb, var(--p-bad) 55%, transparent); }
+.app-shell .profile-danger .home-kicker { color: var(--p-bad); }
+.app-shell .seg { border-color: var(--p-line-strong); border-radius: var(--p-r-sm); overflow: hidden; }
+.app-shell .seg .btn + .btn { border-left-color: var(--p-line-strong); }
+
+/* ── 13. Systemic lift for surfaces still on the Phase-2 markup ──
+   Intelligence, Academy, the practice/exam task screens and the writing
+   tools all share `.page-head`, `.section-eyebrow`, `.home-card` and the
+   elevated-card group. Restyling those four selectors here upgrades every
+   one of those routes to the new art direction without rewriting their
+   markup — and without touching the marketing site, since all of it is
+   scoped under .app-shell.
+   ------------------------------------------------------------ */
+.app-shell .page-head { margin-bottom: 28px; max-width: none; }
+.app-shell .page-head h1,
+.app-shell .exercise > h1 {
+  font-size: var(--p-fs-display);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  font-weight: 660;
+  margin: 0 0 14px;
+  text-wrap: balance;
+  color: var(--p-ink);
+}
+.app-shell .page-head > .muted,
+.app-shell .page-head > p:not(.section-eyebrow) {
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--p-ink2);
+  max-width: 60ch;
+}
+.app-shell .section-eyebrow,
+.app-shell .home-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--p-muted);
+  margin: 0 0 12px;
+}
+.app-shell .page-head > .section-eyebrow::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--p-line-strong), transparent);
+}
+
+/* Elevated groups become real panels with depth. */
+.app-shell .home-mission,
+.app-shell .home-slp,
+.app-shell .auth-card,
+.app-shell .skill-primary,
+.app-shell .academy-now,
+.app-shell .intel-hero,
+.app-shell .writing-editor,
+.app-shell .recorder {
+  background: var(--p-elevated);
+  border: 1px solid var(--p-line);
+  border-radius: var(--p-r);
+  box-shadow: var(--p-edge), var(--p-shadow-1);
+}
+.app-shell .home-card { border-top-color: var(--p-line); }
+.app-shell .home-banner,
+.app-shell .transition-banner {
+  background: var(--p-surface);
+  border: 1px solid var(--p-line);
+  border-left: 3px solid var(--p-accent);
+  border-radius: var(--p-r-sm);
+  padding: 16px 18px;
+}
+.app-shell .feedback-banner { border-radius: var(--p-r-sm); }
+.app-shell .doc-rail,
+.app-shell .exam-toolbar { border-color: var(--p-line); }
+
+/* Readiness / confidence rings pick up the accent instead of the old blue. */
+.app-shell .home-ring,
+.app-shell .intel-ring { color: var(--p-ink); }
+.app-shell .confidence-rungs span { background: color-mix(in srgb, var(--p-ink) 12%, transparent); }
+.app-shell .confidence-rungs span.is-reached { background: var(--p-accent); }
+
+/* Options in practice/exam get a real pressable surface. */
+.app-shell .option-list button,
+.app-shell .option-row {
+  border-radius: var(--p-r-sm);
+  transition: border-color var(--p-t-fast) var(--p-ease), background var(--p-t-fast) var(--p-ease), transform var(--p-t-fast) var(--p-ease);
+}
+.app-shell .option-list button:hover { border-color: var(--p-line-strong); transform: translateX(2px); }
+.p-block-posture {
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--p-muted);
+}
+.p-status-sub { display: block; font-size: 11.5px; font-weight: 500; color: var(--p-muted); margin-top: 2px; }

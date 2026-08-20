@@ -1,38 +1,133 @@
-import { ConfidenceScaleCard, EstimatedSlpHero, TransitionBanner } from "@/components/home/EstimatedSlpHero";
+import Link from "next/link";
+import { ConfidenceScaleCard, TransitionBanner } from "@/components/home/EstimatedSlpHero";
+import { ProgressDial } from "@/components/progress/ProgressDial";
+import { displayOverallLevel } from "@/lib/api/progress";
 import { loadProgress } from "@/lib/server/home";
+
+const SKILLS = ["reading", "listening", "writing", "speaking"] as const;
 
 export default async function ProgressPage() {
   const progress = await loadProgress();
+  const overallRaw = progress ? displayOverallLevel(progress) : null;
+  const overall = overallRaw == null ? null : Number(overallRaw);
+  const hasDial = overall != null && Number.isFinite(overall);
+  const confidence =
+    progress?.skills.reading.confidence_label ||
+    progress?.skills.listening.confidence_label ||
+    progress?.overall.confidence ||
+    "";
 
   return (
-    <section className="exercise instrument">
-      <header className="page-head">
-        <p className="section-eyebrow">Progress</p>
-        <p className="progress-figure" aria-hidden={progress ? undefined : true}>
-          {progress ? `SLP ${progress.overall.level ?? "—"}` : "Estimated SLP"}
-        </p>
-        <h1 className="visually-hidden">Estimated SLP</h1>
-        {/*
-          This line used to read "Levels come from GET /api/progress. Nothing here
-          is derived in the browser." That is a note to an engineer, not to a
-          candidate, and it shipped on the page a learner opens to find out where
-          they stand. The guarantee it was trying to make — that the number is
-          measured, never invented — is worth keeping; the endpoint name is not.
-        */}
-        <p className="muted">
-          Every level here is measured from work you actually submitted — nothing is
-          estimated to fill a gap. Where the evidence is thin, the confidence label
-          says so: Reliable, Fairly reliable, Limited evidence, or Out of date.
-        </p>
-      </header>
+    <div className="p-progress-page">
+      <section className="p-hero p-progress-hero" data-enter>
+        <div>
+          <p className="p-eyebrow">Progress</p>
+          <h1 className="p-hero-title">
+            {hasDial ? <>You are at SLP {overallRaw}.</> : <>No estimate yet.</>}
+          </h1>
+          <p className="p-lead">
+            {hasDial
+              ? "Every level here is measured from work you actually submitted — nothing is estimated to fill a gap. Where the evidence is thin, the confidence label says so."
+              : "Estimated SLP appears once you have submitted enough work for the backend to measure it. Nothing is guessed to fill the gap."}
+          </p>
+          {progress ? (
+            <dl className="p-evidence">
+              {progress.totalExercises > 0 ? (
+                <div>
+                  <dt>Evidence</dt>
+                  <dd className="p-num">{progress.totalExercises} exercises</dd>
+                </div>
+              ) : null}
+              {confidence ? (
+                <div>
+                  <dt>Confidence</dt>
+                  <dd>{confidence}</dd>
+                </div>
+              ) : null}
+              {progress.targetLevel ? (
+                <div>
+                  <dt>Target</dt>
+                  <dd className="p-num">SLP {progress.targetLevel}</dd>
+                </div>
+              ) : null}
+            </dl>
+          ) : null}
+        </div>
+        {hasDial ? (
+          <ProgressDial
+            level={overall!}
+            caption="Estimated SLP"
+            target={progress?.targetLevel ? String(progress.targetLevel) : null}
+          />
+        ) : null}
+      </section>
+
       <TransitionBanner progress={progress} />
-      <div className="intel-layout">
-        <EstimatedSlpHero progress={progress} />
-        <ConfidenceScaleCard progress={progress} />
-      </div>
-      {!progress ? (
+
+      {progress ? (
+        <section className="p-section" aria-label="Skill breakdown">
+          <div className="p-section-head" data-reveal>
+            <div>
+              <h2>Where each skill stands</h2>
+              <p>Four independent measurements. A skill with no evidence shows no level.</p>
+            </div>
+          </div>
+          <div className="p-skill-table">
+            {SKILLS.map((skill, index) => {
+              const row = progress.skills[skill];
+              const level = row.available && row.level != null ? Number(row.level) : null;
+              const pct = level != null && Number.isFinite(level) ? Math.max(3, Math.min(100, (level / 4) * 100)) : 0;
+              // Joined rather than concatenated with leading separators, so a
+              // row with only a confidence label never renders a stray "· ".
+              const meta: string[] = [];
+              if (row.evidence?.count) meta.push(`${row.evidence.count} ${row.evidence.unit || "attempts"}`);
+              else if (level == null) meta.push("no evidence yet");
+              if (row.confidence_label) meta.push(row.confidence_label);
+              if (row.stale) meta.push("out of date");
+              return (
+                <div key={skill} className={`p-skill-row skill-${skill}`} data-reveal style={{ ["--i" as string]: index }}>
+                  <div className="p-skill-row-id">
+                    <span className="p-dotmark" aria-hidden="true" />
+                    <strong>{skill}</strong>
+                  </div>
+                  <div className="p-skill-row-bar">
+                    <span className="p-rung-bar">
+                      <i style={{ width: `${pct}%`, background: "var(--p-skill)" }} />
+                    </span>
+                  </div>
+                  <div className="p-skill-row-meta">
+                    <span className="p-num">{meta.join(" · ")}</span>
+                  </div>
+                  <div className="p-skill-row-val">
+                    {level != null ? (
+                      <strong className="p-num">SLP {row.level}</strong>
+                    ) : (
+                      <Link className="p-status-link" href={`/${skill}/practice`}>
+                        Set baseline
+                        <span className="p-arrow" aria-hidden="true">→</span>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ) : (
         <p className="muted">Estimated SLP is unavailable right now. The rest of the workspace still works.</p>
+      )}
+
+      {progress ? (
+        <section className="p-section" data-reveal>
+          <div className="p-section-head">
+            <div>
+              <h2>How sure we are</h2>
+              <p>Confidence is a statement about the evidence, not about your English.</p>
+            </div>
+          </div>
+          <ConfidenceScaleCard progress={progress} />
+        </section>
       ) : null}
-    </section>
+    </div>
   );
 }

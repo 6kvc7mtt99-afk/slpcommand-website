@@ -71,8 +71,8 @@ const payload: HomeV2Payload = {
 describe("HomeDashboard", () => {
   it("renders the v2 layout and never shows passProbability", () => {
     const { container } = render(<HomeDashboard initial={payload} userId="user-1" />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("Rafael");
-    expect(screen.getByText("Recover listening")).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("Recover listening");
+    expect(container.querySelector(".p-eyebrow")?.textContent).toContain("Rafael");
     expect(screen.getByText("recovering")).toBeTruthy();
     expect(screen.getByText("You will hear one more clip.")).toBeTruthy();
     expect(screen.getByText("SLP Command Free")).toBeTruthy();
@@ -95,6 +95,6 @@ describe("HomeDashboard", () => {
     expect(screen.queryByText("Estimated SLP")).toBeNull();
     expect(screen.queryByText("Streak")).toBeNull();
     expect(screen.getByText("SLP Command Free")).toBeTruthy();
-    expect(screen.getByText("No mission card today. Progress and plan stay available.")).toBeTruthy();
+    expect(screen.getByText(/No mission was composed for today/)).toBeTruthy();
   });
 });
