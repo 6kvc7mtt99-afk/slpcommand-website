@@ -1,9 +1,16 @@
 import { SkillHub, type Destination } from "@/components/skill/SkillHub";
 import { featureAccess } from "@/lib/entitlements";
+import { loadCoachAvailability } from "@/lib/server/coach";
 import { loadEntitlements, loadProgress } from "@/lib/server/home";
 
 export default async function SpeakingHome() {
-  const [entitlements, progress] = await Promise.all([loadEntitlements(), loadProgress()]);
+  const [entitlements, progress, coach] = await Promise.all([
+    loadEntitlements(),
+    loadProgress(),
+    // Fails closed: an unreachable readiness call hides the Coach rather than
+    // offering a door that can only fail.
+    loadCoachAvailability(),
+  ]);
   const access = featureAccess(entitlements, "speaking_ai_feedback");
   const planNote = "Speaking evaluation is not available on your current plan. Subscriptions are managed in the iOS app.";
 
@@ -32,6 +39,20 @@ export default async function SpeakingHome() {
       disabled: !access.usable,
       disabledReason: planNote,
     },
+    ...(coach.available
+      ? [
+          {
+            href: "/speaking/coach",
+            mode: "train" as const,
+            kind: "Converse",
+            label: "AI Coach",
+            detail:
+              "A live voice conversation built around one objective, then a debrief from the same engine that rates your recordings.",
+            preview: "coach" as const,
+            cta: "Open Coach",
+          },
+        ]
+      : []),
     {
       href: "/speaking/history",
       mode: "review",
@@ -47,7 +68,11 @@ export default async function SpeakingHome() {
     <SkillHub
       skill="Speaking"
       title="Record it. Then hear the verdict."
-      lead="Recorded practice and exam, rated against the same criteria an examiner applies. Coach arrives later, as a separate gated feature."
+      lead={
+        coach.available
+          ? "Recorded practice and exam, rated against the same criteria an examiner applies — and a live AI Coach that teaches to one objective."
+          : "Recorded practice and exam, rated against the same criteria an examiner applies."
+      }
       primary={
         access.usable
           ? { href: "/speaking/practice", label: "Start practice" }

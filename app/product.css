@@ -855,6 +855,28 @@ a.p-rung-val.none:hover { text-decoration: underline; }
   border-color: var(--p-accent-hi);
   transform: translateY(-1px);
 }
+/* DEFECT, found while building the Coach's desktop-only screen: this file is
+   imported after design-system.css, so `.app-shell .btn-primary` beat
+   `.btn:disabled` on specificity AND order — every disabled primary button in
+   the authenticated product rendered solid accent blue with a hover lift, i.e.
+   indistinguishable from an enabled one. A control that cannot be used must
+   never look like the page's primary action. */
+.app-shell .btn:disabled,
+.app-shell .btn-primary:disabled {
+  background: var(--p-surface);
+  border-color: var(--p-line);
+  color: var(--p-muted);
+  box-shadow: none;
+  cursor: default;
+  transform: none;
+}
+.app-shell .btn:disabled:hover,
+.app-shell .btn-primary:disabled:hover {
+  background: var(--p-surface);
+  border-color: var(--p-line);
+  color: var(--p-muted);
+  transform: none;
+}
 .app-shell .btn-outline { border-color: var(--p-line-strong); color: var(--p-ink2); }
 .app-shell .btn-outline:hover { border-color: var(--p-ink2); color: var(--p-ink); background: color-mix(in srgb, var(--p-ink) 5%, transparent); }
 .app-shell a:focus-visible,
@@ -1227,3 +1249,29 @@ a.p-dest.mode-assess:hover { border-color: color-mix(in srgb, var(--p-skill) 62%
 @media (prefers-reduced-motion: reduce) {
   .is-leaving .app-main { transition: none; opacity: 1; transform: none; filter: none; }
 }
+
+/* Coach: two parties taking turns, and the arc of a lesson under them.
+   No waveform — the Coach is a conversation, not a recording. */
+.p-turns { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+.p-turn {
+  display: block;
+  height: 14px;
+  width: 58%;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--p-ink) 11%, transparent);
+  align-self: flex-end;
+}
+.p-turn.is-agent {
+  align-self: flex-start;
+  width: 74%;
+  background: color-mix(in srgb, var(--p-skill) 42%, transparent);
+}
+.p-arc { display: flex; align-items: center; gap: 6px; }
+.p-arc i {
+  display: block;
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--p-ink) 13%, transparent);
+}
+.p-arc i.on { background: var(--p-skill); }

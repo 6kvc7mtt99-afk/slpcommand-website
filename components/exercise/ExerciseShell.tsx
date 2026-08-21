@@ -74,7 +74,12 @@ export function ExerciseShell({
           </Link>
           <span className="task-mode">
             <span className="task-mode-dot" aria-hidden="true" />
-            {exam ? "Exam" : "Practice"}
+            {/* The bar used to hard-code "Practice" for everything that was
+                not an exam, so History read as Practice and Coach — which
+                spends Coach minutes, not the practice allowance — would have
+                read as Practice too. Exam styling and the exam clock still key
+                off isExam(); only the word shown is the caller's own. */}
+            {exam ? "Exam" : mode}
           </span>
           <span className="task-skill">{skill}</span>
         </div>

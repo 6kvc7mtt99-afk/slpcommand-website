@@ -13,9 +13,7 @@ test.beforeEach(async ({ context }) => {
   await context.addInitScript(() => localStorage.setItem("onboarding_completed:user-1", "1"));
 });
 
-test("speaking home has practice and exam but not coach", async ({ page }) => {
-  const requests: string[] = [];
-  page.on("request", (req) => requests.push(req.url()));
+test("speaking home leads with recorded practice and never names the provider", async ({ page }) => {
   await page.goto("/speaking");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 20_000 });
   // Practice and Exam are each reachable from two places now — the hero CTA
@@ -23,9 +21,16 @@ test("speaking home has practice and exam but not coach", async ({ page }) => {
   // rather than a bare accessible name that matches both.
   await expect(page.locator('a.p-dest[href="/speaking/practice"]')).toBeVisible();
   await expect(page.locator('a.p-dest[href="/speaking/exam"]')).toBeVisible();
+  // Recorded practice stays the primary action: it has no minutes, no
+  // provider and no desktop requirement. The Coach is one destination among
+  // several, never the thing the hub pushes you into.
   await expect(page.getByRole("link", { name: "Start practice", exact: true })).toBeVisible();
+  // PR-20 added the Coach as a product destination (see coach.spec.ts), but
+  // the conversation provider is an implementation detail the learner is told
+  // about at consent time, not advertised on the hub.
   await expect(page.locator("body")).not.toContainText("ElevenLabs");
-  expect(requests.some((url) => url.includes("/speaking/coach"))).toBe(false);
+  // The spike is not product and must never be linked from it.
+  await expect(page.locator("a[href='/spike/coach']")).toHaveCount(0);
 });
 
 test("microphone permission failure is explained", async ({ page }) => {

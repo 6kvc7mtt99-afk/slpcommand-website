@@ -1,7 +1,9 @@
 import { FrontendError } from "@/lib/api/errors";
 import { apiRequest } from "@/lib/api/client";
-import { asString, isRecord } from "@/lib/api/decode";
+import { asNumber, asString, isRecord } from "@/lib/api/decode";
+import { COACH_CONSENT_POLICY_VERSION } from "./consent";
 import { mapCoachStartError, type CoachStartError } from "./errors";
+import { decodeSessionPlan, type CoachSessionPlan } from "./plan";
 import {
   decodeCoachSessionStart,
   decodeCoachSessionStatus,
@@ -15,13 +17,31 @@ export type CoachReadiness = {
   status: string;
 };
 
+/** `eligible | needs_consent | needs_minutes | unavailable` — the backend decides. */
+export type CoachEligibility = string;
+
 export type CoachMission = {
   objective: string;
   objectiveSource: string;
   rationale: string;
   estimatedMinutes: number;
-  eligibility: string;
+  /**
+   * The two minute pools, named. Never an ambiguous single total: included
+   * minutes reset with the plan, purchased top-ups never expire, and the
+   * client displays both — it never computes either.
+   */
+  availableMinutes: number;
+  includedMinutes: number;
+  purchasedMinutes: number;
+  eligibility: CoachEligibility;
   blockedReason: string | null;
+  /**
+   * A PREVIEW of the class, so a learner can see it is a lesson before
+   * agreeing to spend minutes on it. Null when the Coach is not on offer —
+   * showing the shape of a class you cannot start would be an advertisement,
+   * not information. The real plan is built at session start.
+   */
+  plan: CoachSessionPlan | null;
 };
 
 export type CoachBalance = {
@@ -66,9 +86,13 @@ export async function fetchCoachMission(): Promise<CoachMission> {
     objective: asString(mission.objective),
     objectiveSource: asString(mission.objectiveSource || mission.objective_source),
     rationale: asString(mission.rationale),
-    estimatedMinutes: Number(mission.estimatedMinutes ?? mission.estimated_minutes ?? 0) || 0,
+    estimatedMinutes: asNumber(mission.estimatedMinutes ?? mission.estimated_minutes, 0),
+    availableMinutes: asNumber(mission.availableMinutes ?? mission.available_minutes, 0),
+    includedMinutes: asNumber(mission.includedMinutes ?? mission.included_minutes, 0),
+    purchasedMinutes: asNumber(mission.purchasedMinutes ?? mission.purchased_minutes, 0),
     eligibility: asString(mission.eligibility, "unavailable"),
     blockedReason: asString(mission.blockedReason || mission.blocked_reason) || null,
+    plan: decodeSessionPlan(mission.plan),
   };
 }
 
@@ -81,14 +105,21 @@ export async function fetchCoachBalance(): Promise<CoachBalance> {
   };
 }
 
-export async function recordCoachConsent(): Promise<void> {
+/**
+ * Record the grant SERVER-SIDE, versioned.
+ *
+ * The backend still hardcodes `source: "ios"` on the row — a documented
+ * backend follow-up, not something this repo patches (authorization never
+ * depended on `source`). `appVersion` is the honest client marker meanwhile.
+ */
+export async function recordCoachConsent(appVersion = "web"): Promise<void> {
   await apiRequest("/speaking/coach/consent", {
     method: "POST",
     body: {
       consentType: "granted",
       scope: "elevenlabs_conversation",
-      policyVersion: "coach-consent-1.0.0",
-      appVersion: "web-spike",
+      policyVersion: COACH_CONSENT_POLICY_VERSION,
+      appVersion,
     },
   });
 }

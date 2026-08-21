@@ -710,3 +710,125 @@
   text-wrap: balance;
 }
 .speak-alt { margin-top: 4px; }
+
+/* ── The Coach ────────────────────────────────────────────
+   A live conversation is not a recording and must not look like one:
+   no transport, no waveform, no take-two. The screen carries the
+   objective, whose turn it is, where the lesson has reached, and how
+   much time is left — and nothing the learner cannot act on.
+   ------------------------------------------------------------ */
+/* Same vertical rhythm as every other pre-task decision screen
+   (.skill-primary, .exam-gate): a task's entry sits below the bar, not
+   pinned to it. */
+.coach-brief,
+.coach-panel { width: min(680px, 100%); margin: clamp(20px, 7vh, 72px) auto 0; }
+.coach-panel + .coach-brief { margin-top: 26px; }
+.coach-panel {
+  border: 1px solid var(--p-line);
+  background: var(--p-elevated);
+  border-radius: 10px;
+  padding: 28px;
+}
+.coach-objective-title {
+  font-size: clamp(23px, 2.6vw, 30px);
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  font-weight: 650;
+  color: var(--p-ink);
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.coach-rationale { font-size: 16px; line-height: 1.6; color: var(--p-ink2); margin: 0; }
+
+.coach-arc {
+  margin: 26px 0;
+  padding: 18px 20px;
+  border: 1px solid var(--p-line);
+  border-radius: 10px;
+  background: var(--p-surface);
+}
+.coach-arc-line {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 550;
+  line-height: 1.6;
+  color: var(--p-ink);
+  text-wrap: balance;
+}
+
+.coach-minutes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--p-line);
+  border: 1px solid var(--p-line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 26px;
+}
+.coach-minute {
+  background: var(--p-elevated);
+  padding: 16px 12px;
+  text-align: center;
+  display: grid;
+  gap: 4px;
+}
+.coach-minute strong { font-size: 26px; font-weight: 650; color: var(--p-ink); letter-spacing: -0.02em; }
+.coach-minute span { font-size: 12px; line-height: 1.35; }
+
+.coach-deadend { border-top: 1px solid var(--p-line); padding-top: 22px; }
+.coach-deadend p { margin: 0 0 6px; }
+.coach-error { color: var(--p-bad); font-size: 14px; margin: 14px 0 0; }
+.coach-consent-body { font-size: 15.5px; line-height: 1.7; color: var(--p-ink2); margin: 0 0 18px; }
+.coach-policy { font-size: 12px; margin-top: 14px; }
+
+/* The live screen. Centred, sparse, and readable from a metre away:
+   during a conversation the learner is talking, not reading. */
+.coach-live {
+  width: min(560px, 100%);
+  margin: clamp(20px, 7vh, 72px) auto 0;
+  text-align: center;
+  display: grid;
+  justify-items: center;
+}
+.coach-live .coach-stage { width: 100%; text-align: left; }
+.coach-objective { font-size: 15px; color: var(--p-muted); margin: 0 0 4px; text-wrap: balance; }
+.coach-connecting { margin: 0; }
+.coach-phase {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--task-accent, var(--p-skill));
+  margin: 18px 0 6px;
+}
+.coach-clock {
+  font-size: clamp(44px, 7vw, 60px);
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--p-ink);
+  margin: 0;
+}
+.coach-clock.is-near { color: var(--p-bad); }
+
+.coach-notes { list-style: none; padding: 0; margin: 0; display: grid; gap: 18px; }
+.coach-notes > li > strong { display: block; font-size: 15px; color: var(--p-ink); margin-bottom: 4px; }
+.coach-notes > li > p { margin: 0; }
+.coach-evidence {
+  margin: 8px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid color-mix(in srgb, var(--p-skill) 55%, transparent);
+  color: var(--p-ink2);
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .coach-minutes { grid-template-columns: 1fr; }
+  .coach-panel { padding: 22px 18px; }
+  /* The entry screens' primary action goes full width like every other
+     task entry. "End session" deliberately does NOT: on a live call the
+     most prominent control on screen must not be the one that ends it. */
+  .coach-brief .cta-row .btn,
+  .coach-panel .cta-row .btn { width: 100%; }
+}

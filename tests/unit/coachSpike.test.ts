@@ -150,7 +150,16 @@ describe("session decode and poll", () => {
     expect(decoded?.sessionId).toBe("sess-1");
     expect(decoded?.dynamicVariables.session_ref).toBe("ref-1");
     expect(decoded?.dynamicVariables.minutes_budget).toBe("1");
-    expect(sessionIsSettled({ id: "s", status: "completed", evaluationStatus: "done", consumedSecs: 12, hasResult: true })).toBe(true);
+    expect(
+      sessionIsSettled({
+        id: "s",
+        status: "completed",
+        evaluationStatus: "done",
+        consumedSecs: 12,
+        hasResult: true,
+        result: null,
+      }),
+    ).toBe(true);
   });
 
   it("polls ten times then returns the last status", async () => {

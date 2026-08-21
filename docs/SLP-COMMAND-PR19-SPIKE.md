@@ -50,6 +50,14 @@ Do **not** start PR-20 until explicit approval.
 Do **not** start PR-21.  
 Do **not** claim desktop Safari, Safari iOS, or CSP hosts as CONFIRMED.
 
+> **2026-08-21 — superseded in part.** PR-20 was approved and implemented; see
+> `SLP-COMMAND-PR20-COACH.md`. PR-21 remains not started (blocked on Q4 —
+> `SLP-COMMAND-PR21-BILLING.md`). Rows 2, 10 and 12 of the matrix above are
+> still **UNVERIFIED** and PR-20 claims none of them: the product Coach is
+> desktop-only by an explicit environment gate, the app still sets no CSP, and
+> no copy predicts what backgrounding does. This spike page is kept, flagged
+> and unlinked, because it is the harness those three captures need.
+
 ## What shipped (spike only)
 
 - Learner allowlist: readiness, mission, balance, consent, session POST, session GET. Webhook remains 410.

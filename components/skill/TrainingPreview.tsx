@@ -25,7 +25,8 @@ export type PreviewKind =
   | "academy"
   | "intelligence"
   | "history"
-  | "tools";
+  | "tools"
+  | "coach";
 
 /** Fixed bar heights — a drawn waveform, not sampled audio. */
 const WAVE = [34, 52, 41, 68, 88, 62, 45, 74, 96, 70, 51, 38, 60, 82, 55, 40, 66, 47, 33, 58];
@@ -110,6 +111,25 @@ export function TrainingPreview({ kind }: { kind: PreviewKind }) {
                 <i key={i} style={{ ["--h" as string]: `${h}%` }} />
               ))}
             </span>
+          </div>
+        </div>
+      );
+
+    case "coach":
+      // Two parties taking turns, and the arc of a lesson under them. No
+      // waveform: the Coach is a conversation, not a recording.
+      return (
+        <div className="p-prev" aria-hidden="true">
+          <div className="p-turns">
+            <span className="p-turn is-agent" />
+            <span className="p-turn" />
+            <span className="p-turn is-agent" />
+          </div>
+          <div className="p-arc">
+            <i />
+            <i className="on" />
+            <i />
+            <i />
           </div>
         </div>
       );

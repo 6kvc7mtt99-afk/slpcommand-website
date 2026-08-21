@@ -17,6 +17,9 @@ const CLIENT_GLOBS = [
   "lib/api/speaking.ts",
   "components/speaking/SpeakingPractice.tsx",
   "components/speaking/SpeakingExam.tsx",
+  "components/coach/CoachPreSession.tsx",
+  "components/coach/CoachSession.tsx",
+  "lib/coach/api.ts",
 ];
 
 describe("security regressions", () => {
@@ -45,6 +48,37 @@ describe("security regressions", () => {
     expect(decidePolicy("GET", "/api/writing/intelligence/missions")).toMatchObject({ status: 410 });
     expect(decidePolicy("GET", "/api/writing/intelligence/brain-profile")).toMatchObject({ status: 410 });
     expect(decidePolicy("GET", "/api/writing/intelligence/mastery")).toMatchObject({ status: 410 });
+  });
+
+  /**
+   * The conversation token is the one credential the browser ever holds. It is
+   * minted server-side, worthless after its `exp`, and must reach the SDK
+   * without passing through storage, a log line, a React prop or the DOM —
+   * every one of which is a place it could be read or captured.
+   */
+  it("keeps the Coach conversation token out of storage, logs and the DOM", () => {
+    for (const file of ["components/coach/CoachPreSession.tsx", "components/coach/CoachSession.tsx"]) {
+      const source = readFileSync(file, "utf8");
+      expect(source).not.toMatch(/console\.(log|info|warn|error)/);
+      expect(source).not.toMatch(/(local|session)Storage/);
+      // No React state ever receives the token; a ref holds it instead, so it
+      // is not in a props panel, a devtools snapshot or a re-render trace.
+      expect(source).not.toMatch(/set[A-Z]\w*\(\s*[\w.]*[Tt]oken/);
+    }
+    const entry = readFileSync("components/coach/CoachPreSession.tsx", "utf8");
+    expect(entry).toContain("const tokenRef = useRef<string | null>(null)");
+    // The live screen receives a getter, never the token itself as a prop.
+    const live = readFileSync("components/coach/CoachSession.tsx", "utf8");
+    expect(live).toContain("getToken: () => string | null");
+    expect(live).not.toMatch(/conversationToken:\s*string/);
+  });
+
+  it("keeps the Coach webhook gone and the learner routes allowlisted", () => {
+    expect(decidePolicy("POST", "/api/speaking/coach/webhook")).toMatchObject({ status: 410, reason: "webhook" });
+    expect(decidePolicy("POST", "/api/speaking/coach/session")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/speaking/coach/session/abc-123")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/speaking/coach/mission")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/speaking/coach/balance")).toEqual({ action: "forward" });
   });
 
   it("does not ship the leftover Render-calling admin SPA", () => {

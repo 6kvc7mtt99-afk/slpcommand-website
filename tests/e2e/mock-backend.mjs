@@ -1,5 +1,19 @@
 import http from "node:http";
 
+const COACH_PLAN = {
+  version: "1.1.0",
+  workflowVersion: "1.0.0",
+  sessionMode: "academy",
+  expectedMinutes: 1,
+  maxSameScenarioExchanges: 3,
+  phases: [
+    { id: "orientation", label: "Orientation", goal: "Name today's objective.", targetSecs: 20 },
+    { id: "guided_practice", label: "Practice", goal: "Work the objective directly.", targetSecs: 25 },
+    { id: "close", label: "Close", goal: "End on the learner's turn.", targetSecs: 15 },
+  ],
+  droppedPhases: ["transfer"],
+};
+
 const server = http.createServer((req, res) => {
   const url = new URL(req.url ?? "/", "http://127.0.0.1");
   res.setHeader("content-type", "application/json");
@@ -313,10 +327,16 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({
       ok: true,
       mission: {
-        objective: "Spike only",
-        objectiveSource: "spike",
-        rationale: "Prove the browser SDK.",
+        actionType: "SPEAKING_COACH",
+        destination: "coach",
+        objective: "Sustain an argument under pressure",
+        objectiveSource: "evidence",
+        rationale: "Your last three recordings lost the claim when challenged.",
+        plan: COACH_PLAN,
         estimatedMinutes: 1,
+        availableMinutes: 12,
+        includedMinutes: 10,
+        purchasedMinutes: 2,
         eligibility: "eligible",
         blockedReason: null,
       },
@@ -339,13 +359,37 @@ const server = http.createServer((req, res) => {
       conversationToken: "spike-fake-token-do-not-render",
       conversationTokenExpiresAt: "2026-08-16T00:10:00Z",
       conversationId: "conv-spike-1",
-      dynamicVariables: { session_objective: "Spike only", session_ref: "ref-spike-1", minutes_budget: "1" },
-      objective: "Spike only",
+      dynamicVariables: { session_objective: "Sustain an argument under pressure", session_ref: "ref-spike-1", minutes_budget: "1" },
+      objective: "Sustain an argument under pressure",
+      sessionPlan: COACH_PLAN,
     }));
     return;
   }
   if (url.pathname === "/api/speaking/coach/session/sess-spike-1") {
-    res.end(JSON.stringify({ ok: true, session: { id: "sess-spike-1", status: "completed", evaluation_status: "completed", consumed_secs: 12, result: null } }));
+    res.end(JSON.stringify({
+      ok: true,
+      session: {
+        id: "sess-spike-1",
+        status: "completed",
+        evaluation_status: "completed",
+        consumed_secs: 12,
+        result: {
+          workedOn: "Sustain an argument under pressure",
+          ratable: true,
+          headline: "Solid work — this session counts toward your evidence.",
+          wentWell: ["content", "tasks"],
+          keepWorkingOn: "accuracy",
+          strengths: [{ criterion: "content", note: "Wide range of ideas.", evidence: "the logistics chain was the real problem" }],
+          growthAreas: [{ criterion: "accuracy", note: "Past-tense slips under pressure.", evidence: null }],
+          functionsPracticed: ["Describing", "Explaining"],
+          functionsToTry: ["Hypothesising"],
+          nextObjective: "Hypothesise about consequences",
+          nextRationale: "You did not reach for it once today.",
+          professorNote: "Keep the claim in the first sentence.",
+          metrics: { learnerTurnCount: 18, learnerWordCount: 640 },
+        },
+      },
+    }));
     return;
   }
   if (url.pathname === "/api/support/conversations" && req.method === "POST") {

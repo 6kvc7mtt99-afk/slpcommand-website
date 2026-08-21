@@ -1,4 +1,6 @@
 import { asNumber, asString, isRecord } from "@/lib/api/decode";
+import { decodeSessionPlan, type CoachSessionPlan } from "./plan";
+import { decodeCoachSessionResult, type CoachSessionResult } from "./result";
 
 export type CoachSessionStart = {
   sessionId: string;
@@ -8,6 +10,13 @@ export type CoachSessionStart = {
   conversationId: string | null;
   dynamicVariables: Record<string, string>;
   objective: string;
+  /**
+   * The lesson as designed, frozen server-side before the conversation opens.
+   * Optional so a session can still start against a backend that predates the
+   * plan — the live screen then shows no phases rather than stranding a
+   * learner who has already been charged.
+   */
+  sessionPlan: CoachSessionPlan | null;
 };
 
 export type CoachSessionStatus = {
@@ -16,6 +25,8 @@ export type CoachSessionStatus = {
   evaluationStatus: string;
   consumedSecs: number | null;
   hasResult: boolean;
+  /** The debrief. Null until the provider's webhook lands and evaluation runs. */
+  result: CoachSessionResult | null;
 };
 
 export function decodeDynamicVariables(raw: unknown): Record<string, string> {
@@ -43,6 +54,7 @@ export function decodeCoachSessionStart(raw: unknown): CoachSessionStart | null 
     conversationId: asString(raw.conversationId || raw.conversation_id) || null,
     dynamicVariables: decodeDynamicVariables(raw.dynamicVariables ?? raw.dynamic_variables),
     objective: asString(raw.objective),
+    sessionPlan: decodeSessionPlan(raw.sessionPlan ?? raw.session_plan),
   };
 }
 
@@ -60,6 +72,7 @@ export function decodeCoachSessionStatus(raw: unknown): CoachSessionStatus | nul
         ? null
         : asNumber(session.consumedSecs ?? session.consumed_secs, 0),
     hasResult: session.result != null,
+    result: decodeCoachSessionResult(session.result),
   };
 }
 

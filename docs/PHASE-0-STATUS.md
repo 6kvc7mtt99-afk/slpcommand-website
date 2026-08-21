@@ -54,6 +54,12 @@ Verified 2026-08-16 locally (`next dev` :3000 + Vitest + Playwright). No product
 - PR-13 Writing exam — implemented
 - PR-14 Progress + Profile + export/delete — implemented
 - PR-15 MVP hardening — implemented
+- PR-16 admin migration — implemented
+- PR-17 Academy + Intelligence + Writing tools — implemented
+- PR-18 Speaking practice/exam — implemented
+- PR-19 ElevenLabs Coach spike — GO (`SLP-COMMAND-PR19-SPIKE.md`)
+- PR-20 Speaking Coach desktop — implemented (`SLP-COMMAND-PR20-COACH.md`), live path certified (`SLP-COMMAND-PR20-LIVE-CERTIFICATION.md`)
+- PR-21 web billing paywall — **blocked on Q4** (`SLP-COMMAND-PR21-BILLING.md`)
 
 ## PR-15 — MVP hardening — implemented
 
@@ -66,3 +72,26 @@ Verified 2026-08-16. `tsc` + `next build` PASS. Vitest 32. Playwright gate 4/4 i
 One GET `/api/reading/passage` per intent, client UUID reused across Strict Mode remounts, one question (N accepted, 4 not assumed). `/reading/next` remains 410. Exam is a stub only.
 
 See the implementation report in the final session note. No production deploy. No push.
+
+## PR-20 — Speaking Coach desktop — implemented
+
+Verified 2026-08-21 locally. No production deploy. No push.
+
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS (0 source errors) |
+| `eslint .` | PASS — 0 errors, 3 pre-existing warnings |
+| Vitest | PASS — 222 tests (was 173) |
+| `next build` | PASS — `/speaking/coach` 5.0 kB |
+| Playwright | PASS — 49 tests (was 39) |
+| Visual QA | Coach wide / mobile / desktop-only captured under `docs/visual-qa/` |
+| Live session orchestration | PASS — replayed deterministically; 2 real defects found and fixed (`SLP-COMMAND-PR20-LIVE-CERTIFICATION.md`) |
+| Live conversation with a human | **open** — audio, and whether a phase relay changes the teaching. Runbook in the certification doc. |
+
+`/speaking/coach` is the product Coach: server-designed session plan, a one-second phase clock that relays each phase's goal to the agent exactly once, scenario rotation against `maxSameScenarioExchanges`, teardown + 10 × 2 s poll, and the Phase-6 debrief. The Speaking hub offers it only when `GET /coach/readiness` says the flag and provider are on, and fails closed. Phones get a desktop-only screen. The conversation token never enters state, props, storage or a log line.
+
+Desktop Safari, CSP hosts and the tab-hide check remain **UNVERIFIED** and are not claimed. The `/spike/coach` harness is kept for exactly those captures.
+
+## PR-21 — web billing paywall — blocked
+
+Q4 (RevenueCat Web Billing vs Stripe direct) is unanswered, and Phase 12 additionally needs a backend webhook, a new subprocessor and legal updates, plus Q5's RLS closure. Not started, by design. The Model B interim behaviour the master plan specifies is already implemented and is now locked by a regression test. See `SLP-COMMAND-PR21-BILLING.md`.
