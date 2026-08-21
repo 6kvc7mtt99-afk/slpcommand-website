@@ -98,6 +98,29 @@
 }
 .intel-bar-val { font-size: 13px; font-weight: 600; text-align: right; color: var(--p-ink); }
 
+/*
+  The competency ladder — real per-item `band` values (1+ through 3, all
+  genuinely present at once for the same account, verified live) grouped
+  into tiers and given real depth: SLP 1+ sits closest and largest, SLP 3
+  recedes, using the same perspective/preserve-3d idiom as .p-rail
+  elsewhere in the product rather than a new technique. The recession is
+  the actual data — near is foundational and current, far is the ceiling
+  the whole model is measured against — not a decorative stack.
+*/
+.intel-ladder { perspective: 1600px; max-width: 860px; display: flex; flex-direction: column; gap: 22px; }
+.intel-ladder-tier {
+  transform-style: preserve-3d;
+  transform: translateZ(calc(var(--tier, 0) * -34px)) scale(calc(1 - var(--tier, 0) * 0.028));
+  opacity: calc(1 - var(--tier, 0) * 0.1);
+}
+.intel-ladder-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--p-muted);
+  margin: 0 0 8px;
+}
+
 /* Diagnosis findings */
 .intel-findings { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; max-width: 860px; }
 .intel-finding {

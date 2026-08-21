@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CoverageBar } from "@/components/academy/AcademyLessonView";
 import { PriorityAction } from "@/components/training/PriorityAction";
-import { decodeWritingCatalog, decodeWritingLearningState, lessonByCompetency } from "@/lib/api/writing";
+import { decodeWritingCatalog, decodeWritingLearningState, lessonByCompetency, type WritingBlockingCompetency } from "@/lib/api/writing";
 import { backendJson } from "@/lib/server/backend";
 import { loadTargetLevel } from "@/lib/server/targetLevel";
 
@@ -30,7 +30,30 @@ import { loadTargetLevel } from "@/lib/server/targetLevel";
  * The real target — the one thing Settings actually lets a learner set —
  * comes from `loadTargetLevel()` (/profile) instead, the same source
  * Home/Progress/every skill hub already read.
+ *
+ * The band spread just described (real findings at every level from 1+
+ * to 3, in one flat list) was previously only readable as small "band X"
+ * text per row — true, but not something a reader would notice without
+ * checking every row individually. `bandTiers` groups the same real
+ * `band` field into a near-to-far sequence instead, rendered with real
+ * depth (`.intel-ladder`) so the spread this whole page comment is about
+ * is something the layout itself shows, not just states in prose.
  */
+const BAND_ORDER = ["1", "1+", "2", "2+", "3"];
+
+function bandTiers(items: WritingBlockingCompetency[]): Array<{ band: string; items: WritingBlockingCompetency[] }> {
+  const byBand = new Map<string, WritingBlockingCompetency[]>();
+  for (const item of items) {
+    const key = item.band || "Other";
+    const list = byBand.get(key);
+    if (list) list.push(item);
+    else byBand.set(key, [item]);
+  }
+  const known = BAND_ORDER.filter((b) => byBand.has(b)).map((band) => ({ band, items: byBand.get(band)! }));
+  const rest = [...byBand.keys()].filter((b) => !BAND_ORDER.includes(b));
+  return [...known, ...rest.map((band) => ({ band, items: byBand.get(band)! }))];
+}
+
 export default async function WritingIntelligencePage() {
   const [stateResult, catalogResult, targetLevel] = await Promise.all([
     backendJson<unknown>({ path: "/api/writing/learning-state", cache: "no-store" }),
@@ -152,39 +175,50 @@ export default async function WritingIntelligencePage() {
                 <p>Every competency still open, at any level up to SLP 3 — not only the ones tied to your current target. Each opens the class that trains it.</p>
               </div>
             </div>
-            <ul className="intel-findings">
-              {state.blockingPromotion.map((item, i) => {
-                const href = lessonHref(item.id);
-                const example = item.examples[0];
-                const tone = example?.severity === "critical" ? "critical" : example?.severity === "recurrent" ? "warn" : "calm";
-                const body = (
-                  <>
-                    <span className="intel-finding-bar" aria-hidden="true" />
-                    <span className="intel-finding-main">
-                      <strong>{item.title}</strong>
-                      <span className="intel-finding-meta">
-                        <em className={`intel-sev tone-${tone}`}>{item.state}</em>
-                        <span className="p-num">{item.demonstrations} demonstrations</span>
-                        {item.band ? <span>band {item.band}</span> : null}
-                      </span>
-                      {example ? <span className="intel-thin">“{example.text}”</span> : null}
-                    </span>
-                    {href ? <span className="intel-finding-go p-arrow" aria-hidden="true">→</span> : null}
-                  </>
-                );
-                return (
-                  <li key={item.id} className="p-reveal-item" style={{ ["--i" as string]: i }}>
-                    {href ? (
-                      <Link href={href} className={`intel-finding tone-${tone} p-elevate`}>
-                        {body}
-                      </Link>
-                    ) : (
-                      <div className={`intel-finding tone-${tone}`}>{body}</div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="intel-ladder">
+              {bandTiers(state.blockingPromotion).map((tier, ti) => (
+                <div
+                  key={tier.band}
+                  className="intel-ladder-tier"
+                  style={{ ["--tier" as string]: ti }}
+                  data-reveal
+                >
+                  <p className="intel-ladder-label p-num">SLP {tier.band}</p>
+                  <ul className="intel-findings" aria-label={`Blocking competencies at SLP ${tier.band}`}>
+                    {tier.items.map((item, i) => {
+                      const href = lessonHref(item.id);
+                      const example = item.examples[0];
+                      const tone = example?.severity === "critical" ? "critical" : example?.severity === "recurrent" ? "warn" : "calm";
+                      const body = (
+                        <>
+                          <span className="intel-finding-bar" aria-hidden="true" />
+                          <span className="intel-finding-main">
+                            <strong>{item.title}</strong>
+                            <span className="intel-finding-meta">
+                              <em className={`intel-sev tone-${tone}`}>{item.state}</em>
+                              <span className="p-num">{item.demonstrations} demonstrations</span>
+                            </span>
+                            {example ? <span className="intel-thin">“{example.text}”</span> : null}
+                          </span>
+                          {href ? <span className="intel-finding-go p-arrow" aria-hidden="true">→</span> : null}
+                        </>
+                      );
+                      return (
+                        <li key={item.id} className="p-reveal-item" style={{ ["--i" as string]: i }}>
+                          {href ? (
+                            <Link href={href} className={`intel-finding tone-${tone} p-elevate`}>
+                              {body}
+                            </Link>
+                          ) : (
+                            <div className={`intel-finding tone-${tone}`}>{body}</div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </section>
         ) : null}
 
