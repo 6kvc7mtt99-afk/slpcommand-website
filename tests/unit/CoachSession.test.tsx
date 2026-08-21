@@ -57,7 +57,7 @@ vi.mock("../../lib/coach/api", () => ({
 }));
 
 import { CoachSession } from "../../components/coach/CoachSession";
-import { decodeSessionPlan } from "../../lib/coach/plan";
+import { decodeSessionPlan, type CoachSessionPlan } from "../../lib/coach/plan";
 import { decodeCoachSessionResult } from "../../lib/coach/result";
 
 /** A real academy plan: 60 + 120 + 120 + 60 = 360s, exactly the budget. */
@@ -77,7 +77,7 @@ const PLAN = decodeSessionPlan({
 const BUDGET = 360;
 const onExit = vi.fn();
 
-function mount(plan = PLAN) {
+function mount(plan: CoachSessionPlan | null = PLAN) {
   return render(
     <CoachSession
       sessionId="sess-1"
