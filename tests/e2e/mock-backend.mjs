@@ -115,6 +115,29 @@ const server = http.createServer((req, res) => {
     }));
     return;
   }
+  if (url.pathname === "/api/writing/sentence-feedback" && req.method === "POST") {
+    // No fixture existed for this endpoint either — the standalone
+    // "Examiner vision" tool's own submit was never exercised in E2E, and
+    // neither was Writing Practice's in-draft feedback panel. Exercises
+    // all four real response fields (summary, sentenceFeedback with a real
+    // rewrite, priorityFocus, memoriseThese) — the first two were the ones
+    // silently dropped by the old render.
+    res.end(JSON.stringify({
+      summary: "Clear structure, but register slips in two places.",
+      sentenceFeedback: [
+        {
+          original: "I wanna let you know the course was not attended which is wrong.",
+          category: "register",
+          severity: "moderate",
+          explanation: "\"wanna\" is spoken register; a records office email needs formal register throughout.",
+          improved: "I am writing to inform you that the course was incorrectly marked as not attended.",
+        },
+      ],
+      priorityFocus: ["Keep register formal throughout, not just in the opening line."],
+      memoriseThese: ["I am writing to inform you that..."],
+    }));
+    return;
+  }
   if (url.pathname === "/api/writing/submit" && req.method === "POST") {
     // No fixture existed for this endpoint at all, so the correction/result
     // screen was never exercised in E2E. Paragraph breaks are real newlines,

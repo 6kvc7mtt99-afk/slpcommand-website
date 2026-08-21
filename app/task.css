@@ -400,6 +400,32 @@
 .task-env .writing-editor { padding: 22px 24px 16px; }
 .task-env .writing-editor textarea { min-height: 44vh; font-size: 17px; line-height: 1.7; }
 
+/* ── In-draft examiner feedback (Writing Practice + Examiner vision) ── */
+.write-actions { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 14px; }
+.write-feedback { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--p-line); }
+.examiner-feedback { display: flex; flex-direction: column; gap: 18px; margin-top: 10px; }
+.examiner-summary { font-size: 15px; line-height: 1.6; }
+.examiner-sentences { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.examiner-sentence {
+  position: relative;
+  display: flex;
+  border: 1px solid var(--p-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--p-surface);
+}
+.examiner-sentence-bar { flex: none; width: 4px; }
+.examiner-sentence.tone-critical .examiner-sentence-bar { background: var(--p-bad); }
+.examiner-sentence.tone-warn .examiner-sentence-bar { background: var(--p-warn); }
+.examiner-sentence.tone-calm .examiner-sentence-bar { background: var(--p-line-strong); }
+.examiner-sentence-body { flex: 1; min-width: 0; padding: 12px 16px; }
+.examiner-original { font-style: italic; color: var(--p-muted); font-size: 14px; margin: 0 0 6px; }
+.examiner-note { font-size: 14px; line-height: 1.5; margin: 0; }
+.examiner-note .intel-sev { margin-right: 8px; }
+.examiner-improved { font-size: 14px; line-height: 1.5; margin: 8px 0 0; color: var(--p-ok, var(--p-accent)); }
+.examiner-block { margin-top: 4px; }
+.examiner-block ul { margin: 6px 0 0; padding-left: 18px; font-size: 14px; line-height: 1.6; }
+
 /* ── Speaking stage ───────────────────────────────────────── */
 .task-env .speak-stage { min-height: auto; padding-top: 8px; gap: 22px; }
 .app-shell .recorder-ring { box-shadow: 0 0 0 8px color-mix(in srgb, var(--task-accent, var(--p-accent)) 8%, transparent); }

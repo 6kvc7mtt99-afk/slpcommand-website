@@ -6,6 +6,7 @@ import { apiRequest, FrontendError } from "@/lib/api/client";
 import { newIdempotencyKey } from "@/lib/api/idempotency";
 import { decodeExaminer, decodeOrchestrator, decodeTransform, type ExaminerResult, type OrchestratorNext, type TransformResult } from "@/lib/api/writingTools";
 import { CommercialDialog } from "@/components/exercise/CommercialDialog";
+import { ExaminerFeedback } from "./ExaminerFeedback";
 
 export function WritingToolsHome({
   targetLevel,
@@ -186,14 +187,7 @@ export function ExaminerVision() {
       </form>
       {result ? (
         <article className="home-card">
-          <p>{result.summary}</p>
-          <ul>
-            {result.sentenceFeedback.map((item, index) => (
-              <li key={index}>
-                <strong>{item.category}</strong>: {item.explanation}
-              </li>
-            ))}
-          </ul>
+          <ExaminerFeedback result={result} />
         </article>
       ) : null}
       <CommercialDialog open={paywall} onClose={() => setPaywall(false)} title="Writing AI feedback is not available on your current plan." />

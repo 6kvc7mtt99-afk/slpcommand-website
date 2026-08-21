@@ -71,7 +71,11 @@ export function WritingExam() {
   const begin = useCallback(async () => {
     setPhase("loading");
     try {
-      const profile = await apiRequest<{ target_level?: string }>("/profile").catch(() => ({ target_level: "3" }));
+      // No fallback default: a real target level is required to ask for an
+      // appropriately-leveled exam item. If /profile fails, this throws into
+      // the catch below and shows the real "unavailable" state instead of
+      // silently guessing SLP 3.
+      const profile = await apiRequest<{ target_level?: string }>("/profile");
       const rawLevel = profile.target_level === "2" ? "2" : profile.target_level === "2+" ? "2+" : "3";
       const raw = await apiRequest<unknown>(`/writing/prompts/next?mode=exam&targetLevel=${encodeURIComponent(rawLevel)}`);
       const next = decodeWritingPrompt(raw);

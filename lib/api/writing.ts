@@ -15,6 +15,9 @@ export type WritingPrompt = {
   audience: string;
   timeLimitMinutes: number;
   checklist: string[];
+  /** The two real per-band task instructions, kept separately (not just merged into `.prompt`) so a downstream call — sentence-feedback — can send the real one instead of a placeholder. */
+  level2Task: string;
+  level3Task: string;
 };
 
 export type WritingCorrection = {
@@ -62,9 +65,11 @@ export function decodeWritingPrompt(raw: unknown): WritingPrompt | null {
   // the real payload also names an audience, a time limit and a self-check
   // checklist that existed on every request but were never read.
   const levelBand = asString(pickAlias(nested, "levelBand", "band", "level"));
-  const taskInstruction = asString(
-    levelBand === "2" ? nested.level2Task : levelBand === "3" ? nested.level3Task : undefined,
-  ) || asString(pickAlias(nested, "level2Task", "level3Task"));
+  const level2Task = asString(nested.level2Task);
+  const level3Task = asString(nested.level3Task);
+  const taskInstruction =
+    asString(levelBand === "2" ? level2Task : levelBand === "3" ? level3Task : undefined) ||
+    (level2Task || level3Task);
   return {
     writingPromptId,
     title: asString(pickAlias(nested, "title", "headline")),
@@ -75,6 +80,8 @@ export function decodeWritingPrompt(raw: unknown): WritingPrompt | null {
     audience: asString(pickAlias(nested, "audience")),
     timeLimitMinutes: asNumber(pickAlias(nested, "timeLimitMinutes", "time_limit_minutes"), 0),
     checklist: asStringList(nested.checklist),
+    level2Task,
+    level3Task,
   };
 }
 

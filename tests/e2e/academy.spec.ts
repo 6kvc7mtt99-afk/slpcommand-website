@@ -75,6 +75,40 @@ test("Writing Practice result screen closes the loop into Intelligence and Acade
   expect(results.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
 });
 
+test("Writing Practice offers sentence-level feedback on the draft in progress, without losing the draft or leaving the page", async ({ page }) => {
+  await page.goto("/writing/practice");
+  const feedbackButton = page.getByRole("button", { name: "Get feedback on this draft" });
+  await expect(feedbackButton).toBeDisabled();
+  const draft = "The course was not attended which is wrong, I wanna get this fixed today please.";
+  await page.locator("#writing-draft").fill(draft);
+  await expect(feedbackButton).toBeEnabled();
+  await feedbackButton.click();
+  // The real response's four fields, all of them — not just summary.
+  await expect(page.locator(".examiner-summary")).toContainText("register slips");
+  await expect(page.locator(".examiner-original")).toContainText("wanna");
+  await expect(page.locator(".examiner-improved")).toContainText("I am writing to inform you");
+  await expect(page.locator("body")).toContainText("Focus on next");
+  await expect(page.locator("body")).toContainText("Worth memorising");
+  // The draft itself must still be there — this is a read, not a submission.
+  await expect(page.locator("#writing-draft")).toHaveValue(draft);
+  await expect(page.getByRole("button", { name: "Submit for evaluation" })).toBeEnabled();
+  const results = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  expect(results.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+});
+
+test("Examiner vision renders every real field of its response, not just a flattened summary", async ({ page }) => {
+  await page.goto("/writing/tools/examiner");
+  await page.locator("#examiner-text").fill(
+    "I wanna let you know the course was not attended which is wrong and needs fixing right away please.",
+  );
+  await page.getByRole("button", { name: "Ask the examiner" }).click();
+  await expect(page.locator(".examiner-summary")).toContainText("register slips");
+  await expect(page.locator(".examiner-original")).toContainText("wanna");
+  await expect(page.locator(".examiner-improved")).toContainText("I am writing to inform you");
+  await expect(page.locator("body")).toContainText("Focus on next");
+  await expect(page.locator("body")).toContainText("Worth memorising");
+});
+
 test("Writing competency map groups the real 49-lesson catalog by module and never invents a per-lesson state", async ({ page }) => {
   await page.goto("/writing/academy/map");
   await expect(page.locator("body")).toContainText("Self-Editing and Revision");
