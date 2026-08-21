@@ -26,6 +26,12 @@ export function ListeningExam() {
   const [exam, setExam] = useState<ListeningExamStart | null>(null);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
+  // EXAM-REAL-003 — the real-exam SLP3 session's SHARED replay budget. Stays null for a
+  // legacy session (backend decides the engine from the candidate's own profile), in which
+  // case the indicator below simply does not render — this client never showed a per-item
+  // count either, so there is nothing to preserve for that path.
+  const [globalReplaysRemaining, setGlobalReplaysRemaining] = useState<number | null>(null);
+  const [globalReplayBudget, setGlobalReplayBudget] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [result, setResult] = useState("Submitted.");
   const answersRef = useRef(answers);
@@ -69,6 +75,8 @@ export function ListeningExam() {
       setExam(start);
       setAnswers(start.items.map(() => -1));
       setIndex(0);
+      setGlobalReplayBudget(start.globalReplayBudget);
+      setGlobalReplaysRemaining(start.globalReplaysRemaining);
       setPhase("live");
     } catch (err) {
       if (err instanceof FrontendError && (err.code === "quota" || err.code === "entitlement")) {
@@ -100,6 +108,9 @@ export function ListeningExam() {
     if (!exam || !item) return false;
     try {
       const result = await requestListeningPlay(exam.examSessionId, item.position);
+      // EXAM-REAL-003 — the server is the authority on the shared budget; this client only
+      // mirrors what it returns, same discipline the legacy per-item count would have used.
+      if (result.globalReplaysRemaining != null) setGlobalReplaysRemaining(result.globalReplaysRemaining);
       return result.allowed;
     } catch {
       return false;
@@ -134,9 +145,14 @@ export function ListeningExam() {
       ) : null}
       {phase === "live" && exam && item ? (
         <div className="exam-live">
-          <div className="exam-toolbar">
-            <p className="exam-count muted">Question {index + 1} of {exam.items.length}</p>
-          </div>
+          {/* EXAM-REAL-003 — the timer and N/M count are now the shell's own toolbar/progress
+              props above; this is the one piece they don't render. Null for a legacy session,
+              same as before this merge — the shared budget only exists on a real-exam SLP3 session. */}
+          {globalReplayBudget != null ? (
+            <p className="muted" aria-live="polite">
+              {globalReplaysRemaining} of {globalReplayBudget} repeats left (shared across the whole exam)
+            </p>
+          ) : null}
           <article className="audio-stage">
             <p className="home-kicker">Audio</p>
             <AudioPlayer key={`${exam.examSessionId}-${item.position}`} src={item.audioUrl} allowSeek={false} onPlayRequest={authorizePlay} />

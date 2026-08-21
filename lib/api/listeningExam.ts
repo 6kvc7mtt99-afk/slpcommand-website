@@ -11,18 +11,28 @@ export type ListeningExamStart = {
   examSessionId: string;
   timeLimitSeconds: number;
   items: ListeningExamItem[];
+  // EXAM-REAL-003 — set only for an SLP3 real-exam session (backend decides which engine a
+  // candidate gets from their own profile; these are simply absent on a legacy session).
+  // The replay allowance is SHARED across every item, not per item — contrast the
+  // legacy/per-item allowance, which this client never surfaced a count for either.
+  globalReplayBudget: number | null;
+  globalReplaysRemaining: number | null;
 };
 
 export type ListeningPlayResult = {
   allowed: boolean;
   allowSeek: boolean;
   playsLeft: number | null;
+  globalReplayBudget: number | null;
+  globalReplaysRemaining: number | null;
 };
 
 export type ListeningExamState = {
   remainingSeconds: number | null;
   answered: boolean[];
   playsLeft: number | null;
+  globalReplayBudget: number | null;
+  globalReplaysRemaining: number | null;
 };
 
 export function decodeListeningExamStart(raw: unknown): ListeningExamStart | null {
@@ -71,22 +81,40 @@ export function decodeListeningExamStart(raw: unknown): ListeningExamStart | nul
     examSessionId,
     timeLimitSeconds: asNumber(pickAlias(raw, "timeLimitSeconds", "timeLimit"), 0),
     items,
+    globalReplayBudget: pickAlias(raw, "globalReplayBudget") == null ? null : asNumber(raw.globalReplayBudget),
+    globalReplaysRemaining: pickAlias(raw, "globalReplayBudget") == null
+      ? null
+      // At start, none have been used yet — the budget itself IS the remaining count.
+      : asNumber(raw.globalReplayBudget),
   };
 }
 
 export function decodePlayResult(raw: unknown): ListeningPlayResult {
-  if (!isRecord(raw)) return { allowed: false, allowSeek: false, playsLeft: null };
+  if (!isRecord(raw)) {
+    return { allowed: false, allowSeek: false, playsLeft: null, globalReplayBudget: null, globalReplaysRemaining: null };
+  }
   return {
     allowed: asBool(pickAlias(raw, "allowed", "ok"), false),
     allowSeek: false,
     playsLeft: pickAlias(raw, "playsLeft", "playsRemaining") == null
       ? null
       : asNumber(pickAlias(raw, "playsLeft", "playsRemaining")),
+    // EXAM-REAL-003 — the SHARED budget for a real-exam SLP3 session. Absent (null) on a
+    // legacy session, which has no session-level allowance at all.
+    globalReplayBudget: pickAlias(raw, "globalReplayBudget") == null ? null : asNumber(raw.globalReplayBudget),
+    globalReplaysRemaining: pickAlias(raw, "globalReplaysRemaining") == null
+      ? null
+      : asNumber(raw.globalReplaysRemaining),
   };
 }
 
 export function decodeExamState(raw: unknown, length: number): ListeningExamState {
-  if (!isRecord(raw)) return { remainingSeconds: null, answered: Array(length).fill(false), playsLeft: null };
+  if (!isRecord(raw)) {
+    return {
+      remainingSeconds: null, answered: Array(length).fill(false), playsLeft: null,
+      globalReplayBudget: null, globalReplaysRemaining: null,
+    };
+  }
   const flags = pickAlias(raw, "answered", "answeredFlags");
   return {
     remainingSeconds: pickAlias(raw, "remainingSeconds", "remainingTimeSeconds") == null
@@ -94,5 +122,9 @@ export function decodeExamState(raw: unknown, length: number): ListeningExamStat
       : asNumber(pickAlias(raw, "remainingSeconds", "remainingTimeSeconds")),
     answered: Array.isArray(flags) ? flags.map((flag) => asBool(flag)) : Array(length).fill(false),
     playsLeft: pickAlias(raw, "playsLeft") == null ? null : asNumber(raw.playsLeft),
+    globalReplayBudget: pickAlias(raw, "globalReplayBudget") == null ? null : asNumber(raw.globalReplayBudget),
+    globalReplaysRemaining: pickAlias(raw, "globalReplaysRemaining") == null
+      ? null
+      : asNumber(raw.globalReplaysRemaining),
   };
 }
