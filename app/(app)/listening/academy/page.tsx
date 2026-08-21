@@ -3,6 +3,7 @@ import { asString, isRecord } from "@/lib/api/decode";
 import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { AcademyPath, type PathUnit } from "@/components/academy/AcademyPath";
 import { PriorityAction } from "@/components/training/PriorityAction";
+import { TransitionTarget } from "@/components/TransitionTarget";
 import {
   LISTENING_ACADEMY_CATEGORIES,
   isListeningTopicLocked,
@@ -48,11 +49,11 @@ export default async function ListeningAcademyPage() {
 
   return (
     <div className="academy page-skill skill-listening">
-      <header className="academy-masthead" data-enter>
+      <TransitionTarget as="header" className="academy-masthead" data-enter>
         <p className="p-eyebrow is-skill">Listening Academy</p>
         <h1 className="p-hero-title">{asString(reason.headline, "Listening Academy")}</h1>
         <p className="p-lead">{asString(reason.detail, "Cloud standing plus the catalog. A free plan does not unlock every topic.")}</p>
-      </header>
+      </TransitionTarget>
 
       {targetTopic ? (
         <PriorityAction

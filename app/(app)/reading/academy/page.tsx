@@ -3,6 +3,7 @@ import { asString, isRecord } from "@/lib/api/decode";
 import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { AcademyPath, type PathUnit } from "@/components/academy/AcademyPath";
 import { PriorityAction } from "@/components/training/PriorityAction";
+import { TransitionTarget } from "@/components/TransitionTarget";
 import { backendJson } from "@/lib/server/backend";
 import { loadTargetLevel } from "@/lib/server/targetLevel";
 
@@ -52,11 +53,11 @@ export default async function ReadingAcademyPage() {
 
   return (
     <div className="academy page-skill skill-reading">
-      <header className="academy-masthead" data-enter>
+      <TransitionTarget as="header" className="academy-masthead" data-enter>
         <p className="p-eyebrow is-skill">Reading Academy</p>
         <h1 className="p-hero-title">{asString(reason.headline, "Start here")}</h1>
         <p className="p-lead">{asString(reason.detail, "The backend chose this next class from your evidence.")}</p>
-      </header>
+      </TransitionTarget>
 
       {asString(lesson.id) ? (
         <PriorityAction

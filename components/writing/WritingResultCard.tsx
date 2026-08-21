@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { TransitionLink } from "@/components/TransitionLink";
 import type { WritingCorrection } from "@/lib/api/writing";
 
 /**
@@ -85,14 +85,14 @@ export function WritingResultCard({
               blockingPromotion evidence includes these same attempts) but had
               no path here before. Both destinations read the same evidence
               this report is drawn from, not a second opinion. */}
-          <Link className="assessment-next-link" href="/writing/intelligence">
+          <TransitionLink className="assessment-next-link" href="/writing/intelligence">
             What this means for my competencies
             <span className="p-arrow" aria-hidden="true">→</span>
-          </Link>
-          <Link className="assessment-next-link" href="/writing/academy">
+          </TransitionLink>
+          <TransitionLink className="assessment-next-link" href="/writing/academy">
             Open Writing Academy
             <span className="p-arrow" aria-hidden="true">→</span>
-          </Link>
+          </TransitionLink>
         </div>
       </footer>
     </article>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TransitionLink } from "@/components/TransitionLink";
+import { TransitionTarget } from "@/components/TransitionTarget";
 import { CoverageBar } from "@/components/academy/AcademyLessonView";
 import { PriorityAction } from "@/components/training/PriorityAction";
 import { decodeWritingCatalog, decodeWritingLearningState, lessonByCompetency, type WritingBlockingCompetency } from "@/lib/api/writing";
@@ -113,7 +114,7 @@ export default async function WritingIntelligencePage() {
 
   return (
     <div className="intel skill-writing">
-      <section className="p-hero" data-enter>
+      <TransitionTarget as="section" className="p-hero" data-enter>
         <div>
           <p className="p-eyebrow is-skill">Writing Intelligence</p>
           <h1 className="p-hero-title">{state.hasEvidence ? "What your writing shows" : "Not enough evidence yet"}</h1>
@@ -143,7 +144,7 @@ export default async function WritingIntelligencePage() {
             ) : null}
           </dl>
         </div>
-      </section>
+      </TransitionTarget>
 
       <div className="intel-spine">
         {steps.includes("evidence") ? (
@@ -253,22 +254,22 @@ export default async function WritingIntelligencePage() {
             </div>
           </div>
           <div className="intel-exits">
-            <Link href="/writing/academy" className="intel-exit is-primary p-elevate">
+            <TransitionLink href="/writing/academy" className="intel-exit is-primary p-elevate">
               <span className="p-eyebrow">Learn</span>
               <strong>Open Writing Academy</strong>
               <p>Structured classes chosen from this same evidence.</p>
               <span className="intel-exit-go">
                 Open Academy <span className="p-arrow" aria-hidden="true">→</span>
               </span>
-            </Link>
-            <Link href="/writing/practice" className="intel-exit p-elevate">
+            </TransitionLink>
+            <TransitionLink href="/writing/practice" className="intel-exit p-elevate">
               <span className="p-eyebrow">Train</span>
               <strong>Go to practice</strong>
               <p>Add attempts. Nothing here moves until you do.</p>
               <span className="intel-exit-go">
                 Start practice <span className="p-arrow" aria-hidden="true">→</span>
               </span>
-            </Link>
+            </TransitionLink>
           </div>
         </section>
 

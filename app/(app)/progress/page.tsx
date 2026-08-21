@@ -93,7 +93,20 @@ export default async function ProgressPage() {
               const level = row.available && row.level != null ? Number(row.level) : null;
               const pct = level != null && Number.isFinite(level) ? Math.max(3, Math.min(100, (level / 4) * 100)) : 0;
               const targetPct = targetNum != null ? Math.max(0, Math.min(100, (targetNum / 4) * 100)) : null;
-              const atTarget = level != null && targetNum != null ? level >= targetNum : null;
+              // Three real states from the same two numbers, not a new
+              // metric: at-target (unchanged), approaching (within half a
+              // level — close enough that "below target" reads as
+              // discouraging when it isn't accurate), or below-target
+              // (unchanged). Existing class names kept exactly as-is —
+              // tests/e2e/academy.spec.ts already asserts is-at-target.
+              const rungStatus: "is-at-target" | "is-approaching" | "is-below-target" | null =
+                level == null || targetNum == null
+                  ? null
+                  : level >= targetNum
+                    ? "is-at-target"
+                    : targetNum - level <= 0.5
+                      ? "is-approaching"
+                      : "is-below-target";
               // Joined rather than concatenated with leading separators, so a
               // row with only a confidence label never renders a stray "· ".
               const meta: string[] = [];
@@ -108,7 +121,7 @@ export default async function ProgressPage() {
                     <strong>{skill}</strong>
                   </div>
                   <div className="p-skill-row-bar">
-                    <span className={`p-rung-bar${atTarget == null ? "" : atTarget ? " is-at-target" : " is-below-target"}`}>
+                    <span className={`p-rung-bar${rungStatus ? ` ${rungStatus}` : ""}`}>
                       <i style={{ width: `${pct}%` }} />
                       {targetPct != null ? (
                         <b className="p-rung-target" style={{ left: `${targetPct}%` }} aria-hidden="true" />

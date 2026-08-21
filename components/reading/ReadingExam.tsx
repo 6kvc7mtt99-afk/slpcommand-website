@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import { TransitionLink } from "@/components/TransitionLink";
 import { useRouter } from "next/navigation";
 import { FrontendError } from "@/lib/api/client";
 import { unansweredIndex, type ReadingExamAnswer, type ReadingExamStart } from "@/lib/api/readingExam";
@@ -190,10 +190,10 @@ export function ReadingExam() {
             <button className="btn btn-primary" type="button" onClick={() => router.push("/reading")}>
               Back to Reading
             </button>
-            <Link className="btn btn-outline" href="/reading/intelligence">
+            <TransitionLink className="btn btn-outline" href="/reading/intelligence">
               See what this means
               <span className="p-arrow" aria-hidden="true">→</span>
-            </Link>
+            </TransitionLink>
           </div>
         </article>
       ) : null}

@@ -34,6 +34,13 @@
   transform: translateY(-3px);
   box-shadow: var(--p-edge), var(--p-shadow-2);
 }
+/* Pressed: compresses toward the surface from wherever it's resting —
+   lifted-and-current or just hovered — rather than fighting that state.
+   Faster than the lift itself so the response reads as immediate. */
+.p-elevate:active {
+  transform: translateY(-1px) scale(0.99);
+  transition-duration: 80ms;
+}
 /* A resolved/past object recedes rather than just losing colour —
    the same "closer = current" logic the Intelligence spine already
    uses, applied to physical depth instead of colour saturation. */

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { TransitionLink } from "@/components/TransitionLink";
 import { useRouter } from "next/navigation";
 import { FrontendError } from "@/lib/api/client";
 import type { ListeningExamStart } from "@/lib/api/listeningExam";
@@ -166,10 +166,10 @@ export function ListeningExam() {
           <p className="muted">This is educational guidance, not an official SLP result.</p>
           <div className="cta-row">
             <button className="btn btn-primary" type="button" onClick={() => router.push("/listening")}>Back to Listening</button>
-            <Link className="btn btn-outline" href="/listening/intelligence">
+            <TransitionLink className="btn btn-outline" href="/listening/intelligence">
               See what this means
               <span className="p-arrow" aria-hidden="true">→</span>
-            </Link>
+            </TransitionLink>
           </div>
         </article>
       ) : null}

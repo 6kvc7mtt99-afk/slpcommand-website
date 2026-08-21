@@ -2,6 +2,7 @@ import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
 import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { PriorityAction } from "@/components/training/PriorityAction";
+import { TransitionTarget } from "@/components/TransitionTarget";
 import { backendJson } from "@/lib/server/backend";
 import { loadTargetLevel } from "@/lib/server/targetLevel";
 
@@ -45,11 +46,11 @@ export default async function WritingAcademyPage() {
 
   return (
     <div className="academy page-skill skill-writing">
-      <header className="academy-masthead" data-enter>
+      <TransitionTarget as="header" className="academy-masthead" data-enter>
         <p className="p-eyebrow is-skill">Writing Academy</p>
         <h1 className="p-hero-title">{asString(coach.headline, asString(focus.title, "Writing Academy"))}</h1>
         <p className="p-lead">{asString(coach.detail, "The backend composed today’s materials from your submissions.")}</p>
-      </header>
+      </TransitionTarget>
 
       {lessonId ? (
         <PriorityAction

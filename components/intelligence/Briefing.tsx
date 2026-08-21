@@ -3,6 +3,7 @@ import type { MissionItem, ReadinessCard, WeaknessItem } from "@/lib/api/intelli
 import { ReadinessGauge } from "./ReadinessGauge";
 import { PriorityAction } from "@/components/training/PriorityAction";
 import { TransitionLink } from "@/components/TransitionLink";
+import { TransitionTarget } from "@/components/TransitionTarget";
 
 /**
  * The intelligence briefing.
@@ -95,7 +96,7 @@ export function IntelligenceBriefing({
 
   return (
     <div className={`intel skill-${key}`}>
-      <section className="p-hero intel-hero-row" data-enter>
+      <TransitionTarget as="section" className="p-hero intel-hero-row" data-enter>
         <div>
           <p className="p-eyebrow is-skill">{skill} Intelligence</p>
           <h1 className="p-hero-title">{card.label || "What the evidence says"}</h1>
@@ -131,7 +132,7 @@ export function IntelligenceBriefing({
             <p className="intel-gauge-note">This is a readiness score, not Estimated SLP.</p>
           </div>
         )}
-      </section>
+      </TransitionTarget>
 
       <div className="intel-spine">
       {steps.includes("evidence") && bars.length ? (
@@ -243,22 +244,22 @@ export function IntelligenceBriefing({
           </div>
         </div>
         <div className="intel-exits">
-          <Link href={academyHref} className="intel-exit is-primary p-elevate">
+          <TransitionLink href={academyHref} className="intel-exit is-primary p-elevate">
             <span className="p-eyebrow">Learn</span>
             <strong>Open {skill} Academy</strong>
             <p>Structured classes chosen from this same evidence.</p>
             <span className="intel-exit-go">
               Open Academy <span className="p-arrow" aria-hidden="true">→</span>
             </span>
-          </Link>
-          <Link href={practiceHref} className="intel-exit p-elevate">
+          </TransitionLink>
+          <TransitionLink href={practiceHref} className="intel-exit p-elevate">
             <span className="p-eyebrow">Train</span>
             <strong>Go to practice</strong>
             <p>Add attempts. Nothing here moves until you do.</p>
             <span className="intel-exit-go">
               Start practice <span className="p-arrow" aria-hidden="true">→</span>
             </span>
-          </Link>
+          </TransitionLink>
         </div>
       </section>
 

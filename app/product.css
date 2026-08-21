@@ -486,6 +486,12 @@ a.p-dest:focus-visible {
   outline: 2px solid var(--p-accent);
   outline-offset: 3px;
 }
+/* Pressed wins over hover — a real click is both at once, and the
+   compression is the feedback that matters at that instant. */
+a.p-dest:active {
+  transform: translateY(-1px) scale(0.99);
+  transition-duration: 80ms;
+}
 .p-dest-stage {
   position: relative;
   height: 148px;
@@ -752,6 +758,7 @@ a.p-dest:hover .p-dest-go .p-arrow { transform: translateX(4px); }
   showed before.
 */
 .p-rung-bar.is-at-target i { background: var(--p-ok); }
+.p-rung-bar.is-approaching i { background: var(--p-skill, var(--p-accent)); }
 .p-rung-bar.is-below-target i { background: var(--p-warn); }
 .p-rung-target {
   position: absolute;
@@ -774,6 +781,7 @@ a.p-dest:hover .p-dest-go .p-arrow { transform: translateX(4px); }
   box-shadow: var(--p-shadow-1);
 }
 .p-rung-bar.is-at-target .p-rung-node { border-color: var(--p-ok); }
+.p-rung-bar.is-approaching .p-rung-node { border-color: var(--p-skill, var(--p-accent)); }
 .p-rung-bar.is-below-target .p-rung-node { border-color: var(--p-warn); }
 .p-skill-table-note { font-size: 13px; color: var(--p-muted); margin: -6px 0 14px; }
 .p-rung[data-skill="reading"] { --p-fill: #c08a4a; }

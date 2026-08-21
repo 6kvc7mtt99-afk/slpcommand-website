@@ -316,6 +316,10 @@ a.path-lesson-body:hover {
   transform: translateX(3px);
   text-decoration: none;
 }
+a.path-lesson-body:active {
+  transform: translateX(3px) scale(0.99);
+  transition-duration: 80ms;
+}
 .path-lesson-body strong { font-size: 15.5px; font-weight: 550; letter-spacing: -0.01em; }
 .path-lesson.is-now .path-lesson-body {
   background: var(--p-elevated);
