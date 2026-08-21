@@ -19,6 +19,16 @@ const DENY: Rule[] = [
   { method: "POST", pattern: /^\/api\/billing\/revenuecat\/webhook$/, reason: "webhook" },
   { method: "POST", pattern: /^\/api\/speaking\/coach\/webhook$/, reason: "webhook" },
   { method: "POST", pattern: /^\/api\/admin\/billing\/reconcile$/, reason: "admin_secret" },
+  // Q4 audit — two shared-secret billing routes were added to Express while
+  // this file still relied on the blanket `/api/admin/` allow below. Neither
+  // is exploitable through the proxy today, because `buildUpstreamHeaders`
+  // never forwards `x-admin-secret` and Express answers 403 without it. They
+  // are denied by name anyway, for the same reason `reconcile` is: a route
+  // that can grant a plan, or that reports on a webhook secret, should be
+  // unreachable from a browser by policy rather than by a header allowlist
+  // happening to hold.
+  { method: "POST", pattern: /^\/api\/admin\/billing\/manual-grant$/, reason: "admin_secret" },
+  { method: "GET", pattern: /^\/api\/admin\/billing\/webhook-secret-fingerprint$/, reason: "admin_secret" },
   { pattern: /^\/api\/internal(?:\/|$)/, reason: "internal" },
   { method: "POST", pattern: /^\/api\/reading\/generate$/, reason: "admin_secret" },
   { method: "POST", pattern: /^\/api\/listening\/generate$/, reason: "admin_secret" },

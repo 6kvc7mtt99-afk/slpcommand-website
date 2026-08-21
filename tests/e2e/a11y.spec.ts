@@ -1,5 +1,33 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { E2E_BASE_URL } from "./baseUrl";
+
+test("the authenticated home has no serious axe violations, with or without reduced motion", async ({
+  page,
+  context,
+}) => {
+  await context.addCookies([
+    { name: "slp_at", value: "test-access", url: E2E_BASE_URL },
+    { name: "slp_rt", value: "test-refresh", url: E2E_BASE_URL },
+    { name: "slp_uid", value: "user-1", url: E2E_BASE_URL },
+    { name: "slp_em", value: "learner@example.com", url: E2E_BASE_URL },
+  ]);
+  await page.addInitScript(() => localStorage.setItem("onboarding_completed:user-1", "1"));
+
+  await page.goto("/dashboard");
+  const result = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  expect(result.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+
+  // The instrument's stage panel, the doors' live pointer-tilt, and the
+  // legend's target-gap chip are all new surface area — re-run under
+  // reduced motion, where the tilt hook must never attach at all.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  const isLiveTilt = await page.locator("a.p-dest").first().evaluate((el) => el.classList.contains("is-live-tilt"));
+  expect(isLiveTilt).toBe(false);
+  const reduced = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  expect(reduced.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+});
 
 test("login and a legal page have no serious axe violations", async ({ page }) => {
   await page.goto("/login");

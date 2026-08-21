@@ -1057,6 +1057,48 @@ a.p-dest:hover {
   transform: translateY(-4px) rotateX(1.6deg) scale(1.006);
 }
 
+/* Home's rail: pointer-aware doors. --tx/--ty (both [-1, 1]) are written
+   from JS on pointer move — the same lean-toward-the-pointer grammar the
+   readiness instrument already uses — so a destination tilts toward
+   wherever it was approached from instead of lifting uniformly. The
+   static hover above stays the fallback for touch, keyboard focus, and
+   every other page that reuses .p-dest untouched. */
+a.p-dest.is-live-tilt {
+  --tx: 0;
+  --ty: 0;
+  transform:
+    translateY(calc(var(--hover, 0) * -4px))
+    rotateX(calc(var(--ty) * -7deg))
+    rotateY(calc(var(--tx) * 9deg))
+    scale(calc(1 + var(--hover, 0) * 0.008));
+  transition: transform 320ms var(--p-ease), box-shadow var(--p-t) var(--p-ease);
+}
+a.p-dest.is-live-tilt.is-tracking { transition: transform 60ms linear; }
+a.p-dest.is-live-tilt:hover { box-shadow: var(--p-edge), var(--p-shadow-2); }
+a.p-dest.is-live-tilt .p-dest-stage { position: relative; }
+a.p-dest.is-live-tilt .p-dest-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    calc(115deg + var(--tx, 0) * 26deg),
+    transparent 32%,
+    color-mix(in srgb, #fff 65%, var(--p-skill, var(--p-accent))) 50%,
+    transparent 66%
+  );
+  opacity: calc(var(--hover, 0) * 0.16);
+  transition: opacity 220ms var(--p-ease);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+@media (prefers-color-scheme: dark) {
+  a.p-dest.is-live-tilt .p-dest-stage::after { mix-blend-mode: screen; opacity: calc(var(--hover, 0) * 0.1); }
+}
+@media (prefers-reduced-motion: reduce), (hover: none) {
+  a.p-dest.is-live-tilt { transform: none !important; transition: none !important; }
+  a.p-dest.is-live-tilt .p-dest-stage::after { display: none; }
+}
+
 /* ── 15. The readiness instrument ─────────────────────────── */
 .inst {
   /* The 3D pipeline composites its own alpha per depth, so it needs the
@@ -1158,18 +1200,61 @@ a.p-dest:hover {
   font-weight: 600;
   transition: color var(--p-t-fast) var(--p-ease);
 }
-.inst-legend b { font-size: 11.5px; color: var(--p-ink); font-weight: 600; }
+.inst-legend b { font-size: 11.5px; color: var(--p-ink); font-weight: 600; white-space: nowrap; }
+/* The gap to the learner's own target, read off the same two figures
+   already on the ring — never a second metric, just this one made
+   explicit. Non-mono and muted so it stays a caption on the reading,
+   not a second reading. */
+.inst-legend b em {
+  font-family: var(--p-sans);
+  font-style: normal;
+  font-weight: 500;
+  font-variant-numeric: normal;
+  color: var(--p-muted);
+}
+.inst-legend b em.is-met { color: var(--p-ok); }
 @media (max-width: 640px) {
   .inst-legend { gap: 10px; flex-wrap: wrap; justify-content: center; }
   .inst-legend span { display: none; }
+  .inst-legend b em { display: none; }
   .inst-core-value { font-size: 46px; }
 }
-.p-instrument-bay { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+/* The instrument's stage. A bare canvas centred in open page background
+   read as an orphaned diagram — most visible at the tablet breakpoint,
+   where the hero collapses to one column and the ring floated in ~150px
+   of undifferentiated whitespace above and below it. Containing it in a
+   real panel (elevated surface, edge highlight, ambient shadow, a
+   containment glow keyed to the shared accent rather than any one
+   skill's colour) turns that same space into the instrument's own lit
+   enclosure — an object with a boundary, not a gap in the layout. */
+.p-instrument-bay {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 36px 28px 28px;
+  border-radius: var(--p-r-lg);
+  background: var(--p-elevated);
+  border: 1px solid var(--p-line);
+  box-shadow: var(--p-edge), var(--p-shadow-2);
+  isolation: isolate;
+}
+.p-instrument-bay::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 90% at 50% 8%, var(--p-glow), transparent 68%);
+  opacity: 0.9;
+  pointer-events: none;
+}
 .p-instrument-rows { width: 100%; max-width: 380px; margin-top: 4px; }
-@media (max-width: 1080px) { .p-instrument-bay { margin-top: 8px; } }
+@media (max-width: 1080px) { .p-instrument-bay { margin-top: 8px; padding: 30px 24px 24px; } }
+@media (max-width: 640px) { .p-instrument-bay { padding: 26px 18px 20px; } }
 
-/* The instrument is taller than the mission copy beside it; without a cap
-   the centred row strands ~90px of dead space above and below the text. */
 .home .p-hero { padding-bottom: 8px; align-items: center; }
 .home .p-hero > div:first-child { padding: 8px 0; }
 .home .p-section:first-of-type { margin-top: 36px; }
@@ -1275,3 +1360,17 @@ a.p-dest.mode-assess:hover { border-color: color-mix(in srgb, var(--p-skill) 62%
   background: color-mix(in srgb, var(--p-ink) 13%, transparent);
 }
 .p-arc i.on { background: var(--p-skill); }
+
+/* The plan chip in the sidebar is now a link to the commercial surface —
+   it was the one piece of commercial state in the chrome with nowhere to
+   go. `is-unknown` is the read that failed or has not landed: it must
+   read as "we don't know", never as a plan. */
+.app-shell .app-plan {
+  display: block;
+  text-decoration: none;
+  color: var(--p-muted);
+  border-top: 1px solid var(--p-line);
+  transition: color var(--p-t-fast) var(--p-ease);
+}
+.app-shell .app-plan:hover { color: var(--p-ink); }
+.app-shell .app-plan.is-unknown { font-style: italic; }

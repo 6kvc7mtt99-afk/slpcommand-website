@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AppShell } from "@/components/app/AppShell";
-import { planLabel, type EntitlementsState } from "@/lib/entitlements";
+import { PlanProvider } from "@/components/app/PlanProvider";
+import { type EntitlementsState } from "@/lib/entitlements";
 
 export function AppGate({
   children,
@@ -51,5 +52,12 @@ export function AppGate({
     );
   }
 
-  return <AppShell planLabel={planLabel(initialEntitlements)}>{children}</AppShell>;
+  // Seeded from the layout's server read, then owned by the provider — so the
+  // sidebar, Settings and every commercial surface answer the same question the
+  // same way, and a re-read after a purchase updates all of them at once.
+  return (
+    <PlanProvider initial={initialEntitlements}>
+      <AppShell>{children}</AppShell>
+    </PlanProvider>
+  );
 }

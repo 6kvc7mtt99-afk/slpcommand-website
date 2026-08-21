@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SupportAssistant } from "./SupportAssistant";
+import { usePlan } from "./PlanProvider";
 import { Reveal } from "@/components/ui/Reveal";
 import { RouteTransition } from "./RouteTransition";
 
@@ -17,13 +18,8 @@ const NAV = [
   { href: "/profile", label: "Profile", skill: null },
 ];
 
-export function AppShell({
-  children,
-  planLabel,
-}: {
-  children: React.ReactNode;
-  planLabel: string;
-}) {
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const { display } = usePlan();
   const path = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -86,7 +82,13 @@ export function AppShell({
           );
         })}
       </nav>
-      <div className="app-plan">{planLabel}</div>
+      {/* The plan, as a link rather than a label: it was the one piece of
+          commercial state in the chrome with nowhere to go. `known` is false
+          while the read is in flight or after it failed — the chip then says so
+          instead of asserting a plan the app has not been told. */}
+      <Link className={`app-plan${display.known ? "" : " is-unknown"}`} href="/subscription">
+        {display.label}
+      </Link>
       <SupportAssistant />
       <button type="button" className="btn btn-outline" onClick={logout}>
         Log out

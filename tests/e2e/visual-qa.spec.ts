@@ -67,6 +67,8 @@ test.describe("visual QA — workspace", () => {
       { path: "/speaking/coach", name: "speaking-coach", text: "Sustain an argument under pressure" },
       { path: "/progress", name: "progress", text: "You are at SLP 2.2." },
       { path: "/profile", name: "profile", text: "Profile" },
+      { path: "/subscription", name: "subscription", text: "What your plan allows" },
+      { path: "/listening/academy/topic/reasoning", name: "plan-boundary", text: "Plan boundary" },
       { path: "/admin", name: "admin", text: "Admin access" },
     ];
 
@@ -85,7 +87,7 @@ test.describe("visual QA — workspace", () => {
     await noHorizontalOverflow(page);
 
     await page.setViewportSize({ width: 390, height: 844 });
-    for (const route of ["/dashboard", "/reading", "/reading/practice", "/listening/practice", "/writing", "/speaking", "/speaking/coach", "/progress"]) {
+    for (const route of ["/dashboard", "/reading", "/reading/practice", "/listening/practice", "/writing", "/speaking", "/speaking/coach", "/subscription", "/progress"]) {
       await page.goto(route);
       await page.waitForLoadState("networkidle");
       await capture(page, `${route.replaceAll("/", "").replace(/^\s*$/, "root") || "page"}-mobile`);

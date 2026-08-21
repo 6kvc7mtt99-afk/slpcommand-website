@@ -23,6 +23,7 @@ const payload: HomeV2Payload = {
     speaking_enabled: true,
     academy_enabled: true,
     home_v3_enabled: false,
+    web_billing_enabled: false,
   },
   entitlements: { status: "noPlan" },
   progress: decodeProgress({
@@ -82,6 +83,31 @@ describe("HomeDashboard", () => {
     expect(container.textContent).not.toContain("72%");
     expect(container.textContent).not.toContain("passProbability");
     expect(container.textContent).not.toContain("generationMs");
+  });
+
+  it("shows each measured skill's real distance to the account's own target, never a fabricated one", () => {
+    const targeted: HomeV2Payload = {
+      ...payload,
+      progress: decodeProgress({
+        overall: { level: 2.2, available: true, confidence: "medium" },
+        skills: {
+          reading: { level: 2.4, available: true },
+          listening: { level: 3.3, available: true },
+          writing: { level: 2.4, available: true },
+          speaking: { level: null, available: false },
+        },
+        proficiencyEngine: { effectiveLevel: 2.2 },
+        totalExercises: 156,
+        targetLevel: "3",
+      }),
+    };
+    const { container } = render(<HomeDashboard initial={targeted} userId="user-1" />);
+    // Reading (2.4) is short of target 3 by 0.6.
+    expect(container.querySelector(".inst-legend")?.textContent).toContain("+0.6");
+    // Listening (3.3) already clears target 3.
+    expect(container.querySelector(".inst-legend")?.textContent).toContain("at target");
+    // Speaking has no measured level, so no gap is invented for it.
+    expect(container.textContent).not.toContain("undefined");
   });
 
   it("hides the mission card and ring when those payloads failed", () => {

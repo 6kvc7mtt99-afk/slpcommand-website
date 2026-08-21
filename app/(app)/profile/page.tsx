@@ -153,6 +153,7 @@ export default function ProfilePage() {
       }
       try {
         const snap = await apiRequest<EntitlementsSnapshot>("/entitlements");
+        // apiRequest throws on non-2xx, so a value here IS a successful read.
         setPlan(planLabel(interpretEntitlements(200, snap)));
         setPlanInfo(decodePlan(snap));
         setFeatures(decodeFeatures(snap));
@@ -419,8 +420,8 @@ export default function ProfilePage() {
             ) : null}
 
             <p className="settings-note">
-              Subscriptions are managed in the iOS app until web billing exists. Nothing on this page changes what you
-              are billed.
+              This page meters what is left. What you are on, what Pro would change, and how to subscribe live on{" "}
+              <a href="/subscription">your plan</a>. Nothing on this page changes what you are billed.
             </p>
           </section>
 

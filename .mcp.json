@@ -4,6 +4,10 @@
       "command": "graft",
       "args": ["mcp", "."],
       "env": {}
+    },
+    "aidesigner": {
+      "type": "http",
+      "url": "https://api.aidesigner.ai/api/v1/mcp"
     }
   }
 }

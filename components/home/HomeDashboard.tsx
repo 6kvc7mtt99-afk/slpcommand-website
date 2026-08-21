@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { apiRequest } from "@/lib/api/client";
+import { usePlan } from "@/components/app/PlanProvider";
 import { decodeAchievements, decodeRecent } from "@/lib/api/activity";
 import { clampSessionMinutes, decodeSessionToday, hasSession } from "@/lib/api/sessionToday";
 import type { AchievementItem, RecentActivityItem, SessionToday } from "@/lib/api/types";
@@ -19,6 +20,7 @@ import { TransitionBanner } from "./EstimatedSlpHero";
 import { EmptyState, LoadingState } from "@/components/ui/ProductState";
 import { TrainingPreview } from "@/components/skill/TrainingPreview";
 import { ReadinessInstrument, type InstrumentSkill } from "@/components/instrument/ReadinessInstrument";
+import { useTilt } from "@/components/ui/useTilt";
 
 const SKILLS = ["reading", "listening", "writing", "speaking"] as const;
 
@@ -43,6 +45,20 @@ export function HomeDashboard({
   initial: HomeV2Payload;
   userId: string | null;
 }) {
+  // Four doors, four hooks — SKILLS is a fixed-length tuple, so this stays
+  // an unconditional, fixed number of hook calls rather than one per
+  // .map() iteration.
+  const readingTilt = useTilt<HTMLAnchorElement>();
+  const listeningTilt = useTilt<HTMLAnchorElement>();
+  const writingTilt = useTilt<HTMLAnchorElement>();
+  const speakingTilt = useTilt<HTMLAnchorElement>();
+  const tiltRefs: Record<(typeof SKILLS)[number], (node: HTMLAnchorElement | null) => void> = {
+    reading: readingTilt,
+    listening: listeningTilt,
+    writing: writingTilt,
+    speaking: speakingTilt,
+  };
+
   const [sessionToday, setSessionToday] = useState<SessionToday | null>(initial.sessionToday);
   const [prefs, setPrefs] = useState(() => ({
     weeklyGoalDays: 5,
@@ -101,9 +117,15 @@ export function HomeDashboard({
   const href = block?.skill ? SKILL_HREF[block.skill] : undefined;
   const overall = initial.progress ? displayOverallLevel(initial.progress) : null;
   const showRing = shouldShowProgressRing(initial.progress);
-  const plan = initial.entitlements.status === "ready" && initial.entitlements.isPro
-    ? "SLP Command Professional"
-    : "SLP Command Free";
+  // Was computed here, in its own vocabulary ("SLP Command Professional"),
+  // from a snapshot frozen at page load. Two problems, both commercial: the
+  // master plan fixes the display names as "SLP Command Pro" / "SLP Command
+  // Free", and an entitlements read that failed was rendered as Free — telling
+  // a subscriber they are not one. One shared, honest state now.
+  // The SSR snapshot this page was rendered with is the fallback: on its own
+  // the card still states the plan the server sent, and inside the app shell
+  // the shared state — which can be re-read after a purchase — wins.
+  const { display: planDisplayed } = usePlan(initial.entitlements);
 
   const blocks = today?.session.blocks ?? [];
 
@@ -209,7 +231,7 @@ export function HomeDashboard({
             ) : null}
             <div>
               <dt>Plan</dt>
-              <dd>{plan}</dd>
+              <dd>{planDisplayed.label}</dd>
             </div>
           </dl>
         </aside>
@@ -269,6 +291,7 @@ export function HomeDashboard({
                 className={`p-dest skill-${skill}`}
                 data-reveal
                 style={{ ["--i" as string]: index + 1 }}
+                ref={tiltRefs[skill]}
               >
                 <div className="p-dest-stage">
                   <TrainingPreview kind={skill} />

@@ -59,7 +59,8 @@ Verified 2026-08-16 locally (`next dev` :3000 + Vitest + Playwright). No product
 - PR-18 Speaking practice/exam — implemented
 - PR-19 ElevenLabs Coach spike — GO (`SLP-COMMAND-PR19-SPIKE.md`)
 - PR-20 Speaking Coach desktop — implemented (`SLP-COMMAND-PR20-COACH.md`), live path certified (`SLP-COMMAND-PR20-LIVE-CERTIFICATION.md`)
-- PR-21 web billing paywall — **blocked on Q4** (`SLP-COMMAND-PR21-BILLING.md`)
+- PR-21 web billing paywall — **ready for Q4**; everything provider-independent implemented (`SLP-COMMAND-PR21-BILLING.md`)
+- Q4 — **resolved: RevenueCat Web Billing.** Implemented and shipped OFF behind `web_billing_enabled` (`SLP-COMMAND-Q4-WEB-BILLING.md`)
 
 ## PR-15 — MVP hardening — implemented
 
@@ -92,6 +93,52 @@ Verified 2026-08-21 locally. No production deploy. No push.
 
 Desktop Safari, CSP hosts and the tab-hide check remain **UNVERIFIED** and are not claimed. The `/spike/coach` harness is kept for exactly those captures.
 
-## PR-21 — web billing paywall — blocked
+## PR-21 — web billing paywall — ready for Q4
 
-Q4 (RevenueCat Web Billing vs Stripe direct) is unanswered, and Phase 12 additionally needs a backend webhook, a new subprocessor and legal updates, plus Q5's RLS closure. Not started, by design. The Model B interim behaviour the master plan specifies is already implemented and is now locked by a regression test. See `SLP-COMMAND-PR21-BILLING.md`.
+Verified 2026-08-21 locally. No production deploy.
+
+Q4 (RevenueCat Web Billing vs Stripe direct) is still unanswered, and the purchase rail it
+gates is deliberately not built. Everything else in PR-21 is: one shared commercial state
+for the whole product, the bounded `refreshUntilPro` analogue that is itself a
+billing-launch gate, the `/subscription` surface `robots.ts` had reserved since PR-15,
+honest display of an unknown plan, a `CommercialDialog` that behaves like the modal it
+claimed to be, and Model B proven end to end against a browser actively trying to unlock
+itself.
+
+Correction to the previous entry: **Q5 blocks public launch, not billing** — it is absent
+from the "Before billing launch" gate list. See `SLP-COMMAND-PR21-BILLING.md`.
+
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `eslint .` | PASS — 0 errors |
+| Vitest | PASS — 274 tests (was 249) |
+| `next build` | PASS — `/subscription` 3.0 kB |
+| Playwright | PASS — 57 tests (was 49) |
+| axe on `/subscription` | PASS |
+
+## Q4 — RevenueCat Web Billing — implemented, shipped off
+
+Verified 2026-08-21 locally. No production deploy. `web_billing_enabled = false`.
+
+The web can now start a purchase, and a purchase made anywhere lands in the same
+`user_plans` row through the webhook that already existed. No second entitlement authority
+was created: nothing above `GET /api/entitlements` knows a provider exists.
+
+Three things the documentation gate changed, all recorded in
+`SLP-COMMAND-Q4-WEB-BILLING.md`: RevenueCat now HMAC-signs webhooks (the comment in
+`billing.js` saying it does not was stale, and signature verification is now implemented);
+there is no `REFUND` event type, so that dead map row was removed and the audit distinction
+it existed for is now derived from `expiration_reason`; and the earlier claim that refunds
+left access un-revoked was **partly overstated** — `EXPIRATION` always revoked, what was lost
+was the audit trail.
+
+| Check | Result |
+|---|---|
+| `tsc --noEmit` | PASS |
+| `eslint .` | PASS — 0 errors |
+| Vitest (web) | PASS — 297 tests (was 274) |
+| `node --test` (backend, DB-free) | PASS — 18 new tests |
+| `next build` | PASS — `/subscription` 3.8 kB, `/api/billing/checkout` 186 B |
+| Playwright | PASS — 60 tests (was 57) |
+| Sandbox purchase | **not run** — needs a real RevenueCat account |

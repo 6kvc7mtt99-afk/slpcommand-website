@@ -130,6 +130,7 @@ export type FeatureFlags = {
   speaking_enabled: boolean;
   academy_enabled: boolean;
   home_v3_enabled: boolean;
+  web_billing_enabled: boolean;
 };
 
 export type StreakSnapshot = {

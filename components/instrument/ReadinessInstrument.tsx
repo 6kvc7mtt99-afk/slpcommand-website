@@ -288,21 +288,35 @@ export function ReadinessInstrument({
         )}
       </div>
       <ul className="inst-legend">
-        {skills.map((s) => (
-          <li
-            key={s.key}
-            className={hoverKey === s.key ? "is-hover" : undefined}
-            tabIndex={0}
-            onMouseEnter={() => setHoverKey(s.key)}
-            onMouseLeave={() => setHoverKey((k) => (k === s.key ? null : k))}
-            onFocus={() => setHoverKey(s.key)}
-            onBlur={() => setHoverKey((k) => (k === s.key ? null : k))}
-          >
-            <i style={{ background: `rgb(${RING_RGB[s.key].join(",")})` }} aria-hidden="true" />
-            <span>{s.label}</span>
-            <b className="p-num">{s.level == null ? "—" : s.level}</b>
-          </li>
-        ))}
+        {skills.map((s) => {
+          // The gap this skill is actually short of the learner's own
+          // target — computed from the same two numbers already on
+          // screen (this ring's sweep and the dashed target plane), not
+          // a fetched or fabricated figure. Never shown past target as
+          // a negative number: "at target" is a state, not a value.
+          const gap =
+            target != null && s.level != null ? Math.round((target - s.level) * 10) / 10 : null;
+          return (
+            <li
+              key={s.key}
+              className={hoverKey === s.key ? "is-hover" : undefined}
+              tabIndex={0}
+              onMouseEnter={() => setHoverKey(s.key)}
+              onMouseLeave={() => setHoverKey((k) => (k === s.key ? null : k))}
+              onFocus={() => setHoverKey(s.key)}
+              onBlur={() => setHoverKey((k) => (k === s.key ? null : k))}
+            >
+              <i style={{ background: `rgb(${RING_RGB[s.key].join(",")})` }} aria-hidden="true" />
+              <span>{s.label}</span>
+              <b className="p-num">
+                {s.level == null ? "—" : s.level}
+                {gap != null ? (
+                  <em className={gap <= 0 ? "is-met" : undefined}>{gap <= 0 ? " · at target" : ` · +${gap}`}</em>
+                ) : null}
+              </b>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

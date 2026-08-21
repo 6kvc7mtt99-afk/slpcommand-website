@@ -188,8 +188,12 @@ export function CommercialCard({
       <p className="plan-lock-kicker">Plan boundary</p>
       <h2>{title}</h2>
       <p className="plan-lock-body">{body}</p>
-      <Link className="plan-lock-link" href="/profile#plan">
-        View plan &amp; usage
+      {/* One destination for every plan boundary in the product. It used to
+          be Settings' usage meter, which answers "how much is left" but not
+          "what am I on and what would change" — the question someone who just
+          hit a wall is actually asking. */}
+      <Link className="plan-lock-link" href="/subscription">
+        See your plan
         <span className="p-arrow" aria-hidden="true">→</span>
       </Link>
     </article>

@@ -1,6 +1,13 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { featureAccess, interpretEntitlements, planLabel } from "../../lib/entitlements";
+import {
+  featureAccess,
+  interpretEntitlements,
+  isEntitledToPro,
+  planDisplay,
+  planLabel,
+  PRO_PLAN_KEY,
+} from "../../lib/entitlements";
 import { decidePolicy } from "../../lib/server/proxyPolicy";
 
 describe("entitlements", () => {
@@ -43,8 +50,11 @@ describe("entitlements", () => {
  */
 describe("Model B — the client never unlocks", () => {
   it("derives Pro from the plan key alone, and from nothing local", () => {
+    // The key is written once, as a constant, so a screen cannot disagree with
+    // the module about what "Pro" is called.
+    expect(PRO_PLAN_KEY).toBe("pro");
     const source = readFileSync("lib/entitlements.ts", "utf8");
-    expect(source).toContain('body.plan?.key === "pro"');
+    expect(source).toContain("body.plan?.key === PRO_PLAN_KEY");
     // No local grant, no override, no trial clock, no stored flag.
     expect(source).not.toMatch(/(local|session)Storage/);
     expect(source).not.toMatch(/Date\.now|new Date\(/);
@@ -57,11 +67,35 @@ describe("Model B — the client never unlocks", () => {
       interpretEntitlements(404, null),
       interpretEntitlements(401, null),
       interpretEntitlements(200, null),
+      interpretEntitlements(503, { plan: { key: "pro" } }),
     ]) {
-      expect(state.status === "ready" && state.isPro).toBe(false);
-      expect(planLabel(state)).toBe("SLP Command Free");
+      expect(isEntitledToPro(state)).toBe(false);
+      expect(planLabel(state)).not.toBe("SLP Command Pro");
       expect(featureAccess(state, "adaptive_coach").usable).toBe(false);
     }
+  });
+
+  it("fails closed on access but honest on display", () => {
+    // These two duties are different. A read that never landed must unlock
+    // nothing — and must not tell a paying subscriber they are on Free, which
+    // is what collapsing every non-Pro state into "Free" used to do.
+    expect(planDisplay({ status: "error" })).toEqual({ label: "Plan unavailable", known: false });
+    expect(planDisplay({ status: "loading" }).known).toBe(false);
+    // "No active plan found for this account" IS Free — that one is a fact.
+    expect(planDisplay({ status: "noPlan" })).toEqual({ label: "SLP Command Free", known: true });
+    expect(isEntitledToPro({ status: "error" })).toBe(false);
+  });
+
+  it("says why a feature is unusable, so a screen can state the true reason", () => {
+    const spent = interpretEntitlements(200, {
+      plan: { key: "free" },
+      features: [{ key: "reading_practice", enabled: true, quota: { period: "weekly", remaining: 0, limit: 10 } }],
+    });
+    expect(featureAccess(spent, "reading_practice").reason).toBe("spent");
+    expect(featureAccess(spent, "adaptive_coach").reason).toBe("notOnPlan");
+    // An unread snapshot blocks, but must not claim a reason it does not know.
+    expect(featureAccess({ status: "error" }, "reading_practice").reason).toBe("unknown");
+    expect(featureAccess(spent, "reading_practice").usable).toBe(false);
   });
 
   it("keeps every billing write off the browser's path", () => {
@@ -72,5 +106,12 @@ describe("Model B — the client never unlocks", () => {
     // And no purchase route has been quietly added to the allowlist.
     expect(decidePolicy("POST", "/api/billing/checkout")).toMatchObject({ status: 404 });
     expect(decidePolicy("POST", "/api/subscription")).toMatchObject({ status: 404 });
+    // Nor the shared-secret admin billing routes: one can grant a plan, the
+    // other reports on the webhook secret. Neither belongs in a browser.
+    expect(decidePolicy("POST", "/api/admin/billing/manual-grant")).toMatchObject({ status: 410 });
+    expect(decidePolicy("GET", "/api/admin/billing/webhook-secret-fingerprint")).toMatchObject({ status: 410 });
+    // The rest of the admin console still works — this is by name, not a
+    // blanket closure.
+    expect(decidePolicy("GET", "/api/admin/metrics")).toEqual({ action: "forward" });
   });
 });

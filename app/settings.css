@@ -285,3 +285,108 @@
   .settings-quota { grid-template-columns: minmax(0, 1fr) 92px; }
   .settings-quota .settings-meter { grid-column: 1 / -1; order: 3; }
 }
+
+/* ── The commercial surface (/subscription) ───────────────
+   Billing is blocked on Q4, the experience is not. What this screen
+   shows is the account's own allowances and one honest route to Pro —
+   never a price with no way to pay it, and never a disabled checkout
+   button pretending a rail exists.
+   ------------------------------------------------------------ */
+.plan-page { max-width: 760px; }
+.plan-masthead { padding-bottom: 8px; }
+
+.plan-allowances {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--p-line);
+}
+.plan-allowance {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--p-line);
+}
+.plan-allowance-name { font-size: 15px; color: var(--p-ink); }
+.plan-allowance-val {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--p-ink2);
+  text-align: right;
+  flex: 0 0 auto;
+}
+/* A spent allowance is a wall the learner just hit — that is worth red.
+   A feature the plan never included is simply not there, and colouring it
+   like an error made a correct Free plan look broken. */
+.plan-allowance-val.is-out { color: var(--p-bad); }
+.plan-allowance-val.is-absent { color: var(--p-muted); }
+
+.plan-recheck { margin: 12px 0 0; font-size: 14px; color: var(--p-muted); line-height: 1.55; }
+.plan-recheck.is-ok { color: var(--p-ok); }
+.plan-foot { margin-top: 36px; font-size: 13px; color: var(--p-muted); }
+
+@media (max-width: 560px) {
+  .plan-allowance { flex-direction: column; gap: 2px; }
+  .plan-allowance-val { text-align: left; }
+  .plan-page .cta-row .btn { width: 100%; }
+}
+
+/* A link inside a muted paragraph is not distinguishable from its own
+   surrounding text by colour alone — axe `link-in-text-block`, serious:
+   the accent against --p-muted measures 1.13:1 where 3:1 is required.
+   Underlining is the remedy that does not depend on colour at all. */
+.settings-note a,
+.plan-foot a {
+  color: var(--p-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.settings-note a:hover,
+.plan-foot a:hover { text-decoration-thickness: 2px; }
+
+/* The web offer. Deliberately not a pricing table: one plan, one action,
+   and the price only when the server was configured with one — the
+   checkout is the authority on what is charged. */
+.plan-offer {
+  border: 1px solid var(--p-line-strong);
+  background: var(--p-elevated);
+  border-radius: 10px;
+  padding: 26px 28px;
+}
+.plan-offer h2 { margin: 0 0 8px; font-size: 21px; letter-spacing: -0.02em; }
+.plan-offer-price { margin: 0 0 12px; }
+.plan-offer-price strong {
+  font-size: 30px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  color: var(--p-ink);
+}
+.plan-offer-price span { color: var(--p-muted); font-size: 15px; }
+
+/* Three different things, three different colours: confirmed, still
+   waiting on a receipt, and something went wrong. "Pending" must never
+   read as either of the other two. */
+.plan-recheck.is-pending { color: var(--p-warn); }
+.plan-recheck.is-bad { color: var(--p-bad); }
+
+@media (max-width: 560px) {
+  .plan-offer { padding: 22px 18px; }
+  .plan-offer .cta-row .btn { width: 100%; }
+}
+
+/* A payment being confirmed, said where the plan is said. Amber, because
+   it is neither success nor failure — it is "wait, and do not pay
+   again". */
+.plan-banner {
+  margin: 18px 0 0;
+  padding: 12px 16px;
+  border-left: 3px solid var(--p-warn);
+  background: color-mix(in srgb, var(--p-warn) 9%, transparent);
+  border-radius: 0 4px 4px 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--p-ink2);
+  max-width: 62ch;
+}
