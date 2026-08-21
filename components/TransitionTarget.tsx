@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type HTMLAttributes, type ReactNode } from "react";
 import { vtName } from "@/lib/viewTransition";
 
 /**
@@ -9,19 +9,30 @@ import { vtName } from "@/lib/viewTransition";
  * (`usePathname`) rather than taking a name as a prop, so it always
  * agrees with whatever `TransitionLink href="..."` pointed at it —
  * one route, one name, derived the same way on both ends.
+ *
+ * Passes through the rest of the div/header's real attributes (e.g.
+ * `data-enter` for the existing entrance-reveal CSS) rather than
+ * re-deriving its own — this only adds the transition name, it
+ * doesn't replace whatever presentation the caller already had.
  */
-export function TransitionTarget({ as: Tag = "div", className, children }: { as?: "div" | "header"; className?: string; children: ReactNode }) {
+export function TransitionTarget({
+  as: Tag = "div",
+  className,
+  style,
+  children,
+  ...rest
+}: HTMLAttributes<HTMLElement> & { as?: "div" | "header"; children: ReactNode }) {
   const pathname = usePathname();
-  const style: CSSProperties = { viewTransitionName: vtName(pathname) };
+  const mergedStyle: CSSProperties = { ...style, viewTransitionName: vtName(pathname) };
   if (Tag === "header") {
     return (
-      <header className={className} style={style}>
+      <header className={className} style={mergedStyle} {...rest}>
         {children}
       </header>
     );
   }
   return (
-    <div className={className} style={style}>
+    <div className={className} style={mergedStyle} {...rest}>
       {children}
     </div>
   );

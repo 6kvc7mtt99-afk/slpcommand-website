@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TransitionLink } from "@/components/TransitionLink";
 
 /**
  * The priority object.
@@ -35,7 +36,7 @@ export function PriorityAction({
   return (
     <div className="priority-action p-elevate is-current" data-reveal>
       <span className="priority-mark" aria-hidden="true" />
-      <Link href={href} className="priority-body">
+      <TransitionLink href={href} className="priority-body">
         <span className="p-eyebrow">{eyebrow}</span>
         <strong>{title}</strong>
         {detail ? <p>{detail}</p> : null}
@@ -44,7 +45,7 @@ export function PriorityAction({
           {ctaLabel}
           <span className="p-arrow" aria-hidden="true">→</span>
         </span>
-      </Link>
+      </TransitionLink>
       {secondaryHref && secondaryLabel ? (
         <Link href={secondaryHref} className="priority-alt">
           {secondaryLabel}

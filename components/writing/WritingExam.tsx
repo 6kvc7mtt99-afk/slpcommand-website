@@ -20,6 +20,7 @@ import {
 import { CommercialCard, ExerciseShell } from "@/components/exercise/ExerciseShell";
 import { ExamDisclaimerGate } from "@/components/exercise/ExamDisclaimerGate";
 import { ExamTimer } from "@/components/exercise/ExamTimer";
+import { EvaluatingPanel } from "./EvaluatingPanel";
 import { WritingEditor } from "./WritingEditor";
 import { WritingResultCard } from "./WritingResultCard";
 
@@ -188,7 +189,7 @@ export function WritingExam() {
           </div>
         </div>
       ) : null}
-      {phase === "evaluating" ? <p className="muted">Submitting to the evaluator…</p> : null}
+      {phase === "evaluating" ? <EvaluatingPanel /> : null}
       {phase === "done" && result ? (
         <WritingResultCard
           result={result}

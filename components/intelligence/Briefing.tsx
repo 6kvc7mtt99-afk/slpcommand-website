@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { MissionItem, ReadinessCard, WeaknessItem } from "@/lib/api/intelligence";
 import { ReadinessGauge } from "./ReadinessGauge";
 import { PriorityAction } from "@/components/training/PriorityAction";
+import { TransitionLink } from "@/components/TransitionLink";
 
 /**
  * The intelligence briefing.
@@ -144,7 +145,7 @@ export function IntelligenceBriefing({
               const tone = severityTone(item.severity);
               return (
                 <li key={item.key} className="p-reveal-item" style={{ ["--i" as string]: i }}>
-                  <Link href={weaknessHref(item)} className={`intel-finding tone-${tone} p-elevate`}>
+                  <TransitionLink href={weaknessHref(item)} className={`intel-finding tone-${tone} p-elevate`}>
                     <span className="intel-finding-bar" aria-hidden="true" />
                     <span className="intel-finding-main">
                       <strong>{item.label || item.key}</strong>
@@ -159,7 +160,7 @@ export function IntelligenceBriefing({
                       ) : null}
                     </span>
                     <span className="intel-finding-go p-arrow" aria-hidden="true">→</span>
-                  </Link>
+                  </TransitionLink>
                 </li>
               );
             })}

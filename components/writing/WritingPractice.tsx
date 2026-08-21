@@ -14,6 +14,7 @@ import { decodeExaminer, type ExaminerResult } from "@/lib/api/writingTools";
 import { CommercialCard, ExerciseShell } from "@/components/exercise/ExerciseShell";
 import { CommercialDialog } from "@/components/exercise/CommercialDialog";
 import { ErrorState, LoadingState } from "@/components/ui/ProductState";
+import { EvaluatingPanel } from "./EvaluatingPanel";
 import { ExaminerFeedback } from "./ExaminerFeedback";
 import { WritingEditor } from "./WritingEditor";
 import { WritingResultCard } from "./WritingResultCard";
@@ -149,7 +150,8 @@ export function WritingPractice() {
       {phase === "quota" ? <CommercialCard /> : null}
       {phase === "loading" ? <LoadingState label="Loading a prompt…" lines={4} /> : null}
       {phase === "error" ? <ErrorState message={message} onRetry={() => void loadPrompt()} /> : null}
-      {prompt && phase !== "quota" && phase !== "error" && phase !== "result" ? (
+      {phase === "evaluating" ? <EvaluatingPanel /> : null}
+      {prompt && phase !== "quota" && phase !== "error" && phase !== "result" && phase !== "evaluating" ? (
         <div className="writing-workspace">
           <aside className="writing-task">
             {prompt.title ? <h2>{prompt.title}</h2> : null}
@@ -181,9 +183,8 @@ export function WritingPractice() {
             ) : null}
           </aside>
           <div>
-            <WritingEditor value={draft} onChange={setDraft} wordTarget={prompt.wordTarget || undefined} disabled={phase === "evaluating"} />
+            <WritingEditor value={draft} onChange={setDraft} wordTarget={prompt.wordTarget || undefined} />
             {message ? <p className="err" role="status">{message}</p> : null}
-            {phase === "evaluating" ? <p className="muted">Evaluating on the server…</p> : null}
             <div className="write-actions">
               <button
                 className="btn btn-primary"

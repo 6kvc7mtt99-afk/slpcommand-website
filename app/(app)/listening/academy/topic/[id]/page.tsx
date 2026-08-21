@@ -2,6 +2,8 @@ import Link from "next/link";
 import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { LessonStages } from "@/components/academy/LessonStages";
 import { CommercialCard } from "@/components/exercise/ExerciseShell";
+import { TransitionLink } from "@/components/TransitionLink";
+import { TransitionTarget } from "@/components/TransitionTarget";
 import { LISTENING_ACADEMY_CATEGORIES, isListeningTopicLocked, topicById } from "@/lib/listening/academyCatalog";
 import { loadEntitlements } from "@/lib/server/home";
 
@@ -60,7 +62,7 @@ export default async function ListeningTopicPage({
         </p>
       ) : null}
 
-      <header data-enter>
+      <TransitionTarget as="header" data-enter>
         <p className="lesson-kicker">
           <span className="is-skill-text">Listening Academy</span>
           <span aria-hidden="true">·</span>
@@ -77,12 +79,12 @@ export default async function ListeningTopicPage({
           </dl>
         ) : null}
         <div className="lesson-cta">
-          <Link className="btn btn-primary btn-hero" href={practiceHref}>
+          <TransitionLink className="btn btn-primary btn-hero" href={practiceHref}>
             {ctaLabel}
             <span className="p-arrow" aria-hidden="true">→</span>
-          </Link>
+          </TransitionLink>
         </div>
-      </header>
+      </TransitionTarget>
 
       {topic.description ? (
         <section className="lesson-block is-primary" data-reveal>

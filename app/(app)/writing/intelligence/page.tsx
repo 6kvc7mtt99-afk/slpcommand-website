@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TransitionLink } from "@/components/TransitionLink";
 import { CoverageBar } from "@/components/academy/AcademyLessonView";
 import { PriorityAction } from "@/components/training/PriorityAction";
 import { decodeWritingCatalog, decodeWritingLearningState, lessonByCompetency, type WritingBlockingCompetency } from "@/lib/api/writing";
@@ -206,9 +207,9 @@ export default async function WritingIntelligencePage() {
                       return (
                         <li key={item.id} className="p-reveal-item" style={{ ["--i" as string]: i }}>
                           {href ? (
-                            <Link href={href} className={`intel-finding tone-${tone} p-elevate`}>
+                            <TransitionLink href={href} className={`intel-finding tone-${tone} p-elevate`}>
                               {body}
-                            </Link>
+                            </TransitionLink>
                           ) : (
                             <div className={`intel-finding tone-${tone}`}>{body}</div>
                           )}

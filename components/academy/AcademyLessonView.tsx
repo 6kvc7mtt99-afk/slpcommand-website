@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { AcademyLesson } from "@/lib/api/academy";
+import { TransitionLink } from "@/components/TransitionLink";
+import { TransitionTarget } from "@/components/TransitionTarget";
 import { LessonStages } from "./LessonStages";
 
 /**
@@ -42,7 +44,7 @@ export function AcademyLessonView({
         </p>
       ) : null}
 
-      <header data-enter>
+      <TransitionTarget as="header" data-enter>
         <p className="lesson-kicker">
           <span className="is-skill-text">{skill} Academy</span>
           {lesson.competencyTitle || lesson.module || lesson.unit ? (
@@ -76,13 +78,13 @@ export function AcademyLessonView({
         </dl>
         {practiceHref ? (
           <div className="lesson-cta">
-            <Link className="btn btn-primary btn-hero" href={practiceHref}>
+            <TransitionLink className="btn btn-primary btn-hero" href={practiceHref}>
               {ctaLabel}
               <span className="p-arrow" aria-hidden="true">→</span>
-            </Link>
+            </TransitionLink>
           </div>
         ) : null}
-      </header>
+      </TransitionTarget>
 
       {lesson.conceptExplanation ? (
         <section className="lesson-block is-primary" data-reveal>

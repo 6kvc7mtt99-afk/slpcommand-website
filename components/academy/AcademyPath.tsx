@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TransitionLink } from "@/components/TransitionLink";
 
 export type PathLesson = { id: string; title: string; href: string; locked?: boolean };
 export type PathUnit = { id: string; title: string; lessons: PathLesson[] };
@@ -53,11 +54,11 @@ export function AcademyPath({
                       <span className="path-tag is-locked">Locked</span>
                     </span>
                   ) : (
-                    <Link href={lesson.href} className={`path-lesson-body${isNow ? " p-elevate is-current" : ""}`}>
+                    <TransitionLink href={lesson.href} className={`path-lesson-body${isNow ? " p-elevate is-current" : ""}`}>
                       <strong>{lesson.title}</strong>
                       {isNow ? <span className="path-tag is-now">You are here</span> : null}
                       <span className="path-go p-arrow" aria-hidden="true">→</span>
-                    </Link>
+                    </TransitionLink>
                   )}
                   {isNow ? (
                     <div className="path-now-actions">
