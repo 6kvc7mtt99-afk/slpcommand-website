@@ -3,10 +3,13 @@ import { asString, isRecord } from "@/lib/api/decode";
 import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { PriorityAction } from "@/components/training/PriorityAction";
 import { backendJson } from "@/lib/server/backend";
-import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
+import { loadTargetLevel } from "@/lib/server/targetLevel";
 
 export default async function WritingAcademyPage() {
-  const targetLevel = await loadAcademyTargetLevel();
+  const targetLevel = await loadTargetLevel();
+  if (!targetLevel) {
+    return <EmptyAcademy title="Writing Academy" body="Your target level isn't available right now. Nothing was invented locally." />;
+  }
   const result = await backendJson<Record<string, unknown>>({
     method: "POST",
     path: "/api/writing/academy/home",

@@ -5,11 +5,14 @@ import { LessonStages } from "@/components/academy/LessonStages";
 import { RecordState } from "@/components/academy/RecordState";
 import { topicForSkillOrSubSkill } from "@/lib/listening/academyCatalog";
 import { backendJson } from "@/lib/server/backend";
-import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
+import { loadTargetLevel } from "@/lib/server/targetLevel";
 
 export default async function ListeningSkillPage({ params }: { params: Promise<{ key: string }> }) {
   const { key } = await params;
-  const targetLevel = await loadAcademyTargetLevel();
+  const targetLevel = await loadTargetLevel();
+  if (!targetLevel) {
+    return <EmptyAcademy title="Listening skill" body="Your target level isn't available right now." />;
+  }
   const result = await backendJson<Record<string, unknown>>({
     path: `/api/listening/academy/skill/${encodeURIComponent(key)}`,
     search: `?targetLevel=${targetLevel}`,

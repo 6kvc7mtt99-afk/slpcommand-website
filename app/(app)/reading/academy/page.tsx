@@ -4,10 +4,13 @@ import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonVie
 import { AcademyPath, type PathUnit } from "@/components/academy/AcademyPath";
 import { PriorityAction } from "@/components/training/PriorityAction";
 import { backendJson } from "@/lib/server/backend";
-import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
+import { loadTargetLevel } from "@/lib/server/targetLevel";
 
 export default async function ReadingAcademyPage() {
-  const targetLevel = await loadAcademyTargetLevel();
+  const targetLevel = await loadTargetLevel();
+  if (!targetLevel) {
+    return <EmptyAcademy title="Reading Academy" body="Your target level isn't available right now. Nothing was invented locally." />;
+  }
   const result = await backendJson<Record<string, unknown>>({
     method: "POST",
     path: "/api/reading/academy/home",

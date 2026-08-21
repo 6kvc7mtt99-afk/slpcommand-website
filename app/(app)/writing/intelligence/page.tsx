@@ -3,6 +3,7 @@ import { CoverageBar } from "@/components/academy/AcademyLessonView";
 import { PriorityAction } from "@/components/training/PriorityAction";
 import { decodeWritingCatalog, decodeWritingLearningState, lessonByCompetency } from "@/lib/api/writing";
 import { backendJson } from "@/lib/server/backend";
+import { loadTargetLevel } from "@/lib/server/targetLevel";
 
 /**
  * Writing Intelligence.
@@ -19,11 +20,22 @@ import { backendJson } from "@/lib/server/backend";
  * `blockingPromotion` competencies link to their real lesson through the
  * catalog's `competencyId` (`/api/writing/academy/lessons`), the same
  * competency ids the entries are already keyed by — not a guessed mapping.
+ *
+ * `state.targetLevel` (the response's own field) is NOT the learner's
+ * chosen target — live-verified against a real account where /profile
+ * said "2" and this field said "3" simultaneously. Checking the per-item
+ * `band` values confirmed why: `blockingPromotion` spans the whole SLP
+ * 1+->3 ladder in one list (bands 1+, 2, 2+ and 3 all present at once for
+ * the same account), so this field is the model's ceiling, not a target.
+ * The real target — the one thing Settings actually lets a learner set —
+ * comes from `loadTargetLevel()` (/profile) instead, the same source
+ * Home/Progress/every skill hub already read.
  */
 export default async function WritingIntelligencePage() {
-  const [stateResult, catalogResult] = await Promise.all([
+  const [stateResult, catalogResult, targetLevel] = await Promise.all([
     backendJson<unknown>({ path: "/api/writing/learning-state", cache: "no-store" }),
     backendJson<unknown>({ path: "/api/writing/academy/lessons", cache: "no-store" }),
+    loadTargetLevel(),
   ]);
 
   if (stateResult.status >= 400 || !stateResult.data) {
@@ -93,10 +105,10 @@ export default async function WritingIntelligencePage() {
                 <dd className="p-num">{state.attempts} submissions</dd>
               </div>
             ) : null}
-            {state.targetLevel ? (
+            {targetLevel ? (
               <div>
                 <dt>Target</dt>
-                <dd className="p-num">SLP {state.targetLevel}</dd>
+                <dd className="p-num">SLP {targetLevel}</dd>
               </div>
             ) : null}
             {state.blockingPromotion.length ? (
@@ -136,8 +148,8 @@ export default async function WritingIntelligencePage() {
             <div className="intel-step-head">
               <span className="intel-step-no p-num" style={nodeStyle("diagnosis")}>{stepNo("diagnosis")}</span>
               <div>
-                <h2>What is blocking SLP {state.targetLevel || "3"}</h2>
-                <p>The specific competencies your target level can’t be reached without. Each opens the class that trains it.</p>
+                <h2>What is blocking your next promotion</h2>
+                <p>Every competency still open, at any level up to SLP 3 — not only the ones tied to your current target. Each opens the class that trains it.</p>
               </div>
             </div>
             <ul className="intel-findings">

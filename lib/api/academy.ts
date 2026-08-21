@@ -1,8 +1,11 @@
 import { asNumber, asString, isRecord, pickAlias } from "./decode";
 
-export function academyTargetLevel(raw: unknown): "2" | "3" {
+/** Normalizes a raw target-level string. Anything that isn't a real SLP 2/2+/3 value is unknown, not a silent SLP 3. */
+export function academyTargetLevel(raw: unknown): "2" | "3" | null {
   const value = asString(raw);
-  return value === "2" || value === "2+" ? "2" : "3";
+  if (value === "2" || value === "2+") return "2";
+  if (value === "3") return "3";
+  return null;
 }
 
 export function textList(value: unknown): string[] {

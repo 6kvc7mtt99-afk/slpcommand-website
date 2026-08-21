@@ -11,10 +11,13 @@ import {
 } from "@/lib/listening/academyCatalog";
 import { backendJson } from "@/lib/server/backend";
 import { loadEntitlements } from "@/lib/server/home";
-import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
+import { loadTargetLevel } from "@/lib/server/targetLevel";
 
 export default async function ListeningAcademyPage() {
-  const [targetLevel, entitlements] = await Promise.all([loadAcademyTargetLevel(), loadEntitlements()]);
+  const [targetLevel, entitlements] = await Promise.all([loadTargetLevel(), loadEntitlements()]);
+  if (!targetLevel) {
+    return <EmptyAcademy title="Listening Academy" body="Your target level isn't available right now. Nothing was invented locally." />;
+  }
   const isPro = entitlements.status === "ready" && entitlements.isPro;
   // The decision names a skill key, not a topic id — map it through the
   // catalog so the path can mark the right node, and leave it unmarked

@@ -3,10 +3,13 @@ import { asString, isRecord } from "@/lib/api/decode";
 import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { RecordState } from "@/components/academy/RecordState";
 import { backendJson } from "@/lib/server/backend";
-import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
+import { loadTargetLevel } from "@/lib/server/targetLevel";
 
 export default async function ListeningAcademyMapPage() {
-  const targetLevel = await loadAcademyTargetLevel();
+  const targetLevel = await loadTargetLevel();
+  if (!targetLevel) {
+    return <EmptyAcademy title="Listening map" body="Your target level isn't available right now." />;
+  }
   const result = await backendJson<Record<string, unknown>>({
     path: "/api/listening/academy/map",
     search: `?targetLevel=${targetLevel}`,

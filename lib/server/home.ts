@@ -7,6 +7,7 @@ import type { FeatureFlags, ProgressResponse, SessionToday, StreakSnapshot } fro
 import type { HomeV2Payload } from "@/lib/home/types";
 import { interpretEntitlements, type EntitlementsSnapshot, type EntitlementsState } from "@/lib/entitlements";
 import { backendJson } from "./backend";
+import { loadTargetLevel } from "./targetLevel";
 
 export type { HomeV2Payload };
 
@@ -28,12 +29,20 @@ export const loadFeatureFlags = cache(async (): Promise<FeatureFlags> => {
 });
 
 export const loadProgress = cache(async (): Promise<ProgressResponse | null> => {
-  const result = await backendJson<unknown>({
-    path: "/api/progress",
-    cache: "no-store",
-  });
+  const [result, targetLevel] = await Promise.all([
+    backendJson<unknown>({ path: "/api/progress", cache: "no-store" }),
+    loadTargetLevel(),
+  ]);
   if (result.status >= 400) return null;
-  return decodeProgress(result.data);
+  const progress = decodeProgress(result.data);
+  if (!progress) return null;
+  // /api/progress carries its own copy of the target level. /api/profile is
+  // the one place a learner can actually change it (Settings' PATCH), so
+  // every reader of ProgressResponse — the Home instrument's target
+  // marker, the Progress page, every skill hub's "Target" row — gets the
+  // canonical value here rather than trusting a second echo to stay in
+  // sync with the first.
+  return { ...progress, targetLevel: targetLevel ?? progress.targetLevel };
 });
 
 export async function loadSessionToday(minutes = DEFAULT_SESSION_MINUTES): Promise<SessionToday | null> {

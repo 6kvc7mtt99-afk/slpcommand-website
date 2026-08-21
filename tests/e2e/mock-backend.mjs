@@ -132,7 +132,12 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === "/api/profile") {
-    res.end(JSON.stringify({ target_level: "3" }));
+    // Deliberately "2" while /api/writing/learning-state's own targetLevel
+    // fixture below stays "3" — this is the real live discrepancy Phase 7
+    // found (profile said 2, learning-state said 3 for the same account).
+    // Writing Intelligence must read the learner's real target from here,
+    // not from learning-state's own field.
+    res.end(JSON.stringify({ target_level: "2" }));
     return;
   }
   if (url.pathname === "/api/reading/academy/home" && req.method === "POST") {

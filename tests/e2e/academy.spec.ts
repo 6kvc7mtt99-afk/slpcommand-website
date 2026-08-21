@@ -43,7 +43,11 @@ test("academy pages have no serious axe violations", async ({ page }) => {
 
 test("Writing Intelligence renders the real learning-state model, links a blocking competency to its lesson, and has no serious axe violations", async ({ page }) => {
   await page.goto("/writing/intelligence");
-  await expect(page.locator("body")).toContainText("What is blocking SLP 3");
+  await expect(page.locator("body")).toContainText("What is blocking your next promotion");
+  // The fixture deliberately disagrees: /api/profile says target 2, learning-state's own
+  // targetLevel field says 3. The page must show the real target (from /profile), not learning-state's.
+  await expect(page.locator(".intel-facts")).toContainText("SLP 2");
+  await expect(page.locator(".intel-facts")).not.toContainText("SLP 3");
   // Real quoted examiner evidence, not a placeholder.
   await expect(page.locator("body")).toContainText("Level 3 task is underdeveloped");
   // The priority competency (W1.1) must resolve to its real catalog lesson (wl-1), not a dead link.
