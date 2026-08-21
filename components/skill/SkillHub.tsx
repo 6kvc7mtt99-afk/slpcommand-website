@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TransitionLink } from "@/components/TransitionLink";
 import { TrainingPreview, type PreviewKind } from "./TrainingPreview";
 import { SkillStatus } from "./SkillStatus";
 import type { ProgressResponse } from "@/lib/api/types";
@@ -161,9 +162,9 @@ export function SkillHub({
               );
             }
             return (
-              <Link key={dest.href} href={dest.href} className={`p-dest mode-${dest.mode ?? "learn"}`} data-reveal style={{ ["--i" as string]: index + 1 }}>
+              <TransitionLink key={dest.href} href={dest.href} className={`p-dest mode-${dest.mode ?? "learn"}`} data-reveal style={{ ["--i" as string]: index + 1 }}>
                 {body}
-              </Link>
+              </TransitionLink>
             );
           })}
         </div>

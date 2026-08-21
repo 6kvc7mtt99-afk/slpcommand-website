@@ -83,10 +83,17 @@ export default async function ProgressPage() {
             </div>
           </div>
           <div className="p-skill-table">
+            {targetNum != null ? (
+              <p className="p-skill-table-note">
+                Position on each track is the real measured level against the SLP {targetNum} target — not just a 0–4 fill.
+              </p>
+            ) : null}
             {SKILLS.map((skill, index) => {
               const row = progress.skills[skill];
               const level = row.available && row.level != null ? Number(row.level) : null;
               const pct = level != null && Number.isFinite(level) ? Math.max(3, Math.min(100, (level / 4) * 100)) : 0;
+              const targetPct = targetNum != null ? Math.max(0, Math.min(100, (targetNum / 4) * 100)) : null;
+              const atTarget = level != null && targetNum != null ? level >= targetNum : null;
               // Joined rather than concatenated with leading separators, so a
               // row with only a confidence label never renders a stray "· ".
               const meta: string[] = [];
@@ -101,8 +108,14 @@ export default async function ProgressPage() {
                     <strong>{skill}</strong>
                   </div>
                   <div className="p-skill-row-bar">
-                    <span className="p-rung-bar">
-                      <i style={{ width: `${pct}%`, background: "var(--p-skill)" }} />
+                    <span className={`p-rung-bar${atTarget == null ? "" : atTarget ? " is-at-target" : " is-below-target"}`}>
+                      <i style={{ width: `${pct}%` }} />
+                      {targetPct != null ? (
+                        <b className="p-rung-target" style={{ left: `${targetPct}%` }} aria-hidden="true" />
+                      ) : null}
+                      {level != null ? (
+                        <em className="p-rung-node p-elevate" style={{ left: `${pct}%` }} aria-hidden="true" />
+                      ) : null}
                     </span>
                   </div>
                   <div className="p-skill-row-meta">

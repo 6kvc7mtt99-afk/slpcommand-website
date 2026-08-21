@@ -739,8 +739,43 @@ a.p-dest:hover .p-dest-go .p-arrow { transform: translateX(4px); }
 .p-ladder { display: flex; flex-direction: column; gap: 11px; }
 .p-rung { display: grid; grid-template-columns: 74px 1fr auto; align-items: center; gap: 12px; }
 .p-rung-name { font-size: 12px; text-transform: capitalize; color: var(--p-ink2); }
-.p-rung-bar { display: block; width: 100%; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--p-ink) 10%, transparent); overflow: hidden; }
-.p-rung-bar i { display: block; height: 100%; border-radius: 3px; background: var(--p-fill, var(--p-accent)); transform-origin: left; animation: p-sweep var(--p-t-slow) var(--p-ease) both; }
+.p-rung-bar { position: relative; display: block; width: 100%; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--p-ink) 10%, transparent); overflow: visible; }
+.p-rung-bar i { display: block; height: 100%; border-radius: 3px; background: var(--p-skill, var(--p-accent)); transform-origin: left; animation: p-sweep var(--p-t-slow) var(--p-ease) both; overflow: hidden; }
+/*
+  Real target-relative reading, added to the same 0-4 scale rather than a
+  new one: `.p-rung-target` marks the account's actual target level on the
+  track; `.p-rung-node` sits at the skill's actual measured level, lifted
+  toward the viewer (same .p-elevate depth every "current" object in the
+  product uses) so it reads as the thing to look at, not the fill colour.
+  is-at-target / is-below-target recolour the fill itself — whether a skill
+  has reached its own real target is real information the flat bar never
+  showed before.
+*/
+.p-rung-bar.is-at-target i { background: var(--p-ok); }
+.p-rung-bar.is-below-target i { background: var(--p-warn); }
+.p-rung-target {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 11px;
+  background: var(--p-ink);
+  opacity: 0.55;
+  transform: translateX(-1px);
+}
+.p-rung-node {
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--p-surface);
+  border: 2px solid var(--p-skill, var(--p-accent));
+  transform: translate(-50%, -50%) translateZ(6px);
+  box-shadow: var(--p-shadow-1);
+}
+.p-rung-bar.is-at-target .p-rung-node { border-color: var(--p-ok); }
+.p-rung-bar.is-below-target .p-rung-node { border-color: var(--p-warn); }
+.p-skill-table-note { font-size: 13px; color: var(--p-muted); margin: -6px 0 14px; }
 .p-rung[data-skill="reading"] { --p-fill: #c08a4a; }
 .p-rung[data-skill="listening"] { --p-fill: #4a9ec0; }
 .p-rung[data-skill="writing"] { --p-fill: #6aa87e; }

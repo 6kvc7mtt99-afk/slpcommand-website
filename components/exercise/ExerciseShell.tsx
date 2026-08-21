@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TransitionTarget } from "@/components/TransitionTarget";
 
 export function skillClass(skill: string): string {
   const key = skill.trim().toLowerCase();
@@ -66,7 +67,7 @@ export function ExerciseShell({
 
   return (
     <section className={`task-env ${skillClass(skill)} ${exam ? "is-exam" : "is-practice"}`}>
-      <header className="task-bar">
+      <TransitionTarget as="header" className="task-bar">
         <div className="task-bar-lead">
           <Link className="task-exit" href={backHref}>
             <span className="task-exit-glyph" aria-hidden="true">←</span>
@@ -91,7 +92,7 @@ export function ExerciseShell({
           ) : null}
           {toolbar}
         </div>
-      </header>
+      </TransitionTarget>
 
       <div className={`task-stage ${layout === "stage" ? "is-bleed" : ""}`}>
         <h1 className={showTitle ? "task-title" : "visually-hidden"}>{title}</h1>

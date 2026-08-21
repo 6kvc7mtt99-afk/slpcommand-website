@@ -84,6 +84,25 @@
   .p-elevate.is-current, .p-elevate:hover { transform: none; }
 }
 
+/* ── Page transitions (components/TransitionLink + TransitionTarget) ──
+   The browser's native View Transitions API, not React's experimental
+   ViewTransition — a shipped, stable Web Platform feature. Every named
+   pair uses the product's own duration/easing instead of the browser's
+   default cross-fade timing, so a card becoming a page header reads as
+   the same instrument as everything else, not a different technique.
+   `::view-transition-group(*)` covers every dynamic vt-* name from
+   lib/viewTransition.ts's vtName() in one rule, since the names
+   themselves aren't known statically. Real navigation guard, not just
+   the JS feature check: TransitionLink already declines to intercept
+   the click under reduced motion, and this is the CSS-side match. */
+@media not (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*) { animation-duration: 420ms; animation-timing-function: var(--p-ease, cubic-bezier(0.16, 1, 0.3, 1)); }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 220ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
 /* ── Plan boundary ─────────────────────────────────────────
    Shared by every "not on your current plan" moment in the product
    (see CommercialCard/CommercialDialog, components/exercise/

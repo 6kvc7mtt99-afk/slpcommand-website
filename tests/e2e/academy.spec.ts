@@ -134,6 +134,26 @@ test("settings groups real controls and surfaces plan quota without raw backend 
   expect(results.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
 });
 
+test("Progress shows each skill's real level against the real target, not a fabricated one for skills with no evidence", async ({ page }) => {
+  await page.goto("/progress");
+  await expect(page.locator("body")).toContainText("You are at SLP 2.2.");
+  // Reading (2.4) and Listening (2.1) both real-measured above the real target (2) -- the fixture
+  // deliberately keeps /api/progress without its own targetLevel, so this is only correct if the
+  // page used the canonical /profile-sourced target (Phase 7's fix), not a stale or absent one.
+  const reading = page.locator(".p-skill-row.skill-reading .p-rung-bar");
+  await expect(reading).toHaveClass(/is-at-target/);
+  await expect(reading.locator(".p-rung-node")).toBeVisible();
+  const listening = page.locator(".p-skill-row.skill-listening .p-rung-bar");
+  await expect(listening).toHaveClass(/is-at-target/);
+  // Writing and Speaking have no evidence in the fixture -- the track shows the real target tick
+  // (it's a fact about the account) but must never invent a node/level for a skill with no data.
+  const writing = page.locator(".p-skill-row.skill-writing .p-rung-bar");
+  await expect(writing.locator(".p-rung-target")).toBeVisible();
+  await expect(writing.locator(".p-rung-node")).toHaveCount(0);
+  const results = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  expect(results.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+});
+
 test("reading, listening and writing lessons render real content and have no serious axe violations", async ({ page }) => {
   await page.goto("/reading/academy/lesson/rl-1?why=2%20classes%20need%20work");
   await expect(page.locator("body")).toContainText("Inference in orders");
