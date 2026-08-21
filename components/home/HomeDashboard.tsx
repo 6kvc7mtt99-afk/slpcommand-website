@@ -123,6 +123,11 @@ export function HomeDashboard({
   const targetRaw = (initial.progress?.targetLevel ?? "").toString().trim();
   const targetParsed = targetRaw === "" ? NaN : Number(targetRaw);
   const targetNum = Number.isFinite(targetParsed) && targetParsed > 0 ? targetParsed : null;
+  // The gap between current and target is already readable from the
+  // instrument's dashed target plane, but only if you know how to read
+  // an instrument. This states the same real numbers as a sentence too
+  // — only when both are real, never a guess filling one side.
+  const gapNum = overallNum != null && targetNum != null ? Math.round((targetNum - overallNum) * 10) / 10 : null;
 
   return (
     <div className="home">
@@ -159,6 +164,14 @@ export function HomeDashboard({
                   <p className="p-hero-stat">
                     <b aria-label={`Estimated SLP ${overall}`}>SLP {overall}</b>
                     <span>estimated · all skills</span>
+                  </p>
+                ) : null}
+                {overallNum != null && targetNum != null ? (
+                  <p className="p-hero-stat">
+                    <b aria-label={gapNum != null && gapNum > 0 ? `${gapNum} to target SLP ${targetNum}` : `Target SLP ${targetNum} met`}>
+                      {gapNum != null && gapNum > 0 ? gapNum : "Met"}
+                    </b>
+                    <span>{gapNum != null && gapNum > 0 ? `to target SLP ${targetNum}` : `target SLP ${targetNum}`}</span>
                   </p>
                 ) : null}
               </div>

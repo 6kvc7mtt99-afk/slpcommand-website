@@ -49,7 +49,7 @@ export function AcademyPath({
                 <li key={lesson.id} className={`path-lesson${isNow ? " is-now" : ""}${lesson.locked ? " is-locked" : ""}`}>
                   <span className={`path-node${isNow ? " is-now" : ""}`} aria-hidden="true" />
                   {lesson.locked ? (
-                    <span className="path-lesson-body">
+                    <span className="path-lesson-body p-recede">
                       <strong>{lesson.title}</strong>
                       <span className="path-tag is-locked">Locked</span>
                     </span>

@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FrontendError } from "@/lib/api/client";
 import { postSpeakingEvaluate } from "@/lib/api/speaking";
 import { canSubmitSpeaking, decodeSpeakingEvaluate, speakingEvaluateKey, type SpeakingEvaluateResult } from "@/lib/speaking/evaluate";
 import { selectExamPrompts } from "@/lib/speaking/prompts";
 import { ExamDisclaimerGate } from "@/components/exercise/ExamDisclaimerGate";
 import { CommercialCard, ExerciseShell } from "@/components/exercise/ExerciseShell";
+import { EvaluatingPanel } from "@/components/writing/EvaluatingPanel";
 import { SpeakingRecorder } from "./SpeakingRecorder";
 import { SpeakingResultCard } from "./SpeakingPractice";
 
@@ -15,6 +18,7 @@ type Phase = "gate" | "consent" | "intro" | "prep" | "recording" | "transition" 
 const CONSENT = (userId: string) => `speaking_ai_consent_given:${userId}`;
 
 export function SpeakingExam({ userId, level }: { userId: string; level: "2" | "3" }) {
+  const router = useRouter();
   const prompts = useMemo(() => selectExamPrompts(level), [level]);
   const examSessionId = useMemo(() => crypto.randomUUID(), []);
   const [phase, setPhase] = useState<Phase>("gate");
@@ -197,7 +201,10 @@ export function SpeakingExam({ userId, level }: { userId: string; level: "2" | "
   if (phase === "evaluating") {
     return (
       <ExerciseShell skill="Speaking" mode="Exam" title="Evaluating">
-        <p>Submitting {results.length + 1} of 3. This is not retried automatically.</p>
+        <EvaluatingPanel
+          heading={`Submitting ${results.length + 1} of 3.`}
+          body="Transcribed and scored against the rubric, server-side. This is not retried automatically — the page will update as each task returns."
+        />
       </ExerciseShell>
     );
   }
@@ -227,6 +234,20 @@ export function SpeakingExam({ userId, level }: { userId: string; level: "2" | "
       {results.map((item) => (
         <SpeakingResultCard key={item.attemptId} result={item} />
       ))}
+      {/* One shared footer for the whole three-task result, not one per
+          card — three "Back to Speaking" buttons would repeat the same
+          action. This is the exam's only remaining action, so it's primary. */}
+      <footer className="assessment-next">
+        <div className="assessment-next-actions">
+          <button className="btn btn-primary" type="button" onClick={() => router.push("/speaking")}>
+            Back to Speaking
+          </button>
+          <Link className="assessment-next-link" href="/speaking/history">
+            See speaking history
+            <span className="p-arrow" aria-hidden="true">→</span>
+          </Link>
+        </div>
+      </footer>
     </ExerciseShell>
   );
 }

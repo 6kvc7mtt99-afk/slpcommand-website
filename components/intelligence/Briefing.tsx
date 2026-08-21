@@ -29,6 +29,32 @@ function severityTone(severity: string): "critical" | "warn" | "calm" {
   return "calm";
 }
 
+const SEVERITY_TIER_LABEL: Record<"critical" | "warn" | "calm", string> = {
+  critical: "Needs attention",
+  warn: "Developing",
+  calm: "Minor",
+};
+
+/**
+ * Groups the same real, already-ranked findings into near-to-far tiers
+ * and reuses Writing Intelligence's `.intel-ladder` depth exactly (see
+ * app/(app)/writing/intelligence/page.tsx's `bandTiers`) — critical
+ * findings sit closest since they're what actually needs attention now,
+ * developing recedes, minor recedes furthest. Same component, grouped
+ * by severity instead of band, because Reading/Listening's diagnosis
+ * step never carried a `band` field to group by in the first place.
+ */
+function severityTiers(items: WeaknessItem[]): Array<{ tone: "critical" | "warn" | "calm"; items: WeaknessItem[] }> {
+  const byTone = new Map<"critical" | "warn" | "calm", WeaknessItem[]>();
+  for (const item of items) {
+    const tone = severityTone(item.severity);
+    const list = byTone.get(tone);
+    if (list) list.push(item);
+    else byTone.set(tone, [item]);
+  }
+  return (["critical", "warn", "calm"] as const).filter((tone) => byTone.has(tone)).map((tone) => ({ tone, items: byTone.get(tone)! }));
+}
+
 export function IntelligenceBriefing({
   skill,
   card,
@@ -140,31 +166,35 @@ export function IntelligenceBriefing({
               <p>Ranked by severity. Each one opens the class that trains it.</p>
             </div>
           </div>
-          <ul className="intel-findings">
-            {ranked.map((item, i) => {
-              const tone = severityTone(item.severity);
-              return (
-                <li key={item.key} className="p-reveal-item" style={{ ["--i" as string]: i }}>
-                  <TransitionLink href={weaknessHref(item)} className={`intel-finding tone-${tone} p-elevate`}>
-                    <span className="intel-finding-bar" aria-hidden="true" />
-                    <span className="intel-finding-main">
-                      <strong>{item.label || item.key}</strong>
-                      <span className="intel-finding-meta">
-                        {item.severity ? <em className={`intel-sev tone-${tone}`}>{item.severity}</em> : null}
-                        {item.accuracy != null ? <span className="p-num">{Math.round(item.accuracy)}% accurate</span> : null}
-                        {item.attempts > 0 ? <span className="p-num">{item.attempts} attempts</span> : null}
-                        {item.trend ? <span>{item.trend}</span> : null}
-                      </span>
-                      {!item.reportable ? (
-                        <span className="intel-thin">Too few attempts to state a level — this is a direction, not a verdict.</span>
-                      ) : null}
-                    </span>
-                    <span className="intel-finding-go p-arrow" aria-hidden="true">→</span>
-                  </TransitionLink>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="intel-ladder">
+            {severityTiers(ranked).map((tier, ti) => (
+              <div key={tier.tone} className="intel-ladder-tier" style={{ ["--tier" as string]: ti }} data-reveal>
+                <p className="intel-ladder-label p-num">{SEVERITY_TIER_LABEL[tier.tone]}</p>
+                <ul className="intel-findings" aria-label={`${SEVERITY_TIER_LABEL[tier.tone]} weak areas`}>
+                  {tier.items.map((item, i) => (
+                    <li key={item.key} className="p-reveal-item" style={{ ["--i" as string]: i }}>
+                      <TransitionLink href={weaknessHref(item)} className={`intel-finding tone-${tier.tone} p-elevate`}>
+                        <span className="intel-finding-bar" aria-hidden="true" />
+                        <span className="intel-finding-main">
+                          <strong>{item.label || item.key}</strong>
+                          <span className="intel-finding-meta">
+                            {item.severity ? <em className={`intel-sev tone-${tier.tone}`}>{item.severity}</em> : null}
+                            {item.accuracy != null ? <span className="p-num">{Math.round(item.accuracy)}% accurate</span> : null}
+                            {item.attempts > 0 ? <span className="p-num">{item.attempts} attempts</span> : null}
+                            {item.trend ? <span>{item.trend}</span> : null}
+                          </span>
+                          {!item.reportable ? (
+                            <span className="intel-thin">Too few attempts to state a level — this is a direction, not a verdict.</span>
+                          ) : null}
+                        </span>
+                        <span className="intel-finding-go p-arrow" aria-hidden="true">→</span>
+                      </TransitionLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </section>
       ) : null}
 

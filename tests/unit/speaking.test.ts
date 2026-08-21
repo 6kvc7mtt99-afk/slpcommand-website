@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { decidePolicy, requiresIdempotency } from "../../lib/server/proxyPolicy";
 import { canSubmitSpeaking, decodeSpeakingEvaluate } from "../../lib/speaking/evaluate";
-import { selectExamPrompts, speakingPromptLibrary } from "../../lib/speaking/prompts";
+import { selectExamPrompts, speakingPromptLibrary, speakingTargetLevel } from "../../lib/speaking/prompts";
 
 describe("speaking corpus and exam picker", () => {
   it("ports 300 iOS prompts and picks 3 exam-compatible slots", () => {
@@ -22,6 +22,20 @@ describe("speaking corpus and exam picker", () => {
       rating: { credited: true, level_attempted: "3", band: 2.7, criteria: { content: { met: true } } },
     });
     expect(decoded?.rating.band).toBeNull();
+  });
+});
+
+describe("speakingTargetLevel", () => {
+  it("delegates to the one canonical parser instead of its own guess", () => {
+    // This used to default to "3" for a missing/unrecognised profile
+    // target, which could silently arm a live speaking exam with the
+    // wrong level. It must now agree with academyTargetLevel exactly,
+    // including returning null rather than guessing.
+    expect(speakingTargetLevel("2")).toBe("2");
+    expect(speakingTargetLevel("2+")).toBe("2");
+    expect(speakingTargetLevel("3")).toBe("3");
+    expect(speakingTargetLevel(undefined)).toBeNull();
+    expect(speakingTargetLevel("")).toBeNull();
   });
 });
 

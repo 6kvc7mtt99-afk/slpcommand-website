@@ -330,7 +330,12 @@ a.path-lesson-body:hover {
 }
 .path-tag.is-now { background: var(--p-skill, var(--p-accent)); color: #fff; }
 .path-tag.is-locked { background: color-mix(in srgb, var(--p-ink) 8%, transparent); color: var(--p-muted); }
-.path-lesson.is-locked .path-lesson-body { cursor: default; opacity: 0.62; }
+/* Opacity + scale now come from .p-recede (instrument.css) — the same
+   "closer = current, resolved recedes" depth logic the Intelligence
+   spine already uses, applied here to locked-vs-current position on
+   the path instead of a path-local opacity rule. */
+.path-lesson.is-locked .path-lesson-body { cursor: default; }
+.path-lesson.is-locked .path-node { opacity: 0.55; }
 .path-go { margin-left: auto; color: var(--p-muted); transition: transform var(--p-t) var(--p-ease); }
 a.path-lesson-body:hover .path-go { transform: translateX(3px); color: var(--p-skill, var(--p-accent)); }
 .path-now-actions { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px 0 10px 16px; }

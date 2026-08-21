@@ -1,3 +1,4 @@
+import { academyTargetLevel } from "@/lib/api/academy";
 import promptsJson from "./prompts.json";
 
 export type SpeakingCategory =
@@ -66,6 +67,12 @@ export function selectExamPrompts(level: "2" | "3", random = Math.random): Speak
   return picked.slice(0, 3);
 }
 
-export function speakingTargetLevel(raw: unknown): "2" | "3" {
-  return raw === "2" || raw === "2+" ? "2" : "3";
+// Reuses the one canonical target-level parser rather than a second
+// transformation that can quietly drift from it — this used to default
+// to SLP 3 for a missing/unrecognised value, which meant a failed or
+// still-loading /profile fetch could silently arm a live exam with the
+// wrong level. Callers now get null and render an honest unavailable
+// state instead.
+export function speakingTargetLevel(raw: unknown): "2" | "3" | null {
+  return academyTargetLevel(raw);
 }

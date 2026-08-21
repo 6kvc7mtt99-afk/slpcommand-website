@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { FrontendError } from "@/lib/api/client";
 import { postSpeakingEvaluate } from "@/lib/api/speaking";
 import { decodeSpeakingEvaluate, speakingEvaluateKey, type SpeakingEvaluateResult } from "@/lib/speaking/evaluate";
 import { promptsForLevel, type SpeakingPrompt } from "@/lib/speaking/prompts";
 import { CommercialCard, ExerciseShell } from "@/components/exercise/ExerciseShell";
+import { EvaluatingPanel } from "@/components/writing/EvaluatingPanel";
 import { SpeakingRecorder } from "./SpeakingRecorder";
 
 const CONSENT = (userId: string) => `speaking_ai_consent_given:${userId}`;
@@ -102,10 +104,30 @@ export function SpeakingPractice({ userId, level }: { userId: string; level: "2"
           setSeconds(duration);
         }}
       />
-      {phase === "evaluating" ? <p>Evaluating… do not resubmit.</p> : null}
+      {phase === "evaluating" ? (
+        <EvaluatingPanel
+          heading="Your recording is with the evaluator."
+          body="Transcribed and scored against the rubric, server-side. Do not resubmit — the page will update the moment it's back."
+        />
+      ) : null}
       {phase === "quota" ? <CommercialCard title="Speaking AI feedback is not available on your current plan." /> : null}
       {phase === "error" ? <p className="err" role="alert">{message}</p> : null}
-      {phase === "result" && result ? <SpeakingResultCard result={result} /> : null}
+      {phase === "result" && result ? (
+        <SpeakingResultCard
+          result={result}
+          onNext={() => {
+            setPhase("ready");
+            setResult(null);
+            setBlob(null);
+            setConfirm(false);
+            setIndex((value) => (value + 1) % prompts.length);
+          }}
+          nextLabel="Practice another prompt"
+          primaryAction
+          secondaryHref="/speaking/history"
+          secondaryLabel="See speaking history"
+        />
+      ) : null}
       {phase !== "evaluating" && phase !== "result" ? (
         <div className="speak-alt">
           <button className="btn btn-ghost" type="button" onClick={() => setIndex((value) => (value + 1) % prompts.length)}>
@@ -139,7 +161,22 @@ const CRITERIA_LABEL: Record<"content" | "tasks" | "accuracy" | "textProduced", 
   textProduced: "Text produced",
 };
 
-export function SpeakingResultCard({ result }: { result: SpeakingEvaluateResult }) {
+export function SpeakingResultCard({
+  result,
+  onNext,
+  nextLabel = "Continue",
+  primaryAction = false,
+  secondaryHref,
+  secondaryLabel,
+}: {
+  result: SpeakingEvaluateResult;
+  /** Omitted in the exam's per-task list, where one shared footer follows all three results instead of one per card. */
+  onNext?: () => void;
+  nextLabel?: string;
+  primaryAction?: boolean;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+}) {
   const rating = result.rating;
   return (
     <article className="speaking-result p-ignite">
@@ -163,6 +200,21 @@ export function SpeakingResultCard({ result }: { result: SpeakingEvaluateResult 
           </li>
         ))}
       </ul>
+      {onNext ? (
+        <footer className="assessment-next p-reveal-item" style={{ ["--i" as string]: 5 }}>
+          <div className="assessment-next-actions">
+            <button className={primaryAction ? "btn btn-primary" : "btn btn-outline"} type="button" onClick={onNext}>
+              {nextLabel}
+            </button>
+            {secondaryHref ? (
+              <Link className="assessment-next-link" href={secondaryHref}>
+                {secondaryLabel}
+                <span className="p-arrow" aria-hidden="true">→</span>
+              </Link>
+            ) : null}
+          </div>
+        </footer>
+      ) : null}
     </article>
   );
 }

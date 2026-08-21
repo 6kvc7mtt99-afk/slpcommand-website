@@ -48,11 +48,14 @@ export function WritingPractice() {
     started.current = Date.now();
     try {
       // No fallback default: a real target level is required to ask for an
-      // appropriately-leveled prompt. If /profile fails, this throws into
-      // the catch below and shows the real "unavailable" state instead of
-      // silently guessing SLP 3.
+      // appropriately-leveled prompt. If /profile fails, or returns a
+      // level this app doesn't recognise, this throws into the catch
+      // below and shows the real "unavailable" state instead of silently
+      // guessing SLP 3.
       const profile = await apiRequest<{ target_level?: string }>("/profile");
-      const rawLevel = profile.target_level === "2+" ? "2+" : profile.target_level === "2" ? "2" : "3";
+      const rawLevel =
+        profile.target_level === "2+" ? "2+" : profile.target_level === "2" ? "2" : profile.target_level === "3" ? "3" : null;
+      if (!rawLevel) throw new Error("target_level_unavailable");
       const target = encodeURIComponent(rawLevel);
       const raw = await apiRequest<unknown>(`/writing/prompts/next?mode=practice&targetLevel=${target}`);
       const next = decodeWritingPrompt(raw);

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiRequest, FrontendError } from "@/lib/api/client";
+import { academyTargetLevel } from "@/lib/api/academy";
 import { interpretEntitlements, planLabel, type EntitlementsSnapshot } from "@/lib/entitlements";
 import { CommercialDialog } from "@/components/exercise/CommercialDialog";
 import { greetingNameFromEmail } from "@/lib/displayName";
@@ -146,8 +147,15 @@ export default function ProfilePage() {
       }
       try {
         const profile = await apiRequest<{ target_level?: string }>("/profile");
-        const raw = profile.target_level ?? "3";
-        setLevel(raw === "2+" ? "3" : raw === "2" ? "2" : "3");
+        // Same parser every other target-level surface uses — no local
+        // re-derivation, so this can't quietly disagree with Home,
+        // Progress, or Academy about what "2+" maps to. A missing or
+        // unrecognised value is an honest levelError, not a silent
+        // SLP 3 — this screen writes the target back on Save, so
+        // guessing here risks overwriting a real one.
+        const parsed = academyTargetLevel(profile.target_level);
+        if (parsed) setLevel(parsed);
+        else setLevelError(true);
       } catch {
         setLevelError(true);
       }
