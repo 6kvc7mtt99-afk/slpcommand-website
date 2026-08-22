@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { AcademyLesson } from "@/lib/api/academy";
 import { LessonStages } from "./LessonStages";
+import { AcademyCompletionBeacon } from "./AcademyCompletionBeacon";
 
 /**
  * The lesson experience shared by Reading and Writing (Listening's topic
@@ -145,6 +146,19 @@ export function AcademyLessonView({
           </div>
         </section>
       ) : null}
+
+      {/*
+        FASE ACADEMY-LOOP-CLOSURE-001 — the completion signal, placed after the
+        last content block so it can only be reached by scrolling past the
+        lesson. It records "reached the end of the lesson content", which is the
+        strongest honest claim this page can make; see AcademyCompletionBeacon
+        for why it is not fired on mount.
+
+        `lesson:` prefixed to match the iOS client's AcademyActivityID, so the
+        same lesson read on either client is the same activity row rather than
+        two.
+      */}
+      <AcademyCompletionBeacon skill={key} activityId={`lesson:${lesson.id}`} />
     </div>
   );
 }

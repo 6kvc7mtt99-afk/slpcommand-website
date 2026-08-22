@@ -180,6 +180,20 @@ describe("coming back from checkout", () => {
     await vi.waitFor(
       () => expect(screen.getByText(/The server still reports this account as/)).toBeTruthy(),
       );
-    expect(screen.queryByText(/receipt arrives/)).toBeNull();
+    // NARROWED, AND WHY. This asserted the absence of /receipt arrives/, which
+    // was unique to the pending-receipt banner when this test was written. The
+    // "Getting Professional" section later gained "Payment lands on this
+    // account when the receipt arrives — not when this browser comes back",
+    // which is correct copy in a DIFFERENT sentence for a different state, and
+    // is legitimately on screen here: this learner is free, is not awaiting a
+    // receipt, and can buy. The loose regex caught it and turned a copy
+    // addition into a red suite.
+    //
+    // The banner's distinguishing half is "Don't pay again" — the instruction
+    // that only makes sense when a payment may already be in flight, and the
+    // marker the pending-receipt test above already keys on. Asserting THAT is
+    // absent tests what this case is named for; asserting a shared phrase is
+    // absent tested where a substring happened to appear.
+    expect(screen.queryByText(/pay again/)).toBeNull();
   });
 });

@@ -60,6 +60,14 @@ const ALLOW: Rule[] = [
   { method: "POST", pattern: /^\/api\/support\/cases$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/session\/today$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/activity\/streak$/, reason: "ok" },
+  // FASE ACADEMY-LOOP-CLOSURE-001 — the Academy leg of the loop, which was open.
+  // The endpoint, its RPC and its table have been in production since
+  // RETENTION-ENGINE-PHASE-3 and nothing has ever called them; the web client
+  // could not have, because the path was not on this allowlist. Not a quota path:
+  // record_academy_completion() is idempotent on
+  // (user, skill, activity_id, activity_date), so a repeat costs nothing and
+  // there is no charge for a retry to double-fire.
+  { method: "POST", pattern: /^\/api\/academy\/complete$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/activity\/achievements$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/activity\/recent$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/reading\/passage$/, reason: "ok" },
