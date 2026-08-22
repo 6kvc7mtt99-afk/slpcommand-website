@@ -75,34 +75,35 @@ afterEach(() => {
 describe("the checkout entry point", () => {
   it("is absent while the kill switch is off, and the iOS route is offered instead", () => {
     mount({ billingEnabled: false });
-    expect(screen.queryByRole("button", { name: "Subscribe" })).toBeNull();
-    expect(screen.getByText("SLP Command Professional is purchased in the iOS app")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Get Professional · €9.99/month" })).toBeNull();
+    expect(screen.getByText("Web checkout is off on this account")).toBeTruthy();
   });
 
   it("is absent when the server has no offer configured, even with the switch on", () => {
     mount({ offer: { status: "unconfigured" }, billingEnabled: true });
-    expect(screen.queryByRole("button", { name: "Subscribe" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Get Professional · €9.99/month" })).toBeNull();
   });
 
   it("appears only when the switch is on and an offer exists", () => {
     mount();
-    expect(screen.getByRole("button", { name: "Subscribe" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Get Professional · €9.99/month" })).toBeTruthy();
   });
 
-  it("quotes no price when the server was not configured with one", () => {
+  it("uses one Professional CTA, not a second price card", () => {
     mount();
-    expect(screen.getByText("The price is shown on the secure checkout page before you pay.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Get Professional · €9.99/month" })).toBeTruthy();
+    expect(document.querySelectorAll(".plan-lock")).toHaveLength(1);
+    expect(document.querySelectorAll(".plan-offer")).toHaveLength(0);
   });
 
-  it("shows the configured price, and never a number of its own", () => {
+  it("still uses the one Professional CTA when the server sent a price", () => {
     mount({
       offer: {
         status: "ready",
         offer: { productId: "p", planName: "SLP Command Pro", displayPrice: "€9.99", period: "month" },
       },
     });
-    expect(screen.getByText("€9.99")).toBeTruthy();
-    expect(screen.getByText("/ month")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Get Professional · €9.99/month" })).toBeTruthy();
   });
 
   it("asks the server for the URL rather than assembling one", async () => {
@@ -114,7 +115,7 @@ describe("the checkout entry point", () => {
     });
     mount();
     await act(async () => {
-      screen.getByRole("button", { name: "Subscribe" }).click();
+      screen.getByRole("button", { name: "Get Professional · €9.99/month" }).click();
     });
     expect(globalThis.fetch).toHaveBeenCalledWith("/api/billing/checkout", expect.objectContaining({ method: "POST" }));
     expect(assigned).toEqual(["https://pay.rev.cat/x?app_user_id=user-1"]);
@@ -124,7 +125,7 @@ describe("the checkout entry point", () => {
     (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({ ok: false, json: async () => ({}) });
     mount();
     await act(async () => {
-      screen.getByRole("button", { name: "Subscribe" }).click();
+      screen.getByRole("button", { name: "Get Professional · €9.99/month" }).click();
     });
     expect(screen.getByRole("alert").textContent).toContain("Nothing was charged");
     expect(assigned).toEqual([]);
@@ -143,12 +144,12 @@ describe("coming back from checkout", () => {
     serverSays.mockReturnValue(FREE_BODY);
     returnFromCheckout();
     mount();
-    await vi.waitFor(() => expect(screen.getByText(/still being confirmed/)).toBeTruthy());
+    await vi.waitFor(() => expect(screen.getByText(/receipt arrives/)).toBeTruthy());
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("SLP Command Free");
     expect(screen.queryByText("Confirmed — this account is on SLP Command Pro.")).toBeNull();
     // And the purchase button is gone, so a learner who reads "Free" at the
     // top of the page cannot conclude the payment failed and pay twice.
-    expect(screen.queryByRole("button", { name: "Subscribe" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Get Professional · €9.99/month" })).toBeNull();
     expect(screen.getByText(/Don.t pay again/)).toBeTruthy();
   });
 
@@ -179,6 +180,6 @@ describe("coming back from checkout", () => {
     await vi.waitFor(
       () => expect(screen.getByText(/The server still reports this account as/)).toBeTruthy(),
       );
-    expect(screen.queryByText(/still being confirmed/)).toBeNull();
+    expect(screen.queryByText(/receipt arrives/)).toBeNull();
   });
 });

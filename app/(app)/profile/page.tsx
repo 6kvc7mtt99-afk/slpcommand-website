@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiRequest, FrontendError } from "@/lib/api/client";
-import { interpretEntitlements, planLabel, type EntitlementsSnapshot } from "@/lib/entitlements";
+import { interpretEntitlements, isEntitledToPro, planLabel, type EntitlementsSnapshot } from "@/lib/entitlements";
 import { CommercialDialog } from "@/components/exercise/CommercialDialog";
 import { greetingNameFromEmail } from "@/lib/displayName";
 import {
@@ -115,6 +115,7 @@ export default function ProfilePage() {
   const [level, setLevel] = useState<string | null>(null);
   const [levelError, setLevelError] = useState(false);
   const [plan, setPlan] = useState("SLP Command Free");
+  const [isPro, setIsPro] = useState(false);
   const [planInfo, setPlanInfo] = useState<PlanInfo>(null);
   const [features, setFeatures] = useState<QuotaFeature[]>([]);
   const [planLoaded, setPlanLoaded] = useState(false);
@@ -154,12 +155,16 @@ export default function ProfilePage() {
       try {
         const snap = await apiRequest<EntitlementsSnapshot>("/entitlements");
         // apiRequest throws on non-2xx, so a value here IS a successful read.
-        setPlan(planLabel(interpretEntitlements(200, snap)));
+        const state = interpretEntitlements(200, snap);
+        setPlan(planLabel(state));
+        setIsPro(isEntitledToPro(state));
         setPlanInfo(decodePlan(snap));
         setFeatures(decodeFeatures(snap));
       } catch (err) {
         const status = err && typeof err === "object" && "status" in err ? Number(err.status) : 404;
-        setPlan(planLabel(interpretEntitlements(status, null)));
+        const state = interpretEntitlements(status, null);
+        setPlan(planLabel(state));
+        setIsPro(isEntitledToPro(state));
       } finally {
         setPlanLoaded(true);
       }
@@ -419,10 +424,11 @@ export default function ProfilePage() {
               </p>
             ) : null}
 
-            <p className="settings-note">
-              This page meters what is left. What you are on, what Pro would change, and how to subscribe live on{" "}
-              <a href="/subscription">your plan</a>. Nothing on this page changes what you are billed.
-            </p>
+            {!isPro ? (
+              <p className="settings-note">
+                <a className="btn btn-primary" href="/subscription">Open plan</a>
+              </p>
+            ) : null}
           </section>
 
           <section className="settings-group" id="appearance" data-reveal>

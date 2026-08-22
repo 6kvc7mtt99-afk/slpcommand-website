@@ -166,7 +166,7 @@ export function SubscriptionView({
           <p className="p-lead">
             {isPro
               ? "Everything in SLP Command is open on this account. Your subscription is managed where you bought it."
-              : "Free covers the whole method with weekly and monthly allowances. Pro removes the allowances."}
+              : "Free covers the whole method with weekly and monthly allowances. Professional removes the allowances."}
           </p>
         ) : (
           <p className="p-lead">
@@ -182,7 +182,7 @@ export function SubscriptionView({
           <p className="plan-banner" role="status" aria-live="polite">
             {phase.kind === "confirming"
               ? "Checking with the server for your subscription…"
-              : "Your payment is still being confirmed. Don’t pay again — if it went through, this page will show Pro shortly."}
+              : "Payment lands on this account when the receipt arrives — not when this browser comes back. Don’t pay again."}
           </p>
         ) : null}
       </header>
@@ -237,61 +237,51 @@ export function SubscriptionView({
         <section className="p-section" data-reveal aria-label="How to subscribe">
           <div className="p-section-head">
             <div>
-              <h2>Getting SLP Command Pro</h2>
+              <h2>Getting Professional</h2>
               <p>
                 {canBuy
-                  ? "Subscribe here, or in the iOS app. Either way the plan lives on your account."
-                  : "Subscriptions are sold in the iOS app. There is no web checkout yet."}
+                  ? "Subscribe here. Payment lands on this account when the receipt arrives — not when this browser comes back."
+                  : "Web checkout is off on this account. Email support@slpcommand.com."}
               </p>
             </div>
           </div>
 
-          {canBuy && offer.status === "ready" ? (
-            <article className="plan-offer">
-              <p className="plan-lock-kicker">Subscribe on the web</p>
-              <h2>{offer.offer.planName}</h2>
-              {/* A price is shown only when the server was configured with one.
-                  Otherwise the checkout states it — this page never becomes a
-                  second opinion about what someone is charged. */}
-              {offer.offer.displayPrice ? (
-                <p className="plan-offer-price">
-                  <strong>{offer.offer.displayPrice}</strong>
-                  {offer.offer.period ? <span> / {offer.offer.period}</span> : null}
+          <article className="plan-lock">
+            <span className="plan-lock-mark" aria-hidden="true" />
+            {canBuy && offer.status === "ready" ? (
+              <>
+                <p className="plan-lock-kicker">Subscribe on the web</p>
+                <h2>Professional</h2>
+                <p className="plan-lock-body">
+                  Payment is handled securely. You will come back here afterwards, and your plan updates once your
+                  receipt reaches your account.
                 </p>
-              ) : (
-                <p className="plan-lock-body">The price is shown on the secure checkout page before you pay.</p>
-              )}
-              <p className="plan-lock-body">
-                Payment is handled by RevenueCat on our behalf. You will come back here afterwards, and your plan
-                updates once your receipt reaches your account.
-              </p>
-              <div className="cta-row">
-                <button
-                  className="btn btn-primary btn-command"
-                  type="button"
-                  onClick={() => void startCheckout()}
-                  disabled={phase.kind === "starting"}
-                >
-                  {phase.kind === "starting" ? "Opening secure checkout…" : "Subscribe"}
-                </button>
-              </div>
-              {phase.kind === "failed" ? (
-                <p className="plan-recheck is-bad" role="alert">
-                  We couldn’t open the checkout. Nothing was charged. Try again, or subscribe in the iOS app.
+                <div className="cta-row">
+                  <button
+                    className="btn btn-primary btn-command"
+                    type="button"
+                    onClick={() => void startCheckout()}
+                    disabled={phase.kind === "starting"}
+                  >
+                    {phase.kind === "starting" ? "Opening secure checkout…" : "Get Professional · €9.99/month"}
+                  </button>
+                </div>
+                {phase.kind === "failed" ? (
+                  <p className="plan-recheck is-bad" role="alert">
+                    Checkout did not open. Nothing was charged. Try again.
+                  </p>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <p className="plan-lock-kicker">Web checkout</p>
+                <h2>Web checkout is off on this account</h2>
+                <p className="plan-lock-body">
+                  Email support@slpcommand.com.
                 </p>
-              ) : null}
-            </article>
-          ) : (
-            <article className="plan-lock">
-              <span className="plan-lock-mark" aria-hidden="true" />
-              <p className="plan-lock-kicker">Where to subscribe</p>
-              <h2>SLP Command Professional is purchased in the iOS app</h2>
-              <p className="plan-lock-body">
-                Buying there unlocks this account everywhere, including here — the plan lives on your account, not on
-                the device. When web billing opens, this screen is where it will be.
-              </p>
-            </article>
-          )}
+              </>
+            )}
+          </article>
         </section>
       ) : null}
 
@@ -324,8 +314,7 @@ export function SubscriptionView({
             and saying it twice on one screen reads as two different problems. */}
         {phase.kind === "pending" ? (
           <p className="plan-recheck is-pending" role="status">
-            Nothing is unlocked from this browser, so this page waits for your account rather than guessing. Checking
-            again is safe.
+            Payment lands when the receipt hits this account, not on browser return. Checking again is safe.
           </p>
         ) : null}
 

@@ -39,7 +39,7 @@ describe("commercial dialog", () => {
 
   it("moves focus into the dialog on open and back to the trigger on close", () => {
     const { trigger, view } = open();
-    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Close" }));
+    expect(document.activeElement).toBe(screen.getByRole("link", { name: "Open plan" }));
     view.unmount();
     expect(document.activeElement).toBe(trigger);
   });
@@ -60,8 +60,8 @@ describe("commercial dialog", () => {
 
   it("keeps Tab inside the dialog in both directions", () => {
     open();
-    const close = screen.getByRole("button", { name: "Close" });
-    const link = screen.getByRole("link", { name: /See your plan/ });
+    const close = screen.getByRole("link", { name: "Open plan" });
+    const link = screen.getByRole("button", { name: "Not now" });
 
     link.focus();
     fireEvent.keyDown(document, { key: "Tab" });
@@ -81,8 +81,8 @@ describe("commercial dialog", () => {
 
   it("points at the commercial surface, and offers nothing that looks like a checkout", () => {
     open();
-    expect(screen.getByRole("link", { name: /See your plan/ })).toHaveProperty("href");
-    expect(screen.getByRole("link", { name: /See your plan/ }).getAttribute("href")).toBe("/subscription");
+    expect(screen.getByRole("link", { name: "Open plan" })).toHaveProperty("href");
+    expect(screen.getByRole("link", { name: "Open plan" }).getAttribute("href")).toBe("/subscription");
     const dialog = screen.getByRole("dialog");
     expect(dialog.querySelectorAll("input, form")).toHaveLength(0);
     expect(dialog.textContent ?? "").not.toMatch(/\b(Subscribe|Buy now|Pay)\b/i);

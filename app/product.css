@@ -977,6 +977,8 @@ a.p-rung-val.none:hover { text-decoration: underline; }
   border: 1px solid var(--p-line);
   border-radius: var(--p-r);
   box-shadow: var(--p-edge), var(--p-shadow-1);
+  overflow: hidden;
+  min-width: 0;
 }
 .app-shell .home-card { border-top-color: var(--p-line); }
 .app-shell .home-banner,

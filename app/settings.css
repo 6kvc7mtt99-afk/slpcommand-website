@@ -292,7 +292,8 @@
    never a price with no way to pay it, and never a disabled checkout
    button pretending a rail exists.
    ------------------------------------------------------------ */
-.plan-page { max-width: 760px; }
+.plan-page { max-width: 760px; min-width: 0; }
+.plan-lock { overflow: hidden; min-width: 0; }
 .plan-masthead { padding-bottom: 8px; }
 
 .plan-allowances {
@@ -308,14 +309,26 @@
   gap: 20px;
   padding: 14px 0;
   border-bottom: 1px solid var(--p-line);
+  min-width: 0;
+  overflow: hidden;
 }
-.plan-allowance-name { font-size: 15px; color: var(--p-ink); }
+.plan-allowance-name {
+  font-size: 15px; color: var(--p-ink); min-width: 0;
+  overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
 .plan-allowance-val {
   font-size: 14px;
+  font-family: var(--p-mono);
   font-variant-numeric: tabular-nums;
   color: var(--p-ink2);
   text-align: right;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 46%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 /* A spent allowance is a wall the learner just hit — that is worth red.
    A feature the plan never included is simply not there, and colouring it

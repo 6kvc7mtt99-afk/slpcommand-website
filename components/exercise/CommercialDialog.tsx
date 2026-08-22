@@ -21,8 +21,8 @@ const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1
  */
 export function CommercialDialog({
   open,
-  title = "This feature is not available on your current plan.",
-  body = "Subscriptions are managed in the iOS app until web billing exists.",
+  title = "You've used this Free allowance.",
+  body = "Free measures all four skills with weekly and monthly allowances. Open your plan to see what is left. This dialog does not charge you.",
   onClose,
 }: {
   open: boolean;
@@ -103,13 +103,12 @@ export function CommercialDialog({
           {body}
         </p>
         <div className="cta-row" style={{ marginTop: 18 }}>
-          <button className="btn btn-primary" type="button" onClick={onClose}>
-            Close
-          </button>
-          <Link className="plan-lock-link" href="/subscription" onClick={onClose}>
-            See your plan
-            <span className="p-arrow" aria-hidden="true">→</span>
+          <Link className="btn btn-primary" href="/subscription" onClick={onClose}>
+            Open plan
           </Link>
+          <button className="btn btn-outline" type="button" onClick={onClose}>
+            Not now
+          </button>
         </div>
       </article>
     </div>
