@@ -247,26 +247,34 @@ body {
   justify-content: flex-start; width: max-content; margin: 0 auto;
   align-items: flex-end;
 }
+/* Real product screens, not a phone mockup — the app is a responsive web
+   product, not an iOS-only one, and screens captured straight from it
+   (test-fixture data, not a real learner's) read as evidence rather than
+   as marketing art. A thin edge and a real shadow, the same instrument-
+   panel treatment the rest of the page uses (var(--shadow-2), var(--line))
+   — no device bezel standing in for authenticity that a real screen
+   already has on its own. */
 .screenshot-frame {
-  flex: 0 0 auto; width: 210px; text-align: center;
+  flex: 0 0 auto; width: 340px; text-align: left;
   transition: transform var(--dur-2) var(--ease);
 }
 .screenshot-frame img {
-  width: 100%; border-radius: 20px; border: 6px solid var(--ink);
+  width: 100%; height: auto; aspect-ratio: 900 / 555; object-fit: cover;
+  border-radius: 12px; border: 1px solid var(--line);
   box-shadow: var(--shadow-2); display: block;
-  background: var(--ink);
+  background: var(--bg2);
 }
 .screenshot-frame figcaption {
   margin-top: 14px; font-size: 13px; font-weight: 600; color: var(--ink2);
 }
 /* A constellation, not a filmstrip: every other frame floats higher and
    tilts the opposite way, so the row reads as objects arranged in space
-   rather than thumbnails in a list. The centre frame (Speaking, the
-   product's most distinctive screen) is the one held level and largest. */
-.screenshot-frame:nth-child(odd) { transform: translateY(10px) rotate(-2.5deg); }
-.screenshot-frame:nth-child(even) { transform: translateY(-14px) rotate(2.5deg); }
-.screenshot-frame:nth-child(5) { transform: translateY(-26px) scale(1.08); z-index: 1; }
-.screenshot-frame:hover { transform: translateY(-30px) rotate(0deg) scale(1.1); z-index: 2; }
+   rather than thumbnails in a list. The centre frame is the one held
+   level and largest. */
+.screenshot-frame:nth-child(odd) { transform: translateY(8px) rotate(-1.4deg); }
+.screenshot-frame:nth-child(even) { transform: translateY(-10px) rotate(1.4deg); }
+.screenshot-frame.is-peak { transform: translateY(-18px) scale(1.05); z-index: 1; }
+.screenshot-frame:hover { transform: translateY(-22px) rotate(0deg) scale(1.04); z-index: 2; }
 
 /* ─── FEATURES ─── */
 .features { padding: 72px 24px; background: var(--bg); }
@@ -807,7 +815,6 @@ table.legal-table tr:last-child td { border-bottom: none; }
   .site-footer { background: #000; }
   .disclaimer-strip { background: #1e1a08; border-color: #52430d; color: #c8a83a; }
   .site-header { background: color-mix(in srgb, var(--bg) 78%, transparent); }
-  .screenshot-frame img { border-color: #000; }
 }
 
 @media (max-width: 600px) {
@@ -826,7 +833,7 @@ table.legal-table tr:last-child td { border-bottom: none; }
   .site-header nav a[href="/guides"] { margin-left: 0; }
   .site-header nav a.nav-cta { margin-left: 12px; }
   .step { flex-direction: column; gap: 10px; }
-  .screenshot-frame { width: 170px; }
+  .screenshot-frame { width: 290px; }
   .price-card { padding: 26px 22px; }
   .price-card-featured { transform: none; }
   .skills-band { padding: 56px 20px; }
