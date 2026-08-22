@@ -29,6 +29,17 @@ test("the authenticated home has no serious axe violations, with or without redu
   expect(reduced.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
 });
 
+test("the public landing page has no serious axe violations, with or without reduced motion", async ({ page }) => {
+  await page.goto("/");
+  const result = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  expect(result.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  const reduced = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  expect(reduced.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+});
+
 test("login and a legal page have no serious axe violations", async ({ page }) => {
   await page.goto("/login");
   const login = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();

@@ -1,5 +1,6 @@
 import { SiteHeader, SiteFooter } from "@/components/marketing/SiteChrome";
 import { JsonLd } from "@/components/marketing/JsonLd";
+import { Reveal } from "@/components/marketing/Reveal";
 import { landingHtml } from "@/content/landing";
 import { organizationJsonLd, softwareJsonLd, websiteJsonLd } from "@/lib/authority";
 
@@ -10,6 +11,7 @@ export default function HomePage() {
   return (
     <>
       <SiteHeader />
+      <Reveal />
       <div dangerouslySetInnerHTML={{ __html: inner }} />
       <SiteFooter />
       <JsonLd data={organizationJsonLd} />
