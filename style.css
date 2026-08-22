@@ -114,26 +114,31 @@ body {
    numbers in a bordered box. Dark is deliberate and local to the hero
    only: the rest of the page stays the light, readable system below;
    .hero-seam is the one gradient that joins the two without a hard cut. */
-.hero {
+/* Shared by every dark scene (hero, the Intelligence engine, the closing
+   reveal) — one instrument-panel material used three times rather than
+   three different dark treatments invented once each. */
+.dark-stage {
   --hi: #f3f2ee; --hi2: #b9bec8; --hmuted: #8a8f9a;
   --hline: #23252b; --hline-strong: #34373f; --helevated: #14161b;
   background: #08090a; color: var(--hi);
-  padding: 120px 24px 70px;
   position: relative; overflow: hidden; isolation: isolate;
-  display: flex; flex-direction: column; align-items: center;
 }
-.hero-field {
+.scene-field {
   position: absolute; inset: 0; z-index: -2;
   background:
     radial-gradient(50% 45% at 78% 14%, rgba(123,161,255,.14), transparent 70%),
     radial-gradient(40% 35% at 12% 88%, rgba(200,148,42,.10), transparent 70%);
 }
-.hero-grid {
+.scene-grid {
   position: absolute; inset: 0; z-index: -1; opacity: .55;
   background-image: linear-gradient(var(--hline) 1px, transparent 1px), linear-gradient(90deg, var(--hline) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(60% 50% at 50% 32%, #000, transparent 78%);
   -webkit-mask-image: radial-gradient(60% 50% at 50% 32%, #000, transparent 78%);
+}
+.hero {
+  padding: 120px 24px 70px;
+  display: flex; flex-direction: column; align-items: center;
 }
 .hero-kicker {
   font-size: 12px; font-weight: 650; letter-spacing: .22em; text-transform: uppercase;
@@ -494,6 +499,61 @@ body {
   .steps-pipeline { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 28px 18px; }
   .steps-pipeline::before { display: none; }
 }
+
+/* ─── THE ENGINE SCENE ───
+   Intelligence was a feature among eighteen in the old card grid and a
+   quiet numbered list beside "How it works" — for a system the brief
+   itself calls one of the two or three things that actually differentiate
+   this product, that is undersold. It gets the hero's own dark material
+   (the second of the page's two dark beats, not a third invented style)
+   and the hero's own type scale, so the model reads as a real capability
+   rather than a diagram inserted between two lighter sections. */
+.engine-scene { padding: 96px 24px 88px; background: #08090a; border-top: 0; }
+.engine-scene .how-inner { max-width: 880px; }
+.engine-scene .section-eyebrow { color: var(--hmuted); text-align: center; }
+.engine-scene .section-lead { color: var(--hi2); }
+.engine-headline {
+  font-size: clamp(32px, 4.4vw, 54px); line-height: 1; font-weight: 780;
+  letter-spacing: -.03em; text-align: center; color: var(--hi);
+  margin: 14px 0 18px;
+}
+.engine-headline em { font-style: normal; color: var(--hmuted); }
+.engine-scene .steps-pipeline::before { background: linear-gradient(90deg, transparent, #7ba1ff 12%, #7ba1ff); }
+.engine-scene .step-num {
+  background: #7ba1ff; color: #08090a; box-shadow: 0 0 0 8px rgba(123,161,255,.16);
+}
+.engine-scene .step-body h3 { color: var(--hi); }
+.engine-scene .step-body p { color: var(--hi2); }
+.engine-scene .pipeline-loop span { color: var(--hmuted); border-color: var(--hline-strong); }
+.engine-scene .pipeline-loop svg { color: var(--hmuted); }
+.engine-scene .note {
+  background: rgba(200,148,42,.08); border-color: rgba(200,148,42,.28);
+  color: var(--hi2);
+}
+.engine-scene .note strong { color: #e0b04a; }
+
+/* ─── THE CLOSING SCENE ───
+   The page had no answer to its own opening — it just ran out at the
+   FAQ. A brief that opens on a dark, confident stage and then never
+   returns to it reads as unfinished, not restrained. This is the
+   second bookend: the same material as the hero, none of its detail
+   (no pillars — those are the hero's object, not a motif to repeat),
+   because the closing beat's job is to be quiet and certain, not to
+   re-explain anything the visitor has already read twice. */
+.closing-seam { height: 120px; background: linear-gradient(180deg, var(--bg), #08090a); margin-bottom: -1px; }
+.closing-scene {
+  padding: 90px 24px 110px; text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+}
+.closing-scene .section-eyebrow { color: var(--hmuted); }
+.closing-headline {
+  font-size: clamp(40px, 6vw, 76px); line-height: 1; font-weight: 780;
+  letter-spacing: -.035em; color: var(--hi); margin: 16px 0 20px;
+}
+.closing-dek { max-width: 50ch; font-size: 17px; line-height: 1.6; color: var(--hi2); margin: 0 0 34px; }
+.closing-cta { justify-content: center; }
+.closing-scene .btn-outline { border-color: var(--hline-strong); color: var(--hi2); }
+.closing-scene .btn-outline:hover { border-color: var(--hi2); }
 
 /* ─── DISCLAIMER STRIP ─── */
 .disclaimer-strip {
