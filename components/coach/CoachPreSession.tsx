@@ -294,16 +294,43 @@ function Gate({
   }
 
   const outOfMinutes = mission.eligibility === "needs_minutes";
+
+  // ── FASE COACH-HONEST-COPY-001 ────────────────────────────────────────────
+  //
+  // THE DEFECT. This said, unconditionally: "Your included minutes renew with
+  // your plan." No plan grants Coach minutes. coach_4h / coach_8h exist in
+  // lib/coachBillingBridge.js and in OWNER-HANDOFF.md but not in App Store
+  // Connect or RevenueCat, so classifyCoachProduct returns null for every
+  // product a subscriber can buy and the ledger holds zero subscription_grant
+  // events — the only Coach minutes ever issued were three manual admin
+  // adjustments.
+  //
+  // Whether Pro should include an allowance, or the SKUs should be created, is
+  // a commercial decision with a real margin consequence. It is not a decision
+  // a copy fix may quietly make. So this tells the truth about the account in
+  // front of it, read from the balance the backend already sends — and the
+  // original sentence returns on its own the moment a plan really does grant
+  // minutes, with no second code change.
+  const hasPlanAllowance = mission.includedMinutes > 0;
+  const deadEndTitle = outOfMinutes
+    ? hasPlanAllowance
+      ? "You’re out of Coach minutes"
+      : "The AI Coach isn’t part of your plan yet"
+    : "The AI Coach isn’t available yet";
+  const deadEndBody = !outOfMinutes
+    ? "Speaking Practice is ready whenever you are, and it is rated by the same engine."
+    : hasPlanAllowance
+      ? "Your included minutes renew with your plan. Recorded Speaking Practice stays unlimited on your allowance."
+      : mission.purchasedMinutes > 0
+        ? "Your purchased credits are used up, and they do not expire — anything you add stays. Recorded Speaking Practice stays unlimited on your allowance."
+        : "Live Coach minutes are not included in any plan on sale today, and none have been added to this account. Recorded Speaking Practice — record, submit, get a full assessment — stays unlimited on your allowance.";
+
   return (
     <div className="coach-deadend">
       <p>
-        <strong>{outOfMinutes ? "You’re out of Coach minutes" : "The AI Coach isn’t available yet"}</strong>
+        <strong>{deadEndTitle}</strong>
       </p>
-      <p className="muted">
-        {outOfMinutes
-          ? "Your included minutes renew with your plan. Recorded Speaking Practice stays unlimited on your allowance."
-          : "Speaking Practice is ready whenever you are, and it is rated by the same engine."}
-      </p>
+      <p className="muted">{deadEndBody}</p>
       <div className="cta-row">
         <Link className="btn btn-primary" href="/speaking/practice">
           Open Speaking Practice

@@ -59,9 +59,11 @@
   <h2>4. Sub-processors</h2>
   <p>To deliver the Service, we share personal data with the following processors, each bound by a data processing agreement requiring it to act only on our instructions. See the full <a href="subprocessors">Subprocessors and Third Parties</a> page for details.</p>
   <ul>
+    <li><strong>Cloudflare</strong> — serves and protects slpcommand.com, and is the runtime the web application runs on. Every request to the website passes through Cloudflare, which therefore processes your IP address, request metadata and — in transit — the contents of those requests and responses, including your session cookie.</li>
     <li><strong>Supabase</strong> — database, authentication, audio file storage.</li>
     <li><strong>OpenAI</strong> — Whisper (speech-to-text transcription) and GPT models (evaluation of Speaking and Writing responses across fluency, grammar, vocabulary, coherence and task achievement).</li>
-    <li><strong>ElevenLabs</strong> — text-to-speech audio generation for listening exercises and pronunciation models. No personal data is sent — only exercise text.</li>
+    <li><strong>ElevenLabs</strong> — text-to-speech audio generation for listening exercises and pronunciation models (exercise text only, no personal data), and the live AI Speaking Coach, which is an optional spoken conversation you enter only after giving explicit consent and during which your microphone audio is processed in real time.</li>
+    <li><strong>xAI (Grok)</strong> — the in-app support assistant. Only the messages you write in a support conversation, and the replies to them, are processed. It is never used to evaluate or score your work, and receives none of your exam answers, audio or results.</li>
     <li><strong>Render</strong> — backend API hosting.</li>
     <li><strong>Sentry</strong> — crash and error diagnostics. Request bodies and authorization headers are stripped before transmission; no personal content or audio is sent to Sentry.</li>
     <li><strong>PostHog</strong> — pseudonymous product usage analytics (feature/screen usage, app version). Never your written answers, audio, transcripts, or account email.</li>
