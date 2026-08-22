@@ -105,119 +105,118 @@ body {
   .site-header nav a { margin-left: 14px; }
 }
 
-/* ─── HERO ─── */
-/*
-  The hero was the standard centred stack: pill badge, headline, centred
-  paragraph, centred button pair. It read as any SaaS landing page.
-
-  It is now asymmetric and anchored on the one idea the whole product rests on —
-  that an SLP is four independent judgements read L-S-R-W, and the lowest digit
-  is the one that matters. Stating that in the hero as a specimen does the work
-  a decorative badge was doing, and teaches the concept before the fold.
-*/
+/* ─── HERO — "The Profile" ───
+   Not a text-left/card-right SaaS stack: a dark instrument stage the
+   visitor arrives inside of. The one idea the whole product rests on —
+   an SLP is four independent judgements, and the lowest one gates the
+   posting, never an average — is staged as a real dimensional object
+   (four pillars + a gate line cutting through them) instead of a row of
+   numbers in a bordered box. Dark is deliberate and local to the hero
+   only: the rest of the page stays the light, readable system below;
+   .hero-seam is the one gradient that joins the two without a hard cut. */
 .hero {
-  background: var(--bg);
-  padding: 88px 24px 72px;
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
+  --hi: #f3f2ee; --hi2: #b9bec8; --hmuted: #8a8f9a;
+  --hline: #23252b; --hline-strong: #34373f; --helevated: #14161b;
+  background: #08090a; color: var(--hi);
+  padding: 120px 24px 70px;
+  position: relative; overflow: hidden; isolation: isolate;
+  display: flex; flex-direction: column; align-items: center;
 }
-/* Two soft glows anchored top-right and bottom-left — the same
-   containment-glow device the authenticated app's hero uses (see
-   product.css .p-hero::before), rebuilt here for the light-first public
-   palette instead of copied. Atmosphere, not a graphic. */
-.hero::before {
-  content: "";
-  position: absolute; z-index: -1; inset: -20% -10% auto auto;
-  width: 70%; height: 140%;
-  background: radial-gradient(closest-side, var(--accent-glow), transparent 72%);
-  pointer-events: none;
+.hero-field {
+  position: absolute; inset: 0; z-index: -2;
+  background:
+    radial-gradient(50% 45% at 78% 14%, rgba(123,161,255,.14), transparent 70%),
+    radial-gradient(40% 35% at 12% 88%, rgba(200,148,42,.10), transparent 70%);
 }
-.hero::after {
-  content: "";
-  position: absolute; z-index: -1; inset: auto auto -30% -10%;
-  width: 50%; height: 100%;
-  background: radial-gradient(closest-side, var(--gold-glow), transparent 72%);
-  opacity: .5;
-  pointer-events: none;
+.hero-grid {
+  position: absolute; inset: 0; z-index: -1; opacity: .55;
+  background-image: linear-gradient(var(--hline) 1px, transparent 1px), linear-gradient(90deg, var(--hline) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(60% 50% at 50% 32%, #000, transparent 78%);
+  -webkit-mask-image: radial-gradient(60% 50% at 50% 32%, #000, transparent 78%);
 }
-.hero-inner {
-  max-width: var(--hero-max); margin: 0 auto;
-  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: 56px; align-items: center;
+.hero-kicker {
+  font-size: 12px; font-weight: 650; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--hmuted); margin: 0 0 22px; text-align: center;
 }
-.hero-eyebrow {
-  display: flex; align-items: center; gap: 14px;
-  font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--muted); margin: 0 0 18px;
+.hero-headline {
+  font-size: clamp(38px, 6vw, 78px); line-height: .98; font-weight: 780;
+  letter-spacing: -0.035em; text-align: center; margin: 0 0 8px; max-width: 16ch;
+  text-wrap: balance;
 }
-.hero-eyebrow::after { content: ""; flex: 1; max-width: 100px; height: 1px; background: linear-gradient(90deg, var(--line-strong), transparent); }
-.hero h1 {
-  font-size: clamp(34px, 4.6vw, 58px);
-  line-height: 1.08; font-weight: 800;
-  color: var(--ink); margin: 0 0 20px; letter-spacing: -1.4px;
+.hero-headline em { font-style: normal; color: var(--hmuted); }
+
+/* The rig: a real dimensional object, not a chart. Perspective on the
+   wrapper, a fixed painterly tilt on the pillar row, a dashed "gate"
+   plane cutting across at the lowest measured level — the exact
+   mechanic the copy states, made visible instead of described. */
+.profile-rig {
+  position: relative; margin: 54px auto 0; width: min(900px, 92vw);
+  perspective: 1800px;
 }
-.hero h1 em { font-style: normal; color: var(--accent); }
+.rig-cap {
+  text-align: center; font-size: 10.5px; font-weight: 650; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--hmuted); margin: 0 0 30px;
+}
+.rig-pillars {
+  position: relative; display: flex; align-items: flex-end; justify-content: center;
+  gap: clamp(28px, 6vw, 76px); height: 300px;
+  transform: rotateX(8deg); transform-style: preserve-3d;
+}
+.pillar { display: flex; flex-direction: column; align-items: center; width: 96px; }
+.pillar-bar {
+  width: 100%; border-radius: 8px 8px 0 0;
+  height: calc(var(--v) * 68px);
+  box-shadow: 0 34px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.16);
+  background: linear-gradient(180deg, var(--tint-hi), var(--tint-lo));
+}
+.pillar.sk-listening { --tint-hi: #6fc0e6; --tint-lo: #1f4552; }
+.pillar.sk-speaking { --tint-hi: #b39ae8; --tint-lo: #362c53; }
+.pillar.sk-reading { --tint-hi: #e6b96e; --tint-lo: #6b5228; }
+.pillar.sk-writing { --tint-hi: #93d1a3; --tint-lo: #29372a; }
+.pillar-tag { margin: 16px 0 0; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--hmuted); }
+.pillar-val { margin: 4px 0 0; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 22px; color: var(--hi); }
+.rig-gate {
+  position: absolute; left: 0; right: 0; z-index: 2;
+  top: calc(300px - (var(--gate) * 68px) - 2px);
+  height: 0; border-top: 1px dashed #c8942a;
+}
+.rig-gate span {
+  position: absolute; right: 0; top: -20px; font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: #c8942a; white-space: nowrap;
+}
+.rig-note {
+  max-width: 62ch; margin: 34px auto 0; text-align: center;
+  font-size: 13.5px; line-height: 1.6; color: var(--hi2);
+}
+@media (max-width: 640px) {
+  .rig-pillars { transform: none; gap: 18px; height: 220px; }
+  .pillar { width: 64px; }
+  .pillar-bar { height: calc(var(--v) * 50px); }
+  .rig-gate { top: calc(220px - (var(--gate) * 50px) - 2px); }
+  /* The inline "gating level" tag has nowhere to sit without crossing a
+     pillar at this width — the rig-note directly below already says the
+     same thing in words, so the tag is redundant here, not lost. */
+  .rig-gate span { display: none; }
+}
+
 .hero .hero-dek {
-  font-size: 18px; color: var(--ink2); max-width: 46ch;
-  margin: 0 0 30px; line-height: 1.6;
+  max-width: 52ch; margin: 40px auto 0; text-align: center;
+  font-size: 17px; line-height: 1.6; color: var(--hi2);
 }
 .hero-note { font-size: 13.5px; color: var(--muted); margin: 18px 0 0; }
+.hero .hero-note { color: var(--hmuted); text-align: center; }
 .cta-group { display: flex; gap: 12px; flex-wrap: wrap; }
+.hero .cta-group { justify-content: center; margin-top: 32px; }
+.hero .btn-outline { border-color: var(--hline-strong); color: var(--hi2); }
+.hero .btn-outline:hover { border-color: var(--hi2); }
 
-/* The specimen: a real instrument reading, not a graphic — but it now
-   sits in space rather than on the page. A wrapping perspective plus a
-   controlled, fixed tilt (not pointer-driven: this is a static marketing
-   page, not the authenticated app's canvas instrument) is enough to read
-   as an object the camera is looking past, not a bordered box. */
-.hero-rig { perspective: 1600px; }
-.hero-profile {
-  margin: 0; padding: 26px 28px 24px;
-  border: 1px solid var(--line); border-radius: var(--radius);
-  background: var(--elevated);
-  box-shadow: var(--edge), var(--shadow-2);
-  transform: rotateY(-6deg) rotateX(2.5deg);
-  transform-style: preserve-3d;
-}
-.hero-profile figcaption {
-  font-size: 11px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 14px;
-}
-.profile-digits { list-style: none; margin: 0; padding: 0; }
-.profile-digits li {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
-  padding: 12px 0 12px 20px; border-top: 1px solid var(--line);
-  position: relative;
-}
-.profile-digits li:first-child { border-top: 0; }
-/* Per-skill colour, read off the row's own position — Listening, Speaking,
-   Reading, Writing, the exact order the copy already lists them in — so
-   the dot is a legend key, not decoration with no referent. */
-.profile-digits li::before {
-  content: ""; position: absolute; left: 0; top: 50%; translate: 0 -50%;
-  width: 8px; height: 8px; border-radius: 50%;
-}
-.profile-digits li:nth-child(1)::before { background: var(--skill-listening); }
-.profile-digits li:nth-child(2)::before { background: var(--skill-speaking); }
-.profile-digits li:nth-child(3)::before { background: var(--skill-reading); }
-.profile-digits li:nth-child(4)::before { background: var(--skill-writing); }
-.digit-skill { font-size: 14px; color: var(--ink2); }
-.digit-value {
-  font-size: 24px; font-weight: 700; letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums; color: var(--ink);
-}
-.profile-note {
-  margin: 18px 0 0; padding: 14px 16px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, var(--gold-glow), transparent 140%);
-  border: 1px solid color-mix(in srgb, var(--gold) 30%, var(--line));
-  font-size: 13px; line-height: 1.55; color: var(--ink2);
-}
-@media (max-width: 880px) {
-  .hero-inner { grid-template-columns: 1fr; gap: 36px; }
-  .hero { padding-top: 64px; }
-  .hero-profile { transform: none; }
-}
+/* The seam: the one gradient that carries the eye from the dark stage
+   into the light reading system below, so the shift never reads as a
+   hard cut between two different websites. */
+.hero-seam { height: 140px; background: linear-gradient(180deg, #08090a, var(--bg)); margin-top: -1px; }
+.proof-strip { background: var(--bg); padding-bottom: 8px; }
+
 .btn {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 14px 26px; border-radius: 12px;
@@ -234,8 +233,8 @@ body {
 
 /* ─── SCREENSHOT GALLERY ─── */
 .screenshot-gallery {
-  margin-top: 76px; overflow-x: auto; -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; padding: 28px 8px 20px;
+  margin-top: 0; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding: 12px 8px 40px;
 }
 .screenshot-gallery::-webkit-scrollbar { display: none; }
 .screenshot-track {
@@ -306,6 +305,38 @@ body {
 }
 .feature-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
 .feature-card p { font-size: 14px; color: var(--muted); line-height: 1.55; }
+
+/* ─── SPEC LIST ───
+   The exhaustive capability lists (Platform, Method) were 18 bordered,
+   shadowed, icon-badged cards in sequence — the exact "more SaaS cards"
+   density this redesign is meant to end. An index reads the same
+   information as reference material rather than 18 separate scenes:
+   a mono index number (the same instrument-reading typographic move as
+   the hero and pricing), a title, tightened supporting copy, one
+   hairline per row. Nothing here is lost — every title and claim below
+   is the same one the card grid held. */
+.spec-list { max-width: 980px; margin: 0 auto; }
+.spec-row {
+  display: grid; grid-template-columns: 64px 220px 1fr; gap: 28px; align-items: baseline;
+  padding: 26px 0; border-top: 1px solid var(--line);
+}
+.spec-list-rules .spec-row { grid-template-columns: 52px 220px 1fr; }
+.spec-row:first-child { border-top: 0; }
+.spec-n {
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px;
+  color: var(--muted); align-self: start; padding-top: 2px;
+}
+.spec-row h3 { font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -.01em; align-self: start; }
+.spec-row p { font-size: 14.5px; color: var(--muted); line-height: 1.6; margin: 0; }
+@media (max-width: 860px) {
+  .spec-row { grid-template-columns: 40px 1fr; }
+  .spec-list-rules .spec-row { grid-template-columns: 40px 1fr; }
+  .spec-row h3 { grid-column: 2; margin-bottom: 8px; }
+  .spec-row p { grid-column: 2; }
+}
+@media (max-width: 640px) {
+  .spec-row { grid-template-columns: 40px 1fr; gap: 16px; }
+}
 
 /* ─── FOUR SKILLS ─── */
 .skills-band { padding: 76px 24px; background: var(--bg2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
@@ -713,8 +744,6 @@ table.legal-table tr:last-child td { border-bottom: none; }
   /* --warn is not re-declared for dark, so the interpretation badge would sit
      dark-gold on near-black. Match what .note does above. */
   .glossary-status.is-interpretation { color: #e0cc80; }
-  .hero { background: var(--bg); }
-  .hero::before { opacity: .7; }
   .site-footer { background: #000; }
   .disclaimer-strip { background: #1e1a08; border-color: #52430d; color: #c8a83a; }
   .site-header { background: color-mix(in srgb, var(--bg) 78%, transparent); }
@@ -722,7 +751,7 @@ table.legal-table tr:last-child td { border-bottom: none; }
 }
 
 @media (max-width: 600px) {
-  .hero { padding: 56px 20px 48px; }
+  .hero { padding: 76px 20px 48px; }
   /*
     This rule used to be `.site-header nav { display: none }`, which removed the
     entire header navigation on phones with nothing in its place — including the
@@ -765,13 +794,31 @@ table.legal-table tr:last-child td { border-bottom: none; }
   transition: opacity var(--dur-3) var(--ease), transform var(--dur-3) var(--ease);
   transition-delay: calc(var(--i, 0) * 80ms);
 }
-.hero-copy > * { animation: site-rise var(--dur-3) var(--ease) both; }
-.hero-copy > .hero-eyebrow { animation-delay: 0ms; }
-.hero-copy > h1 { animation-delay: 60ms; }
-.hero-copy > .hero-dek { animation-delay: 110ms; }
-.hero-copy > .cta-group { animation-delay: 160ms; }
-.hero-copy > .hero-note { animation-delay: 200ms; }
-.hero-rig { animation: site-rise 640ms var(--ease) 180ms both; }
+.hero [data-hero-in] { animation: site-rise var(--dur-3) var(--ease) both; }
+.hero-kicker[data-hero-in] { animation-delay: 0ms; }
+.hero-headline[data-hero-in] { animation-delay: 70ms; }
+.profile-rig[data-hero-in] { animation-delay: 170ms; }
+.hero-dek[data-hero-in] { animation-delay: 300ms; }
+.hero-cta[data-hero-in] { animation-delay: 360ms; }
+.hero-note[data-hero-in] { animation-delay: 400ms; }
+
+/* The one scroll-linked moment on the page: the pillars grow from their
+   base as the rig crosses into view, tied to scroll position itself
+   (native CSS scroll-driven animation, zero JS) rather than merely
+   triggered by it. Where the browser doesn't support scroll timelines
+   yet, @supports means the pillars simply render at full height — never
+   a broken or stuck-at-zero state. */
+@keyframes pillar-rise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.pillar-bar { transform-origin: bottom; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .pillar-bar {
+      animation: pillar-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 45%;
+    }
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -781,7 +828,8 @@ table.legal-table tr:last-child td { border-bottom: none; }
     scroll-behavior: auto !important;
   }
   .reveal-armed [data-reveal] { opacity: 1; transform: none; }
-  .hero-profile,
+  .hero [data-hero-in] { opacity: 1; transform: none; }
+  .rig-pillars,
   .price-card-featured,
   .screenshot-frame,
   .skill-card:hover,
