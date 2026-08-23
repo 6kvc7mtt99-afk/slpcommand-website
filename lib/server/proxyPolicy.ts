@@ -147,6 +147,14 @@ const ALLOW: Rule[] = [
   { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/students\/[^/]+\/speaking$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/students\/[^/]+\/diagnosis$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/alerts$/, reason: "ok" },
+  // FASE TEACHER-GROUPS-001 — groups and secure invitations. The invited
+  // role/organization are still resolved server-side (canInviteRole reads
+  // req.teacherOrgMembership, never the request body) — this allowlist only
+  // says the proxy may forward the request at all.
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/groups$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/teacher\/organizations\/[^/]+\/groups$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/teacher\/organizations\/[^/]+\/invites$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/teacher\/invites\/accept$/, reason: "ok" },
 ];
 
 export type PolicyDecision =

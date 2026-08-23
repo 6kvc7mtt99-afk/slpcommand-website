@@ -51,6 +51,18 @@ describe("proxyPolicy", () => {
     expect(decidePolicy("GET", "/api/teacher/organizations/org-1/alerts")).toEqual({ action: "forward" });
   });
 
+  it("forwards Teacher Groups + Invitations routes", () => {
+    expect(decidePolicy("GET", "/api/teacher/organizations/org-1/groups")).toEqual({ action: "forward" });
+    expect(decidePolicy("POST", "/api/teacher/organizations/org-1/groups")).toEqual({ action: "forward" });
+    expect(decidePolicy("POST", "/api/teacher/organizations/org-1/invites")).toEqual({ action: "forward" });
+    expect(decidePolicy("POST", "/api/teacher/invites/accept")).toEqual({ action: "forward" });
+  });
+
+  it("never forwards a write to a Teacher STUDENT/roster route — those stay read-only", () => {
+    expect(decidePolicy("POST", "/api/teacher/organizations/org-1/students")).toMatchObject({ action: "deny", status: 404 });
+    expect(decidePolicy("DELETE", "/api/teacher/organizations/org-1/groups")).toMatchObject({ action: "deny", status: 404 });
+  });
+
   it("never forwards a write to a Teacher route — this phase is read-only", () => {
     expect(decidePolicy("POST", "/api/teacher/organizations/org-1/students")).toMatchObject({ action: "deny", status: 404 });
     expect(decidePolicy("PATCH", "/api/teacher/organizations/org-1/students/stu-1")).toMatchObject({ action: "deny", status: 404 });
