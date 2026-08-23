@@ -123,18 +123,20 @@ function ProficiencySummary({ skills }: { skills: { skill: string; theta: number
     return <p className="data-note">No proficiency data recorded for this student yet.</p>;
   }
   return (
-    <table className="teacher-table">
-      <thead><tr><th>Skill</th><th>Evidence</th><th>Last measured</th></tr></thead>
-      <tbody>
-        {skills.map((s) => (
-          <tr key={s.skill}>
-            <td className={`skill-badge-${s.skill}`}>{s.skill}</td>
-            <td>{evidenceLabel(s.n_events)} ({s.n_events})</td>
-            <td>{s.last_event_at ? new Date(s.last_event_at).toLocaleDateString() : "—"}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="teacher-table-scroll">
+      <table className="teacher-table">
+        <thead><tr><th>Skill</th><th>Evidence</th><th>Last measured</th></tr></thead>
+        <tbody>
+          {skills.map((s) => (
+            <tr key={s.skill}>
+              <td className={`skill-badge-${s.skill}`}>{s.skill}</td>
+              <td>{evidenceLabel(s.n_events)} ({s.n_events})</td>
+              <td>{s.last_event_at ? new Date(s.last_event_at).toLocaleDateString() : "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -143,20 +145,22 @@ function WritingHistory({ attempts }: { attempts: { id: string; submitted_at: st
     return <p className="data-note">No Writing submissions yet.</p>;
   }
   return (
-    <table className="teacher-table">
-      <thead><tr><th>Date</th><th>Topic</th><th>Score</th><th>Target → Estimated</th><th>Status</th></tr></thead>
-      <tbody>
-        {attempts.map((a) => (
-          <tr key={a.id}>
-            <td>{new Date(a.submitted_at).toLocaleDateString()}</td>
-            <td>{a.topic ?? "—"}</td>
-            <td>{a.overall_score ?? "Pending"}</td>
-            <td>{a.target_level ?? "—"} → {a.estimated_level ?? "—"}</td>
-            <td>{a.status}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="teacher-table-scroll">
+      <table className="teacher-table">
+        <thead><tr><th>Date</th><th>Topic</th><th>Score</th><th>Target → Estimated</th><th>Status</th></tr></thead>
+        <tbody>
+          {attempts.map((a) => (
+            <tr key={a.id}>
+              <td>{new Date(a.submitted_at).toLocaleDateString()}</td>
+              <td>{a.topic ?? "—"}</td>
+              <td>{a.overall_score ?? "Pending"}</td>
+              <td>{a.target_level ?? "—"} → {a.estimated_level ?? "—"}</td>
+              <td>{a.status}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -174,17 +178,19 @@ function SpeakingSummary({ attempts }: { attempts: { id: string; created_at: str
           DATA LIMITED — {attempts.length} recorded evaluation{attempts.length === 1 ? "" : "s"}, not enough for a trend.
         </p>
       )}
-      <table className="teacher-table">
-        <thead><tr><th>Date</th><th>Fluency</th></tr></thead>
-        <tbody>
-          {attempts.map((a) => (
-            <tr key={a.id}>
-              <td>{new Date(a.created_at).toLocaleDateString()}</td>
-              <td>{a.fluency_score ?? "—"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="teacher-table-scroll">
+        <table className="teacher-table">
+          <thead><tr><th>Date</th><th>Fluency</th></tr></thead>
+          <tbody>
+            {attempts.map((a) => (
+              <tr key={a.id}>
+                <td>{new Date(a.created_at).toLocaleDateString()}</td>
+                <td>{a.fluency_score ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 }

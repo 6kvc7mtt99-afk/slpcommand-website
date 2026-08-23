@@ -71,22 +71,24 @@ export default async function StudentRoster({
       {roster.total === 0 ? (
         <div className="teacher-empty">No students match this filter.</div>
       ) : (
-        <table className="teacher-table">
-          <thead>
-            <tr><th>Student</th><th>Group</th><th>Target</th><th>Last activity</th><th>Member since</th></tr>
-          </thead>
-          <tbody>
-            {roster.students.map((s) => (
-              <tr key={s.studentId}>
-                <td><Link href={`/teacher/${organizationId}/students/${s.studentId}`}>{s.studentId}</Link></td>
-                <td>{s.groupId ? (groupNameById.get(s.groupId) ?? "—") : "—"}</td>
-                <td>{s.targetLevel ?? "—"}</td>
-                <td>{s.lastActivityDate ?? "No activity recorded"}</td>
-                <td>{new Date(s.memberSince).toLocaleDateString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="teacher-table-scroll">
+          <table className="teacher-table">
+            <thead>
+              <tr><th>Student</th><th>Group</th><th>Target</th><th>Last activity</th><th>Member since</th></tr>
+            </thead>
+            <tbody>
+              {roster.students.map((s) => (
+                <tr key={s.studentId}>
+                  <td><Link href={`/teacher/${organizationId}/students/${s.studentId}`}>{s.studentId}</Link></td>
+                  <td>{s.groupId ? (groupNameById.get(s.groupId) ?? "—") : "—"}</td>
+                  <td>{s.targetLevel ?? "—"}</td>
+                  <td>{s.lastActivityDate ?? "No activity recorded"}</td>
+                  <td>{new Date(s.memberSince).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {lastPage > 1 && (
         <div style={{ marginTop: 16, display: "flex", gap: 12 }}>

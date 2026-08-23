@@ -89,6 +89,12 @@
 .teacher-card .value { font-size: var(--fs-metric); font-weight: 700; line-height: 1.1; }
 .teacher-card .label { font-size: var(--fs-label); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
 
+/* A 5-column roster row (Student/Group/Target/Last activity/Member since)
+   is wider than a phone viewport — this scrolls the table horizontally
+   instead of forcing the whole page to scroll (found via a real mobile
+   viewport check, not assumed: 375px wide, the un-wrapped table pushed
+   document.documentElement.scrollWidth to 408px). */
+.teacher-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .teacher-table { width: 100%; border-collapse: collapse; font-size: var(--fs-support); }
 .teacher-table th {
   text-align: left; padding: 8px 12px; color: var(--muted);

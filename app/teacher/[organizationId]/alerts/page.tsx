@@ -34,19 +34,21 @@ export default async function AlertsPage({
     <>
       <h1 className="teacher-h1">Alerts</h1>
       <p className="teacher-sub">{alerts.students.length} of {alerts.totalStudents} students need attention.</p>
-      <table className="teacher-table">
-        <thead><tr><th>Student</th><th>Status</th><th>Idle</th><th>Last activity</th></tr></thead>
-        <tbody>
-          {sorted.map((s) => (
-            <tr key={s.studentId}>
-              <td><Link href={`/teacher/${organizationId}/students/${s.studentId}`}>{s.studentId}</Link></td>
-              <td><span className={`risk-pill risk-${s.risk.status}`}>{s.risk.status.replace("_", " ")}</span></td>
-              <td>{s.risk.idleDays !== null ? `${s.risk.idleDays}d` : "—"}</td>
-              <td>{s.lastActivityDate ?? "Never recorded"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="teacher-table-scroll">
+        <table className="teacher-table">
+          <thead><tr><th>Student</th><th>Status</th><th>Idle</th><th>Last activity</th></tr></thead>
+          <tbody>
+            {sorted.map((s) => (
+              <tr key={s.studentId}>
+                <td><Link href={`/teacher/${organizationId}/students/${s.studentId}`}>{s.studentId}</Link></td>
+                <td><span className={`risk-pill risk-${s.risk.status}`}>{s.risk.status.replace("_", " ")}</span></td>
+                <td>{s.risk.idleDays !== null ? `${s.risk.idleDays}d` : "—"}</td>
+                <td>{s.lastActivityDate ?? "Never recorded"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 }

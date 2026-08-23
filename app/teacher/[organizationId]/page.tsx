@@ -65,24 +65,26 @@ export default async function TeacherDashboard({
       {(alerts?.students.length ?? 0) === 0 ? (
         <div className="teacher-empty">No students currently need attention.</div>
       ) : (
-        <table className="teacher-table">
-          <thead>
-            <tr><th>Student</th><th>Status</th><th>Last activity</th><th>Target</th></tr>
-          </thead>
-          <tbody>
-            {alerts!.students
-              .sort((a, b) => severityRank(b.risk.status) - severityRank(a.risk.status))
-              .slice(0, 10)
-              .map((s) => (
-                <tr key={s.studentId}>
-                  <td><Link href={`/teacher/${organizationId}/students/${s.studentId}`}>{s.studentId}</Link></td>
-                  <td><span className={`risk-pill risk-${s.risk.status}`}>{s.risk.status.replace("_", " ")}</span></td>
-                  <td>{s.lastActivityDate ?? "—"}</td>
-                  <td>{s.targetLevel ?? "—"}</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        <div className="teacher-table-scroll">
+          <table className="teacher-table">
+            <thead>
+              <tr><th>Student</th><th>Status</th><th>Last activity</th><th>Target</th></tr>
+            </thead>
+            <tbody>
+              {alerts!.students
+                .sort((a, b) => severityRank(b.risk.status) - severityRank(a.risk.status))
+                .slice(0, 10)
+                .map((s) => (
+                  <tr key={s.studentId}>
+                    <td><Link href={`/teacher/${organizationId}/students/${s.studentId}`}>{s.studentId}</Link></td>
+                    <td><span className={`risk-pill risk-${s.risk.status}`}>{s.risk.status.replace("_", " ")}</span></td>
+                    <td>{s.lastActivityDate ?? "—"}</td>
+                    <td>{s.targetLevel ?? "—"}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       )}
       <p style={{ marginTop: 8 }}>
         <Link href={`/teacher/${organizationId}/alerts`}>View all attention items →</Link>

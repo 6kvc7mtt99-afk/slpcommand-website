@@ -95,6 +95,28 @@ test.describe("Teacher — rendered pages", () => {
       expect(serious.map((v) => `${path}: ${v.id}`), path).toEqual([]);
     }
   });
+
+  // Found by an ad hoc mobile-viewport check while auditing this pass's own
+  // work: the roster's new Group column pushed a 5-column table wider than a
+  // phone viewport with no scroll container, forcing the WHOLE PAGE to
+  // scroll horizontally (measured: documentElement.scrollWidth 408 vs a
+  // 375px viewport). Fixed by wrapping every `.teacher-table` in
+  // `.teacher-table-scroll` (app/teacher.css) — this pins that fix down so a
+  // future added column can't silently reintroduce it.
+  test("no Teacher page forces the whole document to scroll horizontally on a phone viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    for (const path of [
+      `/teacher/${ORG}`, `/teacher/${ORG}/students`, `/teacher/${ORG}/students/${STUDENT}`,
+      `/teacher/${ORG}/groups`, `/teacher/${ORG}/invites`, `/teacher/${ORG}/alerts`,
+    ]) {
+      await page.goto(path);
+      const [scrollWidth, clientWidth] = await page.evaluate(() => [
+        document.documentElement.scrollWidth,
+        document.documentElement.clientWidth,
+      ]);
+      expect(scrollWidth, path).toBeLessThanOrEqual(clientWidth);
+    }
+  });
 });
 
 test.describe("Teacher — a student must never see it", () => {
