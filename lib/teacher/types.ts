@@ -20,6 +20,7 @@ export interface TeacherMeResponse {
 export interface RosterStudent {
   studentId: string;
   memberSince: string;
+  groupId: string | null;
   targetLevel: string | null;
   lastActivityAt: string | null;
   lastActivityDate: string | null;
@@ -145,4 +146,38 @@ export interface AlertsResponse {
   ok: true;
   students: AlertStudent[];
   totalStudents: number;
+}
+
+// FASE TEACHER-GROUPS-001 — groups + secure invitations. Group objects mirror
+// lib/teacher/groups.js's own return shape verbatim (created_at stays
+// snake_case, same convention as WritingAttempt/SpeakingAttempt above).
+export interface TeacherGroup {
+  id: string;
+  name: string;
+  created_at: string;
+  studentCount: number;
+}
+
+export interface GroupsResponse {
+  ok: true;
+  groups: TeacherGroup[];
+  unassignedCount: number;
+}
+
+export interface CreatedInvite {
+  id: string;
+  role: TeacherRole;
+  expiresAt: string;
+  token: string;
+}
+
+export interface CreateInviteResponse {
+  ok: true;
+  invite: CreatedInvite;
+}
+
+export interface AcceptInviteResponse {
+  ok: true;
+  organizationId: string;
+  role: TeacherRole;
 }

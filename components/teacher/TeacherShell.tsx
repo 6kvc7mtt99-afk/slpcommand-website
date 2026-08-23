@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 const NAV = [
   { seg: "", label: "Overview" },
   { seg: "students", label: "Students" },
+  { seg: "groups", label: "Groups" },
+  { seg: "invites", label: "Invite" },
   { seg: "alerts", label: "Alerts" },
 ];
 

@@ -5,7 +5,7 @@
 // Teacher shell.
 
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type BrowserContext } from "@playwright/test";
 import { E2E_BASE_URL } from "./baseUrl";
 
 const ORG = "org-e2e";
@@ -64,8 +64,31 @@ test.describe("Teacher — rendered pages", () => {
     expect(res?.status()).toBe(404);
   });
 
+  test("Groups page lists an existing group and creates a new one", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/groups`);
+    await expect(page.getByText("Morning cohort")).toBeVisible();
+    await page.getByLabel("New group name").fill("E2E Evening Cohort");
+    await page.getByRole("button", { name: "Create group" }).click();
+    await expect(page.getByText("E2E Evening Cohort")).toBeVisible();
+  });
+
+  test("the roster's group filter links to a filtered view", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/groups`);
+    await page.getByText("Morning cohort").click();
+    await expect(page).toHaveURL(/\/students\?groupId=group-1$/);
+  });
+
+  test("Invites page creates a one-time invitation link", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/invites`);
+    await page.getByRole("button", { name: "Create invitation link" }).click();
+    await expect(page.getByText(/\/invite\/accept\?token=/)).toBeVisible();
+  });
+
   test("Teacher pages have no serious axe violations", async ({ page }) => {
-    for (const path of [`/teacher/${ORG}`, `/teacher/${ORG}/students`, `/teacher/${ORG}/students/${STUDENT}`, `/teacher/${ORG}/alerts`]) {
+    for (const path of [
+      `/teacher/${ORG}`, `/teacher/${ORG}/students`, `/teacher/${ORG}/students/${STUDENT}`,
+      `/teacher/${ORG}/groups`, `/teacher/${ORG}/invites`, `/teacher/${ORG}/alerts`,
+    ]) {
       await page.goto(path);
       const result = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
       const serious = result.violations.filter((v) => v.impact === "critical" || v.impact === "serious");
@@ -99,5 +122,67 @@ test.describe("Teacher — a student must never see it", () => {
   test("no session at all → /login, not the Teacher shell", async ({ page }) => {
     await page.goto("/teacher");
     await expect(page).toHaveURL(/\/login$/);
+  });
+});
+
+// FASE TEACHER-GROUPS-001 — /invite/accept is deliberately OUTSIDE /teacher/*
+// (the person opening it is not staff, often not even a member of anything
+// yet), so it gets its own describe block rather than reusing teacherCookies.
+test.describe("Invite acceptance — the public, non-staff flow", () => {
+  const studentCookies = [
+    { name: "slp_at", value: "test-access", url: E2E_BASE_URL },
+    { name: "slp_rt", value: "test-refresh", url: E2E_BASE_URL },
+    { name: "slp_uid", value: "student-invited", url: E2E_BASE_URL },
+    { name: "slp_em", value: "invited@example.com", url: E2E_BASE_URL },
+  ];
+
+  async function createRealInvite(context: BrowserContext): Promise<string> {
+    await context.addCookies(teacherCookies);
+    const origin = E2E_BASE_URL.replace("127.0.0.1", "localhost");
+    const res = await context.request.post(
+      `${E2E_BASE_URL}/api/backend/api/teacher/organizations/${ORG}/invites`,
+      { headers: { Origin: origin, "X-SLP-Client": "web" }, data: { role: "student" } },
+    );
+    if (!res.ok()) {
+      throw new Error(`createRealInvite failed: ${res.status()} ${await res.text()}`);
+    }
+    const body = (await res.json()) as { invite: { token: string } };
+    await context.clearCookies();
+    return body.invite.token;
+  }
+
+  test("a signed-in invitee can accept a real invitation, and lands back at /teacher", async ({ context, page }) => {
+    const token = await createRealInvite(context);
+    await context.addCookies(studentCookies);
+    await context.addInitScript(() => localStorage.setItem("onboarding_completed:student-invited", "1"));
+    await page.goto(`/invite/accept?token=${token}`);
+    await page.getByRole("button", { name: "Accept invitation" }).click();
+    await expect(page.getByText(/joined the organization/i)).toBeVisible();
+    await expect(page).toHaveURL(/\/(teacher|dashboard)/, { timeout: 5000 });
+  });
+
+  test("a fabricated token is rejected with a vague, non-enumerating error", async ({ context, page }) => {
+    await context.addCookies(studentCookies);
+    await page.goto(`/invite/accept?token=${"0".repeat(64)}`);
+    await page.getByRole("button", { name: "Accept invitation" }).click();
+    await expect(page.getByText(/invalid or has expired/i)).toBeVisible();
+  });
+
+  test("the same token cannot be redeemed twice", async ({ context, page }) => {
+    const token = await createRealInvite(context);
+    await context.addCookies(studentCookies);
+    await page.goto(`/invite/accept?token=${token}`);
+    await page.getByRole("button", { name: "Accept invitation" }).click();
+    await expect(page.getByText(/joined the organization/i)).toBeVisible();
+
+    await page.goto(`/invite/accept?token=${token}`);
+    await page.getByRole("button", { name: "Accept invitation" }).click();
+    await expect(page.getByText(/invalid or has expired/i)).toBeVisible();
+  });
+
+  test("without a session, the page asks the invitee to sign in first — no accept button", async ({ page }) => {
+    await page.goto(`/invite/accept?token=${"a".repeat(64)}`);
+    await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Accept invitation" })).toHaveCount(0);
   });
 });

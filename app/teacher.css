@@ -133,6 +133,62 @@
 .skill-badge-writing { color: var(--skill-writing); }
 .skill-badge-speaking { color: var(--skill-speaking); }
 
+/* FASE TEACHER-GROUPS-001 — groups overview + secure invitations. */
+.teacher-group-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.teacher-group-card {
+  background: var(--elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: border-color var(--dur-1) var(--ease-std);
+}
+.teacher-group-card:hover { border-color: var(--accent); }
+.teacher-group-card .name { font-weight: 600; font-size: var(--fs-body); }
+.teacher-group-card .count {
+  margin-top: 6px; font-size: var(--fs-label); color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.teacher-group-card[data-active="true"] { border-color: var(--accent); background: var(--accent-light); }
+
+.teacher-filter-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+}
+.teacher-filter-bar a {
+  display: inline-block; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--line); font-size: var(--fs-support); color: var(--ink2); text-decoration: none;
+}
+.teacher-filter-bar a:hover { border-color: var(--accent); }
+.teacher-filter-bar a[data-active="true"] { background: var(--accent-light); border-color: var(--accent); color: var(--accent-dark); font-weight: 600; }
+
+.teacher-form {
+  background: var(--elevated); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  padding: 20px 22px; max-width: 420px; margin-bottom: 28px;
+}
+.teacher-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.teacher-field label { font-size: var(--fs-label); text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.teacher-field input, .teacher-field select {
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); font-size: var(--fs-body);
+}
+.teacher-field input:focus-visible, .teacher-field select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.teacher-token-box {
+  background: var(--bg2); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px; margin-top: 16px; word-break: break-all; font-family: var(--font-mono, monospace);
+  font-size: var(--fs-meta);
+}
+.teacher-token-warning { font-size: var(--fs-meta); color: var(--warn); margin-top: 8px; }
+.teacher-inline-error { color: var(--bad); font-size: var(--fs-support); margin-top: 6px; }
+.teacher-inline-success { color: var(--ok); font-size: var(--fs-support); margin-top: 6px; }
+
 @media (max-width: 860px) {
   .teacher-shell { flex-direction: column; }
   .teacher-sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); }

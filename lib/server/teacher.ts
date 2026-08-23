@@ -10,7 +10,7 @@ import { backendJson } from "./backend";
 import type {
   TeacherMeResponse, RosterResponse, StudentSummary, StudentActivityResponse,
   StudentWritingResponse, StudentProficiencyResponse, StudentSpeakingResponse,
-  StudentDiagnosisResponse, AlertsResponse, TeacherMembership,
+  StudentDiagnosisResponse, AlertsResponse, TeacherMembership, GroupsResponse,
 } from "@/lib/teacher/types";
 
 /**
@@ -31,14 +31,28 @@ export async function hasTeacherAccess(): Promise<boolean> {
 }
 
 export const loadOrganizationStudents = cache(
-  async (organizationId: string, params?: { limit?: number; offset?: number }): Promise<RosterResponse | null> => {
+  async (
+    organizationId: string,
+    params?: { limit?: number; offset?: number; groupId?: string },
+  ): Promise<RosterResponse | null> => {
     const search = new URLSearchParams();
     if (params?.limit) search.set("limit", String(params.limit));
     if (params?.offset) search.set("offset", String(params.offset));
+    if (params?.groupId) search.set("groupId", params.groupId);
     const qs = search.toString();
     const result = await backendJson<RosterResponse>({
       path: `/api/teacher/organizations/${organizationId}/students`,
       search: qs ? `?${qs}` : undefined,
+      cache: "no-store",
+    });
+    return result.status === 200 ? result.data : null;
+  },
+);
+
+export const loadOrganizationGroups = cache(
+  async (organizationId: string): Promise<GroupsResponse | null> => {
+    const result = await backendJson<GroupsResponse>({
+      path: `/api/teacher/organizations/${organizationId}/groups`,
       cache: "no-store",
     });
     return result.status === 200 ? result.data : null;

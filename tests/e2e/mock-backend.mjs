@@ -1,4 +1,24 @@
 import http from "node:http";
+import crypto from "node:crypto";
+
+/** Reads and JSON-parses a request body, then invokes cb — the only POST
+ * routes below that need to read what was actually sent (groups/invites). */
+function withBody(req, cb) {
+  let raw = "";
+  req.on("data", (chunk) => { raw += chunk; });
+  req.on("end", () => {
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch { body = {}; }
+    cb(body);
+  });
+}
+
+// FASE TEACHER-GROUPS-001 — in-memory, per-process state so the E2E mock can
+// round-trip a real create → list and create-invite → accept flow, the same
+// discipline as the rest of this fixture (real requests, real responses, no
+// production data).
+const MOCK_GROUPS = [{ id: "group-1", name: "Morning cohort", created_at: "2026-01-01T00:00:00Z", studentCount: 0 }];
+const MOCK_INVITES = new Map();
 
 const COACH_PLAN = {
   version: "1.1.0",
@@ -606,6 +626,52 @@ const server = http.createServer((req, res) => {
   }
   if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/alerts`) {
     res.end(JSON.stringify({ ok: true, totalStudents: 1, students: [] }));
+    return;
+  }
+  if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/groups`) {
+    if (req.method === "POST") {
+      withBody(req, (body) => {
+        const name = typeof body.name === "string" ? body.name.trim() : "";
+        if (!name) { res.statusCode = 400; res.end(JSON.stringify({ error: "name is required" })); return; }
+        if (MOCK_GROUPS.some((g) => g.name === name)) {
+          res.statusCode = 409; res.end(JSON.stringify({ error: "a group with this name already exists" })); return;
+        }
+        const group = { id: `group-${MOCK_GROUPS.length + 1}`, name, created_at: new Date().toISOString(), studentCount: 0 };
+        MOCK_GROUPS.push(group);
+        res.statusCode = 201;
+        res.end(JSON.stringify({ ok: true, group }));
+      });
+      return;
+    }
+    res.end(JSON.stringify({ ok: true, groups: MOCK_GROUPS, unassignedCount: 1 }));
+    return;
+  }
+  if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/invites` && req.method === "POST") {
+    withBody(req, (body) => {
+      const role = typeof body.role === "string" ? body.role : "student";
+      const groupId = typeof body.groupId === "string" ? body.groupId : null;
+      const token = crypto.randomBytes(32).toString("hex");
+      MOCK_INVITES.set(token, { organizationId: TEACHER_ORG, role, groupId, used: false });
+      res.statusCode = 201;
+      res.end(JSON.stringify({
+        ok: true,
+        invite: { id: `invite-${MOCK_INVITES.size}`, role, expiresAt: "2026-09-01T00:00:00Z", token },
+      }));
+    });
+    return;
+  }
+  if (url.pathname === "/api/teacher/invites/accept" && req.method === "POST") {
+    withBody(req, (body) => {
+      const token = typeof body.token === "string" ? body.token : "";
+      const invite = MOCK_INVITES.get(token);
+      if (!invite || invite.used) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ error: "invalid_or_expired" }));
+        return;
+      }
+      invite.used = true;
+      res.end(JSON.stringify({ ok: true, organizationId: invite.organizationId, role: invite.role }));
+    });
     return;
   }
 
