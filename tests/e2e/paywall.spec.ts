@@ -191,7 +191,24 @@ test("with billing off there is no checkout in the page", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 20_000 });
   await expect(page.getByRole("button", { name: "Subscribe" })).toHaveCount(0);
   // The honest alternative is still offered.
-  await expect(page.getByText("SLP Command Professional is purchased in the iOS app")).toBeVisible();
+  //
+  // RE-POINTED, AND WHY. This asserted the literal "SLP Command Professional is
+  // purchased in the iOS app", which was the copy when the test was written in
+  // f25be3c. 4253dfc rewrote that block to name the web kill switch and give a
+  // support address instead — a deliberate copy change that did not update this
+  // test. The suite never reported it: 4253dfc also broke a SubscriptionView
+  // unit test, CI stopped at vitest, and Playwright never ran. Fixing the unit
+  // test is what finally let this one execute.
+  //
+  // The INTENT is unchanged and is what this now asserts: with checkout off the
+  // page must still tell the learner where to go, rather than being a dead end.
+  // Keyed on the heading rather than the sentence, because a heading is the part
+  // a copy edit is least likely to reword.
+  await expect(page.getByRole("heading", { name: "Web checkout is off on this account" })).toBeVisible();
+  // `exact` matters: the address appears twice on this screen — once in the
+  // section lead and once in the lock body — and a loose match is a strict-mode
+  // violation rather than a passing assertion.
+  await expect(page.getByText("Email support@slpcommand.com.", { exact: true })).toBeVisible();
 });
 
 test("with billing off there is nothing behind the page either", async ({ browser }) => {
