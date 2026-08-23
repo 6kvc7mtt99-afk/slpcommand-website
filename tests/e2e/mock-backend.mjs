@@ -508,6 +508,107 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({ ok: true }));
     return;
   }
+  // FASE TEACHER-WEB-001 — one fake organization, one fake student, enough
+  // for a real rendered-page a11y/visual check of every Teacher screen
+  // without touching production or inventing a real academy.
+  const TEACHER_ORG = "org-e2e";
+  const TEACHER_STUDENT = "student-e2e";
+  // Distinguishes callers by the exact access-token string the test fixture
+  // sent — "test-access-teacher" is the only one with a real membership.
+  // Anyone else (a real student session, or no matching fixture at all)
+  // gets zero memberships, exactly like a real signed-in learner who has
+  // never been added to any organization.
+  const teacherAuth = req.headers.authorization ?? "";
+  const isTeacherCaller = teacherAuth.includes("test-access-teacher");
+  if (url.pathname === "/api/teacher/me") {
+    res.end(JSON.stringify({
+      ok: true,
+      memberships: isTeacherCaller
+        ? [{ organizationId: TEACHER_ORG, role: "teacher", organizationName: "SLP Command E2E Academy" }]
+        : [],
+    }));
+    return;
+  }
+  if (url.pathname.startsWith("/api/teacher/organizations/") && !isTeacherCaller) {
+    res.statusCode = 403;
+    res.end(JSON.stringify({ error: "Teacher access required" }));
+    return;
+  }
+  if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/students`) {
+    res.end(JSON.stringify({
+      ok: true,
+      total: 1,
+      students: [{
+        studentId: TEACHER_STUDENT, memberSince: "2026-01-15T00:00:00Z",
+        targetLevel: "3", lastActivityAt: "2026-08-20T09:00:00Z", lastActivityDate: "2026-08-20",
+      }],
+    }));
+    return;
+  }
+  if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/students/${TEACHER_STUDENT}`) {
+    res.end(JSON.stringify({
+      ok: true,
+      student: { studentId: TEACHER_STUDENT, memberSince: "2026-01-15T00:00:00Z", targetLevel: "3", accountCreatedAt: "2026-01-10T00:00:00Z" },
+    }));
+    return;
+  }
+  if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/students/${TEACHER_STUDENT}/activity`) {
+    res.end(JSON.stringify({
+      ok: true, studentId: TEACHER_STUDENT, days: 30,
+      activity: [{
+        activity_date: "2026-08-20", reading_practice_question_count: 12, reading_exam_count: 1,
+        listening_practice_question_count: 3, listening_exam_count: 0, writing_submission_count: 2,
+        speaking_evaluation_count: 1, academy_completion_count: 4, skills_trained_count: 3,
+        qualifying_activity_count: 5, first_activity_at: "2026-08-20T08:00:00Z", last_activity_at: "2026-08-20T09:00:00Z",
+      }],
+    }));
+    return;
+  }
+  if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/students/${TEACHER_STUDENT}/writing`) {
+    res.end(JSON.stringify({
+      ok: true, studentId: TEACHER_STUDENT,
+      attempts: [{
+        id: "w-1", submitted_at: "2026-08-19T10:00:00Z", mode: "practice", task_type: "essay",
+        topic: "Describe a recent training exercise", target_level: "3", estimated_level: "2+",
+        overall_score: 78, task_score: 80, content_score: 76, language_score: 78,
+        strengths: ["clear structure"], weaknesses: ["limited range"], critical_errors: [], recurrent_errors: ["article omission"],
+        status: "reviewed",
+      }],
+    }));
+    return;
+  }
+  if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/students/${TEACHER_STUDENT}/proficiency`) {
+    res.end(JSON.stringify({
+      ok: true, studentId: TEACHER_STUDENT,
+      skills: [{ skill: "reading", theta: 0.4, sigma2: 0.2, n_events: 12, last_event_at: "2026-08-20T09:00:00Z" }],
+    }));
+    return;
+  }
+  if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/students/${TEACHER_STUDENT}/speaking`) {
+    res.end(JSON.stringify({
+      ok: true, studentId: TEACHER_STUDENT,
+      attempts: [{ id: "sp-1", created_at: "2026-08-10T09:00:00Z", fluency_score: 65, grammar_score: null, vocabulary_score: null, coherence_score: null, task_achievement_score: null, ratable: true }],
+    }));
+    return;
+  }
+  if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/students/${TEACHER_STUDENT}/diagnosis`) {
+    res.end(JSON.stringify({
+      ok: true,
+      risk: { status: "HEALTHY", reason: "active", idleDays: 1 },
+      findings: [{
+        id: "skill_volume_imbalance",
+        observed: "Reading: 12 items · Listening: 3 items (last 30 days)",
+        calculated: "Listening is under-practiced relative to Reading",
+        recommended: "Consider assigning additional Listening practice",
+      }],
+    }));
+    return;
+  }
+  if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/alerts`) {
+    res.end(JSON.stringify({ ok: true, totalStudents: 1, students: [] }));
+    return;
+  }
+
   res.statusCode = 404;
   res.end(JSON.stringify({ error: "not_found" }));
 });

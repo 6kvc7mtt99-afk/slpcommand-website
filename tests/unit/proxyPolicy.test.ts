@@ -39,6 +39,32 @@ describe("proxyPolicy", () => {
     expect(decidePolicy("POST", "/api/reading/generate")).toMatchObject({ action: "deny", status: 410, reason: "admin_secret" });
   });
 
+  it("forwards SLP Command Teacher routes, GET-only", () => {
+    expect(decidePolicy("GET", "/api/teacher/me")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/teacher/organizations/org-1/students")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/teacher/organizations/org-1/students/stu-1")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/teacher/organizations/org-1/students/stu-1/activity")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/teacher/organizations/org-1/students/stu-1/writing")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/teacher/organizations/org-1/students/stu-1/proficiency")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/teacher/organizations/org-1/students/stu-1/speaking")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/teacher/organizations/org-1/students/stu-1/diagnosis")).toEqual({ action: "forward" });
+    expect(decidePolicy("GET", "/api/teacher/organizations/org-1/alerts")).toEqual({ action: "forward" });
+  });
+
+  it("never forwards a write to a Teacher route — this phase is read-only", () => {
+    expect(decidePolicy("POST", "/api/teacher/organizations/org-1/students")).toMatchObject({ action: "deny", status: 404 });
+    expect(decidePolicy("PATCH", "/api/teacher/organizations/org-1/students/stu-1")).toMatchObject({ action: "deny", status: 404 });
+    expect(decidePolicy("DELETE", "/api/teacher/me")).toMatchObject({ action: "deny", status: 404 });
+  });
+
+  it("a slash smuggled into the :organizationId segment does not escape the pattern", () => {
+    // The proxy's own allowlist is not the tenant-isolation boundary — the
+    // backend's requireOrgMembership is — but a malformed organizationId
+    // should still fail closed here rather than silently forward to a
+    // different real backend path.
+    expect(decidePolicy("GET", "/api/teacher/organizations/org-1/../org-2/students")).toMatchObject({ action: "deny" });
+  });
+
   it("returns 404 for unknown paths and disallowed methods", () => {
     expect(decidePolicy("GET", "/api/unknown/thing")).toMatchObject({ action: "deny", status: 404 });
     expect(decidePolicy("PUT", "/api/profile")).toMatchObject({ action: "deny", status: 404 });

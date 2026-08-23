@@ -132,6 +132,21 @@ const ALLOW: Rule[] = [
   { method: "GET", pattern: /^\/api\/admin\//, reason: "ok" },
   { method: "POST", pattern: /^\/api\/admin\//, reason: "ok" },
   { method: "PATCH", pattern: /^\/api\/admin\//, reason: "ok" },
+
+  // FASE TEACHER-WEB-001 — SLP Command Teacher, read-only in this phase.
+  // Every route is GET; the backend's own requireTeacherRole +
+  // requireOrgMembership decide access from the verified JWT, never from
+  // this allowlist — this only says the PROXY may forward the request at
+  // all, same division of responsibility as every other entry above.
+  { method: "GET", pattern: /^\/api\/teacher\/me$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/students$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/students\/[^/]+$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/students\/[^/]+\/activity$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/students\/[^/]+\/writing$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/students\/[^/]+\/proficiency$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/students\/[^/]+\/speaking$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/students\/[^/]+\/diagnosis$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/alerts$/, reason: "ok" },
 ];
 
 export type PolicyDecision =

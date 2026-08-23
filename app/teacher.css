@@ -1,0 +1,141 @@
+/* SLP COMMAND TEACHER — B2B shell.
+   Reuses the product design system's tokens (ink/surface/accent/skill
+   colors, --radius, --fs-*) so this reads as an edition of SLP Command, not
+   a bolted-on admin panel with its own palette. */
+
+.teacher-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.teacher-sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.teacher-brand {
+  font-size: var(--fs-support);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.teacher-brand small {
+  display: block;
+  font-size: var(--fs-label);
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.teacher-org-name {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  padding: 4px 10px 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+
+.teacher-nav a {
+  display: block;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--ink2);
+  font-size: var(--fs-body);
+  text-decoration: none;
+  transition: background var(--dur-1) var(--ease-std);
+}
+.teacher-nav a:hover { background: var(--bg2); }
+.teacher-nav a[data-active="true"] {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
+.teacher-main {
+  flex: 1;
+  padding: 32px 40px;
+  max-width: var(--content-max);
+}
+
+.teacher-h1 {
+  font-size: var(--fs-title);
+  margin: 0 0 6px;
+}
+.teacher-sub { color: var(--muted); margin: 0 0 28px; font-size: var(--fs-support); }
+
+.teacher-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.teacher-card {
+  background: var(--elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+}
+.teacher-card .value { font-size: var(--fs-metric); font-weight: 700; line-height: 1.1; }
+.teacher-card .label { font-size: var(--fs-label); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+.teacher-table { width: 100%; border-collapse: collapse; font-size: var(--fs-support); }
+.teacher-table th {
+  text-align: left; padding: 8px 12px; color: var(--muted);
+  font-size: var(--fs-label); text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--line);
+}
+.teacher-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.teacher-table tr:hover td { background: var(--bg2); }
+.teacher-table a { color: var(--ink); text-decoration: none; }
+.teacher-table a:hover { text-decoration: underline; }
+
+.risk-pill {
+  display: inline-block; padding: 2px 9px; border-radius: 999px;
+  font-size: var(--fs-label); font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+}
+.risk-HEALTHY { background: var(--ok-bg); color: var(--ok); }
+.risk-WATCH { background: var(--note-bg); color: var(--warn); }
+.risk-AT_RISK { background: #fdf1e0; color: #9a5b0c; }
+.risk-CRITICAL { background: var(--bad-bg); color: var(--bad); }
+
+.teacher-empty {
+  padding: 48px 24px; text-align: center; color: var(--muted);
+  background: var(--elevated); border: 1px dashed var(--line); border-radius: var(--radius-lg);
+}
+
+.finding {
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px;
+  background: var(--elevated);
+}
+.finding dt { font-size: var(--fs-label); text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-top: 8px; }
+.finding dt:first-child { margin-top: 0; }
+.finding dd { margin: 2px 0 0; font-size: var(--fs-support); }
+.finding dd.recommended { color: var(--accent-dark); font-weight: 600; }
+
+.data-note {
+  font-size: var(--fs-meta); color: var(--muted); font-style: italic;
+  padding: 6px 0;
+}
+
+.skill-badge-reading { color: var(--skill-reading); }
+.skill-badge-listening { color: var(--skill-listening); }
+.skill-badge-writing { color: var(--skill-writing); }
+.skill-badge-speaking { color: var(--skill-speaking); }
+
+@media (max-width: 860px) {
+  .teacher-shell { flex-direction: column; }
+  .teacher-sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); }
+  .teacher-nav { display: flex; gap: 4px; }
+  .teacher-main { padding: 20px; }
+}
