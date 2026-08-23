@@ -294,36 +294,50 @@ function Gate({
   }
 
   const outOfMinutes = mission.eligibility === "needs_minutes";
+  // F3-21 — a Free learner is not "unavailable", they are not on the plan.
+  // Without this, needs_pro fell through to "The AI Coach isn't available yet",
+  // which is both wrong and a lost answer to the question they just asked.
+  const needsPro = mission.eligibility === "needs_pro";
 
   // ── FASE COACH-HONEST-COPY-001 ────────────────────────────────────────────
   //
-  // THE DEFECT. This said, unconditionally: "Your included minutes renew with
-  // your plan." No plan grants Coach minutes. coach_4h / coach_8h exist in
-  // lib/coachBillingBridge.js and in OWNER-HANDOFF.md but not in App Store
-  // Connect or RevenueCat, so classifyCoachProduct returns null for every
-  // product a subscriber can buy and the ledger holds zero subscription_grant
-  // events — the only Coach minutes ever issued were three manual admin
-  // adjustments.
+  // THE ORIGINAL DEFECT. This said, unconditionally: "Your included minutes
+  // renew with your plan", when no plan granted Coach minutes at all. Rather
+  // than hard-code a new sentence, it was made to read the balance the backend
+  // already sends, with a note that the original sentence would return on its
+  // own "the moment a plan really does grant minutes, with no second code
+  // change".
   //
-  // Whether Pro should include an allowance, or the SKUs should be created, is
-  // a commercial decision with a real margin consequence. It is not a decision
-  // a copy fix may quietly make. So this tells the truth about the account in
-  // front of it, read from the balance the backend already sends — and the
-  // original sentence returns on its own the moment a plan really does grant
-  // minutes, with no second code change.
+  // F3-13 IS THAT MOMENT. Pro now carries 30 minutes per cycle, so a Pro
+  // learner reaches the hasPlanAllowance branch and reads the right sentence
+  // without anything here changing — the design held.
+  //
+  // What did NOT hold is the final branch, which is why it was rewritten
+  // below: it is reached only by an account with no allowance and no credits,
+  // and it told that learner Coach was not sold. See the note there.
   const hasPlanAllowance = mission.includedMinutes > 0;
-  const deadEndTitle = outOfMinutes
-    ? hasPlanAllowance
-      ? "You’re out of Coach minutes"
-      : "The AI Coach isn’t part of your plan yet"
-    : "The AI Coach isn’t available yet";
-  const deadEndBody = !outOfMinutes
-    ? "Speaking Practice is ready whenever you are, and it is rated by the same engine."
-    : hasPlanAllowance
-      ? "Your included minutes renew with your plan. Recorded Speaking Practice stays unlimited on your allowance."
-      : mission.purchasedMinutes > 0
-        ? "Your purchased credits are used up, and they do not expire — anything you add stays. Recorded Speaking Practice stays unlimited on your allowance."
-        : "Live Coach minutes are not included in any plan on sale today, and none have been added to this account. Recorded Speaking Practice — record, submit, get a full assessment — stays unlimited on your allowance.";
+  const deadEndTitle = needsPro
+    ? "The AI Coach is part of Pro"
+    : outOfMinutes
+      ? hasPlanAllowance
+        ? "You’re out of Coach minutes"
+        : "The AI Coach isn’t part of your plan yet"
+      : "The AI Coach isn’t available yet";
+  // F3-13 UPDATE. The last branch used to say Live Coach minutes were "not
+  // included in any plan on sale today". That was true when it was written and
+  // is now false: Pro carries 30 minutes per cycle. It is reached only by an
+  // account with no allowance and no credits — that is, a Free learner — so
+  // getting it wrong meant telling exactly the person who could buy it that it
+  // was not for sale.
+  const deadEndBody = needsPro
+    ? "Pro includes 30 minutes of live Coach conversation each month. Recorded Speaking Practice — record, submit, get a full assessment — stays unlimited on your allowance."
+    : !outOfMinutes
+      ? "Speaking Practice is ready whenever you are, and it is rated by the same engine."
+      : hasPlanAllowance
+        ? "Your included minutes renew with your plan. Recorded Speaking Practice stays unlimited on your allowance."
+        : mission.purchasedMinutes > 0
+          ? "Your purchased credits are used up, and they do not expire — anything you add stays. Recorded Speaking Practice stays unlimited on your allowance."
+          : "The AI Coach is part of Pro, which includes 30 minutes each month. Recorded Speaking Practice — record, submit, get a full assessment — stays unlimited on your allowance.";
 
   return (
     <div className="coach-deadend">
