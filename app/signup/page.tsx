@@ -105,7 +105,13 @@ export default function SignupPage() {
           ))}
         </div>
         {step === 5 ? (
-          <p>Check your email to confirm the account, then log in.</p>
+          <div className="feedback-banner info" role="status">
+            <p><strong>Account created.</strong></p>
+            <p style={{ marginTop: 8 }}>
+              Check your inbox for a confirmation email, and click the link in
+              it — you won&apos;t be able to log in until you do.
+            </p>
+          </div>
         ) : (
           <form onSubmit={onSubmit}>
             {step === 0 && (

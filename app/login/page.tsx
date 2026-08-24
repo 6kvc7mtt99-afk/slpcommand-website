@@ -27,7 +27,7 @@ export default function LoginPage() {
       });
       const data = (await res.json().catch(() => ({}))) as { userId?: string; error?: string };
       if (!res.ok) {
-        setError(loginErrorMessage(res.status, res.status >= 500 || data.error === "network"));
+        setError(loginErrorMessage(res.status, res.status >= 500 || data.error === "network", data.error));
         return;
       }
       if (typeof window !== "undefined" && data.userId) {

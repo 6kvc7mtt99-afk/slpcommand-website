@@ -10,10 +10,12 @@ export function AppGate({
   children,
   initialEntitlements,
   userId,
+  showTeacherNav,
 }: {
   children: React.ReactNode;
   initialEntitlements: EntitlementsState;
   userId: string | null;
+  showTeacherNav: boolean;
 }) {
   const router = useRouter();
   const path = usePathname();
@@ -57,7 +59,7 @@ export function AppGate({
   // same way, and a re-read after a purchase updates all of them at once.
   return (
     <PlanProvider initial={initialEntitlements}>
-      <AppShell>{children}</AppShell>
+      <AppShell showTeacherNav={showTeacherNav}>{children}</AppShell>
     </PlanProvider>
   );
 }

@@ -18,7 +18,7 @@ const NAV = [
   { href: "/profile", label: "Profile", skill: null },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, showTeacherNav }: { children: React.ReactNode; showTeacherNav: boolean }) {
   const { display } = usePlan();
   const path = usePathname();
   const router = useRouter();
@@ -82,6 +82,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           );
         })}
       </nav>
+      {/* TEACHER-UX-POLISH-001 — visible only to a real staff membership
+          (resolved server-side, see app/(app)/layout.tsx); hiding it from
+          everyone else is UX, not the security boundary — /teacher/* stays
+          independently gated regardless of whether this renders. */}
+      {showTeacherNav ? (
+        <nav aria-label="Staff">
+          <Link href="/teacher" className="app-teacher-link">
+            SLP Command Teacher
+          </Link>
+        </nav>
+      ) : null}
       {/* The plan, as a link rather than a label: it was the one piece of
           commercial state in the chrome with nowhere to go. `known` is false
           while the read is in flight or after it failed — the chip then says so

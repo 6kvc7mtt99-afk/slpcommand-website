@@ -681,6 +681,7 @@ input:focus, select:focus, textarea:focus {
 }
 .feedback-banner.ok { background: var(--ok-bg); border-left-color: var(--ok); }
 .feedback-banner.bad { background: var(--bad-bg); border-left-color: var(--bad); }
+.feedback-banner.info { background: var(--note-bg); border-left-color: var(--warn); }
 
 /* ── Audio / exam ── */
 .audio-stage {

@@ -192,6 +192,22 @@
   width: 3px;
   border-radius: 0 2px 2px 0;
 }
+/* TEACHER-UX-POLISH-001 — a distinct destination from the skill tabs above
+   it, not a new nav pattern: same link styling, a top rule to separate the
+   section, and the accent colour already used for the logo mark. */
+.app-shell .app-sidebar nav[aria-label="Staff"] {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--p-line);
+}
+.app-shell .app-teacher-link {
+  color: var(--p-accent);
+  font-weight: 600;
+}
+.app-shell .app-teacher-link:hover {
+  color: var(--p-accent);
+  background: color-mix(in srgb, var(--p-accent) 10%, transparent);
+}
 .app-shell .logo-mark {
   background: var(--p-accent);
   color: #fff;

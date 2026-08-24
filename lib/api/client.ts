@@ -67,8 +67,15 @@ export async function apiRequest<T>(path: string, init: ApiRequestInit = {}): Pr
   return parsed as T;
 }
 
-export function loginErrorMessage(status: number, network: boolean): string {
+// TEACHER-UX-POLISH-001 — `rawMessage` is the backend's own Supabase error
+// string. Without checking it, "email not confirmed" was indistinguishable
+// from a wrong password — the actual, real cause of a real signup-then-login
+// failure found during the Teacher certification smoke test.
+export function loginErrorMessage(status: number, network: boolean, rawMessage?: string): string {
   if (network || status >= 500) return "Unable to connect. Check your connection and try again.";
+  if (rawMessage && /email.*not.*confirmed/i.test(rawMessage)) {
+    return "Confirm your email before logging in — check your inbox for the confirmation link.";
+  }
   return "Incorrect email or password.";
 }
 
