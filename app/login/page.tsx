@@ -1,78 +1,24 @@
-"use client";
+import { currentTenant } from "@/lib/server/tenantContext";
+import { TenantMark, TenantLoginHeading } from "@/components/platform/TenantBrand";
+import { LoginForm } from "@/components/auth/LoginForm";
 
-import { FormEvent, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { SiteHeader } from "@/components/marketing/SiteChrome";
-import { AuthContext } from "@/components/marketing/AuthContext";
-import { loginErrorMessage } from "@/lib/api/client";
+// FASE PLATFORM-WHITELABEL-001 — the login page resolves its tenant.
+//
+// Server Component on purpose: the brand comes from the hostname THIS server
+// received, so nothing a client sends can change it, and the page paints
+// branded on the first frame instead of flashing SLP Command and correcting
+// itself. The form is unchanged and still a client component
+// (components/auth/LoginForm.tsx) — only where the brand is decided moved.
+//
+// On slpcommand.com currentTenant() returns null, both slots render nothing,
+// and this is byte-for-byte the page that was here before.
 
-export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError("");
-    setBusy(true);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = (await res.json().catch(() => ({}))) as { userId?: string; error?: string };
-      if (!res.ok) {
-        setError(loginErrorMessage(res.status, res.status >= 500 || data.error === "network", data.error));
-        return;
-      }
-      if (typeof window !== "undefined" && data.userId) {
-        const done = localStorage.getItem(`onboarding_completed:${data.userId}`);
-        router.replace(done === "1" ? "/dashboard" : "/onboarding");
-      } else {
-        router.replace("/dashboard");
-      }
-    } catch {
-      setError(loginErrorMessage(0, true));
-    } finally {
-      setBusy(false);
-    }
-  }
-
+export default async function LoginPage() {
+  const tenant = await currentTenant();
   return (
-    <>
-      <SiteHeader
-        links={[
-          { href: "/trust-center", label: "Trust Center" },
-          { href: "/support", label: "Support" },
-          { href: "/signup", label: "Create account" },
-        ]}
-      />
-      <main className="auth-stage">
-        <AuthContext mode="login" />
-        <div className="auth-card">
-          <p className="home-kicker">Workspace</p>
-          <h1>Log in</h1>
-          <p className="updated">Use the same email and password as the iOS app.</p>
-          <form onSubmit={onSubmit}>
-            <label htmlFor="email">Email</label>
-            <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-            <label htmlFor="password">Password</label>
-            <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
-            {error ? <p className="err" role="alert">{error}</p> : null}
-            <button className="btn btn-primary" type="submit" disabled={busy} style={{ marginTop: 20, width: "100%" }}>
-              {busy ? "Signing in…" : "Log in"}
-            </button>
-          </form>
-          <p style={{ marginTop: 20 }}>
-            No account? <Link href="/signup">Create one</Link>
-          </p>
-        </div>
-      </main>
-    </>
+    <LoginForm
+      brandMark={<TenantMark tenant={tenant} />}
+      brandHeading={<TenantLoginHeading tenant={tenant} />}
+    />
   );
 }

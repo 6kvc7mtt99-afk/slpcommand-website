@@ -155,6 +155,34 @@ const ALLOW: Rule[] = [
   { method: "POST", pattern: /^\/api\/teacher\/organizations\/[^/]+\/groups$/, reason: "ok" },
   { method: "POST", pattern: /^\/api\/teacher\/organizations\/[^/]+\/invites$/, reason: "ok" },
   { method: "POST", pattern: /^\/api\/teacher\/invites\/accept$/, reason: "ok" },
+
+  // FASE PLATFORM-TENANT-001 / PLATFORM-ENTERPRISE-001 — Enterprise
+  // administration and White-Label. Same division of responsibility as every
+  // entry above: this allowlist only says the PROXY may forward the request at
+  // all. Who may actually do it is decided by the backend's own
+  // requireTeacherRole + requireOrgMembership + requirePermission stack, from
+  // the verified JWT, on every single call.
+  //
+  // The `/api/admin/` block earlier in this list already covers the
+  // platform-admin tenant-provisioning routes, which is why they are not
+  // repeated here — they are gated by requireAdminUser upstream.
+  { method: "GET", pattern: /^\/api\/platform\/tenant\/resolve$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/platform\/tenant\/by-slug\/[^/]+$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/settings$/, reason: "ok" },
+  { method: "PATCH", pattern: /^\/api\/teacher\/organizations\/[^/]+\/settings$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/branding$/, reason: "ok" },
+  { method: "PATCH", pattern: /^\/api\/teacher\/organizations\/[^/]+\/branding$/, reason: "ok" },
+  { method: "DELETE", pattern: /^\/api\/teacher\/organizations\/[^/]+\/branding$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/members$/, reason: "ok" },
+  { method: "PATCH", pattern: /^\/api\/teacher\/organizations\/[^/]+\/members\/[^/]+\/role$/, reason: "ok" },
+  { method: "PATCH", pattern: /^\/api\/teacher\/organizations\/[^/]+\/members\/[^/]+\/group$/, reason: "ok" },
+  { method: "DELETE", pattern: /^\/api\/teacher\/organizations\/[^/]+\/members\/[^/]+$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/invites$/, reason: "ok" },
+  { method: "DELETE", pattern: /^\/api\/teacher\/organizations\/[^/]+\/invites\/[^/]+$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/flags$/, reason: "ok" },
+  { method: "PATCH", pattern: /^\/api\/teacher\/organizations\/[^/]+\/flags\/[^/]+$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/reports\/(overview|activity|proficiency|groups)$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/audit$/, reason: "ok" },
 ];
 
 export type PolicyDecision =

@@ -1,0 +1,96 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { SiteHeader } from "@/components/marketing/SiteChrome";
+import { AuthContext } from "@/components/marketing/AuthContext";
+import { loginErrorMessage } from "@/lib/api/client";
+
+// FASE PLATFORM-WHITELABEL-001 — this was app/login/page.tsx verbatim. It
+// moved because the page had to become a Server Component in order to resolve
+// the tenant from the request hostname: a layout cannot pass props to a page,
+// and the brand must NOT be decided by client code. The form itself is
+// unchanged — same fields, same submit, same error handling.
+//
+// `brandMark` and `brandHeading` are already-rendered Server Components handed
+// down as children. This file therefore has no idea what tenant it is in,
+// which is the point.
+export function LoginForm({
+  brandMark,
+  brandHeading,
+}: {
+  brandMark?: React.ReactNode;
+  brandHeading?: React.ReactNode;
+}) {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { userId?: string; error?: string };
+      if (!res.ok) {
+        setError(loginErrorMessage(res.status, res.status >= 500 || data.error === "network", data.error));
+        return;
+      }
+      if (typeof window !== "undefined" && data.userId) {
+        const done = localStorage.getItem(`onboarding_completed:${data.userId}`);
+        router.replace(done === "1" ? "/dashboard" : "/onboarding");
+      } else {
+        router.replace("/dashboard");
+      }
+    } catch {
+      setError(loginErrorMessage(0, true));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <SiteHeader
+        links={[
+          { href: "/trust-center", label: "Trust Center" },
+          { href: "/support", label: "Support" },
+          { href: "/signup", label: "Create account" },
+        ]}
+      />
+      <main className="auth-stage">
+        <AuthContext mode="login" />
+        <div className="auth-card">
+          {brandMark}
+          <p className="home-kicker">Workspace</p>
+          <h1>Log in</h1>
+          {brandHeading ?? (
+            <p className="updated">Use the same email and password as the iOS app.</p>
+          )}
+          <form onSubmit={onSubmit}>
+            <label htmlFor="email">Email</label>
+            <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+            <label htmlFor="password">Password</label>
+            <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+            {error ? <p className="err" role="alert">{error}</p> : null}
+            <button className="btn btn-primary" type="submit" disabled={busy} style={{ marginTop: 20, width: "100%" }}>
+              {busy ? "Signing in…" : "Log in"}
+            </button>
+          </form>
+          <p style={{ marginTop: 20 }}>
+            No account? <Link href="/signup">Create one</Link>
+          </p>
+        </div>
+      </main>
+    </>
+  );
+}

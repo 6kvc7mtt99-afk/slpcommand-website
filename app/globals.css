@@ -290,3 +290,30 @@ input, select {
 @media (max-width: 800px) {
   .skill-launch { grid-template-columns: 1fr; }
 }
+
+/* FASE PLATFORM-WHITELABEL-001 — tenant branding on the auth screens.
+   Global rather than route-scoped because the brand scope wraps whole
+   layouts; the three selectors are namespaced `tenant-` so they cannot
+   collide with anything the product or marketing pages already use. */
+.tenant-brand-scope { display: contents; }
+.tenant-mark {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 18px;
+}
+.tenant-mark-logo {
+  max-height: 44px;
+  max-width: 200px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+.tenant-mark-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+}
+.tenant-login-heading { margin: 0 0 4px; }
+.tenant-login-headline { font-weight: 600; margin: 0; }
+.tenant-login-sub { margin: 4px 0 0; opacity: 0.75; font-size: 0.94rem; }

@@ -195,9 +195,158 @@
 .teacher-inline-error { color: var(--bad); font-size: var(--fs-support); margin-top: 6px; }
 .teacher-inline-success { color: var(--ok); font-size: var(--fs-support); margin-top: 6px; }
 
+/* FASE PLATFORM-ENTERPRISE-001 — administration sections.
+   Every selector below is prefixed `teacher-`, and this file is imported ONLY
+   from app/teacher/layout.tsx, never from the root layout — importing it
+   globally once broke an axe check on a marketing page through Next's CSS
+   chunk ordering, with no textual selector collision at all (see
+   TEACHER_ARCHITECTURE.md). The prefix is not decoration. */
+
+.teacher-nav-admin {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.teacher-nav-heading {
+  display: block;
+  padding: 0 10px 6px;
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.teacher-section { margin-bottom: 36px; }
+.teacher-h2 {
+  font-size: var(--fs-support);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+.teacher-note {
+  font-size: var(--fs-support);
+  color: var(--ink2);
+  margin: 0 0 14px;
+  max-width: 68ch;
+}
+.teacher-muted { color: var(--muted); }
+
+/* A caption is read out before the table and is where the honesty about a
+   number belongs — "only days with real activity are listed" has to reach a
+   screen-reader user too, not just someone who can see the gaps. */
+.teacher-caption {
+  caption-side: top;
+  text-align: left;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  padding: 0 12px 10px;
+  max-width: 68ch;
+}
+
+.teacher-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+.teacher-stat {
+  background: var(--elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+}
+.teacher-stat-value { font-size: var(--fs-metric); font-weight: 700; line-height: 1.1; }
+.teacher-stat-label {
+  font-size: var(--fs-label); color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px;
+}
+.teacher-stat-hint { font-size: var(--fs-meta); color: var(--muted); margin-top: 8px; }
+
+.teacher-empty strong { display: block; color: var(--ink); margin-bottom: 8px; }
+.teacher-empty p { margin: 0 auto; max-width: 48ch; font-size: var(--fs-support); }
+
+/* Forms wide enough for a settings screen, unlike the single-field
+   .teacher-form the Groups page uses. */
+.teacher-form-inline { max-width: none; display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.teacher-form-inline .teacher-field { margin-bottom: 0; min-width: 260px; flex: 1; }
+
+.teacher-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0 18px;
+}
+.teacher-field small { font-size: var(--fs-meta); }
+
+.teacher-fieldset {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 4px 0 18px;
+}
+.teacher-fieldset legend {
+  font-size: var(--fs-label); text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--muted); padding: 0 6px;
+}
+.teacher-color-row { display: flex; gap: 18px; flex-wrap: wrap; }
+.teacher-color-row .teacher-field { margin-bottom: 0; min-width: 150px; }
+.teacher-color-input { display: flex; gap: 8px; align-items: center; }
+.teacher-color-input input[type="color"] {
+  width: 40px; height: 34px; padding: 2px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface);
+}
+.teacher-color-input input[type="text"] { flex: 1; min-width: 90px; }
+
+.teacher-brand-preview {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 4px 0 18px;
+  background: var(--surface);
+}
+.teacher-brand-preview-bar { height: 6px; }
+.teacher-brand-preview-body { padding: 16px 18px; }
+.teacher-brand-preview-body strong { display: block; font-size: var(--fs-support); }
+.teacher-brand-preview-body p { margin: 6px 0 0; font-size: var(--fs-support); }
+
+.teacher-form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
+/* Not `.btn-danger`: that name is unclaimed in the global design system, and
+   defining a global-looking class from a route-scoped stylesheet is exactly
+   what caused the CSS-ordering incident this file's header describes. */
+.teacher-btn-danger {
+  background: var(--bad);
+  border-color: var(--bad);
+  color: #fff;
+}
+.teacher-btn-danger:hover { background: var(--bad); border-color: var(--bad); color: #fff; opacity: 0.9; }
+
+.teacher-form select {
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); font-size: var(--fs-body);
+}
+.teacher-table select {
+  padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); font-size: var(--fs-support);
+}
+.teacher-table .btn { padding: 4px 10px; font-size: var(--fs-meta); }
+.teacher-table code {
+  font-family: var(--font-mono, monospace); font-size: var(--fs-meta);
+  background: var(--bg2); padding: 2px 6px; border-radius: var(--radius-sm);
+}
+
 @media (max-width: 860px) {
   .teacher-shell { flex-direction: column; }
   .teacher-sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); }
   .teacher-nav { display: flex; gap: 4px; }
   .teacher-main { padding: 20px; }
+  /* On the horizontal mobile bar the Administration group sits beside the
+     teaching links rather than under them, so its top rule becomes a left
+     rule and its heading would only steal width. */
+  .teacher-nav-admin {
+    margin-top: 0; padding-top: 0; border-top: none;
+    margin-left: 8px; padding-left: 8px; border-left: 1px solid var(--line);
+  }
+  .teacher-nav-heading { display: none; }
+  .teacher-form-inline { flex-direction: column; align-items: stretch; }
+  .teacher-field-grid { grid-template-columns: 1fr; }
 }

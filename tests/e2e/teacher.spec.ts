@@ -208,3 +208,129 @@ test.describe("Invite acceptance — the public, non-staff flow", () => {
     await expect(page.getByRole("button", { name: "Accept invitation" })).toHaveCount(0);
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE PLATFORM-ENTERPRISE-001 — the administration sections.
+//
+// Two staff fixtures against the SAME organization, because the point of the
+// permission layer is that they see different things. A test with only one
+// role could not tell a working gate from an absent one.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const ownerCookies = [
+  { name: "slp_at", value: "test-access-owner", url: E2E_BASE_URL },
+  { name: "slp_rt", value: "test-refresh", url: E2E_BASE_URL },
+  { name: "slp_uid", value: "teacher-1", url: E2E_BASE_URL },
+  { name: "slp_em", value: "owner@example.com", url: E2E_BASE_URL },
+];
+
+test.describe("Enterprise administration — an owner", () => {
+  test.beforeEach(async ({ context }) => {
+    await context.addCookies(ownerCookies);
+  });
+
+  test("the sidebar offers the administration sections", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}`);
+    const admin = page.getByRole("navigation", { name: "Administration" });
+    await expect(admin.getByRole("link", { name: "People" })).toBeVisible();
+    await expect(admin.getByRole("link", { name: "Organization" })).toBeVisible();
+    await expect(admin.getByRole("link", { name: "Security" })).toBeVisible();
+  });
+
+  test("People lists real members with their real roles", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/members`);
+    await expect(page.getByRole("heading", { name: "People" })).toBeVisible();
+    // getByRole("cell"), not getByText: the role <select> carries a
+    // visually-hidden label naming the same person, so a text match is
+    // ambiguous by design rather than by accident.
+    await expect(page.getByRole("cell", { name: "E2E Student", exact: true })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "owner@example.com" })).toBeVisible();
+  });
+
+  test("Organization shows the tenant address as read-only, and says who assigns it", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/settings`);
+    await expect(page.getByText("e2e-academy.slpcommand.com")).toBeVisible();
+    await expect(page.getByText(/addresses are assigned by us/)).toBeVisible();
+  });
+
+  test("a feature override is labelled as the organization's own, not as the default", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/settings`);
+    const row = page.getByRole("row", { name: /Speaking/ });
+    await expect(row.getByText("This organization")).toBeVisible();
+  });
+
+  test("Reports shows counted totals and never a fabricated percentage", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/reports`);
+    await expect(page.getByRole("heading", { name: "Reports" })).toBeVisible();
+    await expect(page.getByText("Never started")).toBeVisible();
+    // The mandate's own example of what must never appear.
+    await expect(page.locator("body")).not.toContainText("% engagement");
+  });
+
+  test("Security shows the audit trail", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/audit`);
+    await expect(page.getByRole("heading", { name: "Security" })).toBeVisible();
+    await expect(page.getByText("changed a member's role")).toBeVisible();
+    await expect(page.getByText("student → teacher")).toBeVisible();
+  });
+
+  test("the administration pages have no serious axe violations", async ({ page }) => {
+    for (const path of [
+      `/teacher/${ORG}/members`, `/teacher/${ORG}/settings`,
+      `/teacher/${ORG}/reports`, `/teacher/${ORG}/audit`,
+    ]) {
+      await page.goto(path);
+      const result = await new AxeBuilder({ page }).analyze();
+      const serious = result.violations.filter((v) => v.impact === "critical" || v.impact === "serious");
+      expect(serious, `${path}: ${serious.map((v) => v.id).join(", ")}`).toEqual([]);
+    }
+  });
+
+  test("no administration page forces the document to scroll sideways on a phone", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    for (const path of [
+      `/teacher/${ORG}/members`, `/teacher/${ORG}/settings`,
+      `/teacher/${ORG}/reports`, `/teacher/${ORG}/audit`,
+    ]) {
+      await page.goto(path);
+      const overflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(overflow, `${path} overflows by ${overflow}px`).toBeLessThanOrEqual(0);
+    }
+  });
+});
+
+test.describe("Enterprise administration — a teacher of the same organization", () => {
+  test.beforeEach(async ({ context }) => {
+    await context.addCookies(teacherCookies);
+  });
+
+  test("is not offered Security in the sidebar", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}`);
+    const admin = page.getByRole("navigation", { name: "Administration" });
+    await expect(admin.getByRole("link", { name: "People" })).toBeVisible();
+    await expect(admin.getByRole("link", { name: "Security" })).toHaveCount(0);
+  });
+
+  test("typing the Security URL gets a 404, not a screen of forbidden controls", async ({ page }) => {
+    const res = await page.goto(`/teacher/${ORG}/audit`);
+    expect(res?.status()).toBe(404);
+  });
+
+  test("still reaches People, because a teacher may read the roster", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/members`);
+    await expect(page.getByRole("heading", { name: "People" })).toBeVisible();
+  });
+
+  test("sees People WITHOUT the role controls an admin gets", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/members`);
+    // Scoped to the MEMBERS table specifically. The invitations table below it
+    // has its own "Actions" column, and a teacher legitimately sees that one —
+    // they hold members.invite but not members.manage. An unscoped assertion
+    // here would have been testing the wrong table.
+    const membersTable = page.getByRole("table", { name: /active membership/ });
+    await expect(membersTable.getByRole("columnheader", { name: "Actions" })).toHaveCount(0);
+    await expect(membersTable.getByRole("combobox")).toHaveCount(0);
+    await expect(membersTable.getByRole("button", { name: "Remove" })).toHaveCount(0);
+  });
+});

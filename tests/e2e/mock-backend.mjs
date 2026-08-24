@@ -539,12 +539,19 @@ const server = http.createServer((req, res) => {
   // gets zero memberships, exactly like a real signed-in learner who has
   // never been added to any organization.
   const teacherAuth = req.headers.authorization ?? "";
-  const isTeacherCaller = teacherAuth.includes("test-access-teacher");
+  // FASE PLATFORM-ENTERPRISE-001 — two staff fixtures, not one. The whole
+  // point of the permission layer is that an owner and a teacher of the SAME
+  // organization see different things, and a single fixture could not show
+  // that. "test-access-owner" is checked FIRST because it also contains
+  // "test-access", which the plain learner fixture uses.
+  const isOwnerCaller = teacherAuth.includes("test-access-owner");
+  const isTeacherCaller = isOwnerCaller || teacherAuth.includes("test-access-teacher");
+  const callerRole = isOwnerCaller ? "owner" : "teacher";
   if (url.pathname === "/api/teacher/me") {
     res.end(JSON.stringify({
       ok: true,
       memberships: isTeacherCaller
-        ? [{ organizationId: TEACHER_ORG, role: "teacher", organizationName: "SLP Command E2E Academy" }]
+        ? [{ organizationId: TEACHER_ORG, role: callerRole, organizationName: "SLP Command E2E Academy" }]
         : [],
     }));
     return;
@@ -624,6 +631,126 @@ const server = http.createServer((req, res) => {
     }));
     return;
   }
+  // ── FASE PLATFORM-ENTERPRISE-001 — administration endpoints ─────────────
+  // The mock mirrors the real backend's PERMISSION split, not just its
+  // shapes: a teacher may read members and settings, and may not read the
+  // audit trail. Without that, the E2E gate test would pass against a mock
+  // that never refuses anything.
+  const orgBase = `/api/teacher/organizations/${TEACHER_ORG}`;
+  if (url.pathname === `${orgBase}/members`) {
+    res.end(JSON.stringify({
+      ok: true,
+      members: [
+        { membershipId: "m-owner", userId: "teacher-1", name: "E2E Owner", email: "owner@example.com",
+          role: callerRole, status: "active", groupId: null, groupName: null, joinedAt: "2026-01-01T00:00:00Z" },
+        { membershipId: "m-student", userId: TEACHER_STUDENT, name: "E2E Student", email: "student@example.com",
+          role: "student", status: "active", groupId: "group-1", groupName: "Morning cohort", joinedAt: "2026-01-02T00:00:00Z" },
+      ],
+    }));
+    return;
+  }
+  if (url.pathname === `${orgBase}/invites` && req.method === "GET") {
+    res.end(JSON.stringify({
+      ok: true,
+      invites: [{
+        id: "invite-e2e", role: "student", status: "pending", groupId: null,
+        expiresAt: "2099-01-01T00:00:00Z", createdAt: "2026-01-03T00:00:00Z",
+        acceptedAt: null, invitedBy: "teacher-1", acceptedBy: null,
+      }],
+    }));
+    return;
+  }
+  if (url.pathname === `${orgBase}/settings`) {
+    if (req.method === "PATCH") {
+      withBody(req, (body) => {
+        const name = typeof body.name === "string" ? body.name.trim() : "";
+        if (!name) { res.statusCode = 400; res.end(JSON.stringify({ error: "validation_error", reason: "validation_error" })); return; }
+        res.end(JSON.stringify({ ok: true, settings: { organizationId: TEACHER_ORG, name } }));
+      });
+      return;
+    }
+    res.end(JSON.stringify({
+      ok: true,
+      settings: {
+        organizationId: TEACHER_ORG, name: "SLP Command E2E Academy", slug: "e2e-academy",
+        type: "enterprise", status: "active", customDomain: null, customDomainStatus: "none",
+        createdAt: "2026-01-01T00:00:00Z",
+      },
+      branding: null,
+    }));
+    return;
+  }
+  if (url.pathname === `${orgBase}/branding`) {
+    res.end(JSON.stringify({ ok: true, branding: null }));
+    return;
+  }
+  if (url.pathname === `${orgBase}/flags`) {
+    res.end(JSON.stringify({
+      ok: true,
+      flags: {
+        reading_enabled: { enabled: true, source: "platform", platformDefault: true },
+        speaking_enabled: { enabled: false, source: "organization", platformDefault: true },
+      },
+    }));
+    return;
+  }
+  if (url.pathname === `${orgBase}/reports/overview`) {
+    res.end(JSON.stringify({
+      ok: true,
+      overview: {
+        organizationId: TEACHER_ORG, windowDays: 30, groupId: null,
+        studentCount: 1, staffCount: 1, groupCount: 1, hasData: true,
+        activeStudentsInWindow: 1, studentsInactiveInWindow: 0, studentsWithNoActivityEver: 0,
+        totals: {
+          readingPracticeQuestions: 12, readingExams: 1, listeningPracticeQuestions: 4,
+          listeningExams: 0, writingSubmissions: 2, speakingEvaluations: 0,
+          academyCompletions: 3, qualifyingActivities: 9,
+        },
+        writing: { attempts: 2, scoredAttempts: 2, averageOverallScore: 6.5 },
+      },
+    }));
+    return;
+  }
+  if (url.pathname === `${orgBase}/reports/activity`) {
+    res.end(JSON.stringify({
+      ok: true,
+      trend: { organizationId: TEACHER_ORG, windowDays: 30, days: [{ date: "2026-08-20", activeStudents: 1, qualifyingActivities: 9 }] },
+    }));
+    return;
+  }
+  if (url.pathname === `${orgBase}/reports/proficiency`) {
+    res.end(JSON.stringify({
+      ok: true,
+      proficiency: { organizationId: TEACHER_ORG, skills: [{ skill: "reading", studentCount: 1, totalEvents: 12, meanTheta: 0.42, minTheta: 0.42, maxTheta: 0.42 }] },
+    }));
+    return;
+  }
+  if (url.pathname === `${orgBase}/reports/groups`) {
+    res.end(JSON.stringify({
+      ok: true,
+      breakdown: { organizationId: TEACHER_ORG, days: 30, groups: [{ groupId: "group-1", groupName: "Morning cohort", studentCount: 1, activeStudentsInWindow: 1, qualifyingActivities: 9, writingSubmissions: 2 }] },
+    }));
+    return;
+  }
+  if (url.pathname === `${orgBase}/audit`) {
+    // The permission split, enforced by the mock exactly as the real backend
+    // enforces it — a teacher has no audit.read.
+    if (!isOwnerCaller) {
+      res.statusCode = 403;
+      res.end(JSON.stringify({ error: "forbidden", reason: "forbidden", requiredPermission: "audit.read" }));
+      return;
+    }
+    res.end(JSON.stringify({
+      ok: true, total: 1,
+      entries: [{
+        id: "1", event: "org.member_role_changed", actorId: "teacher-1", actorName: "E2E Owner",
+        actorEmail: "owner@example.com", targetId: TEACHER_STUDENT,
+        metadata: { from: "student", to: "teacher" }, at: "2026-08-20T10:00:00Z",
+      }],
+    }));
+    return;
+  }
+
   if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/alerts`) {
     res.end(JSON.stringify({ ok: true, totalStudents: 1, students: [] }));
     return;
