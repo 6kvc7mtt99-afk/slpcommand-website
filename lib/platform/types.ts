@@ -23,7 +23,33 @@ export interface Branding {
 }
 
 export type OrganizationType = "academy" | "enterprise" | "white_label";
-export type DomainStatus = "none" | "pending" | "verified" | "disabled";
+// PLATFORM-DOMAINS-001 — `active` (verified AND serving) and `failed` (a
+// verification attempt ran and did not match) joined the lifecycle. Only
+// `active` is served by the tenant resolver.
+export type DomainStatus = "none" | "pending" | "verified" | "active" | "failed" | "disabled";
+
+/** What the admin must publish in DNS to prove they control the domain. */
+export interface DomainInstructions {
+  recordType: "TXT";
+  recordName: string;
+  recordValue: string;
+  expiresAt: string | null;
+}
+
+/**
+ * One organization's domain claim. `instructions` is present only while there
+ * is something for the admin to DO (pending or failed) — carrying a DNS record
+ * around after it has served its purpose invites a UI to keep showing it.
+ */
+export interface DomainClaim {
+  domain: string | null;
+  status: DomainStatus;
+  verifiedAt: string | null;
+  lastCheckedAt: string | null;
+  lastError: string | null;
+  tokenExpired: boolean;
+  instructions: DomainInstructions | null;
+}
 
 export interface OrganizationSettings {
   organizationId: string;

@@ -26,6 +26,11 @@ vi.mock("@/lib/server/platform", () => ({
   })),
   loadOrganizationFlags: vi.fn(async () => ({})),
   loadOrganizationAudit: vi.fn(async () => ({ entries: [], total: 0 })),
+  // PLATFORM-DOMAINS-001 — the settings page now also loads the domain claim.
+  loadDomainClaim: vi.fn(async () => ({
+    domain: null, status: "none", verifiedAt: null, lastCheckedAt: null,
+    lastError: null, tokenExpired: false, instructions: null,
+  })),
 }));
 vi.mock("@/lib/server/authCookies", () => ({ readAuthCookies: vi.fn(async () => ({ userId: "u1" })) }));
 vi.mock("@/components/teacher/MemberTable", () => ({ MemberTable: () => null }));
@@ -33,6 +38,7 @@ vi.mock("@/components/teacher/InviteList", () => ({ InviteList: () => null }));
 vi.mock("@/components/teacher/BrandingForm", () => ({ BrandingForm: () => null }));
 vi.mock("@/components/teacher/OrganizationNameForm", () => ({ OrganizationNameForm: () => null }));
 vi.mock("@/components/teacher/FlagToggles", () => ({ FlagToggles: () => null }));
+vi.mock("@/components/teacher/DomainManager", () => ({ DomainManager: () => null }));
 
 beforeEach(() => {
   loadTeacherMemberships.mockReset();

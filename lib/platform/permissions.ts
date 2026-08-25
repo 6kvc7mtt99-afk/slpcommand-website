@@ -27,6 +27,9 @@ export const PERMISSIONS = {
   BRANDING_WRITE: "branding.write",
   REPORTING_READ: "reporting.read",
   AUDIT_READ: "audit.read",
+  // PLATFORM-DOMAINS-001 — owner and admin only (they hold ALL). A teacher
+  // does not manage the academy's address.
+  DOMAIN_MANAGE: "domain.manage",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

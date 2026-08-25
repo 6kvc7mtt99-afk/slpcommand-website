@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { loadTeacherMemberships } from "@/lib/server/teacher";
-import { loadOrganizationSettings, loadOrganizationFlags } from "@/lib/server/platform";
+import { loadOrganizationSettings, loadOrganizationFlags, loadDomainClaim } from "@/lib/server/platform";
 import { hasPermission, PERMISSIONS } from "@/lib/platform/permissions";
 import { BrandingForm } from "@/components/teacher/BrandingForm";
 import { OrganizationNameForm } from "@/components/teacher/OrganizationNameForm";
 import { FlagToggles } from "@/components/teacher/FlagToggles";
+import { DomainManager } from "@/components/teacher/DomainManager";
 
 // FASE PLATFORM-TENANT-001 — Organization settings.
 //
@@ -19,13 +20,6 @@ import { FlagToggles } from "@/components/teacher/FlagToggles";
 
 export const dynamic = "force-dynamic";
 
-const DOMAIN_STATUS_COPY: Record<string, string> = {
-  none: "No custom domain",
-  pending: "Recorded, not yet live — DNS and the certificate still need to be set up",
-  verified: "Live",
-  disabled: "Disabled",
-};
-
 export default async function SettingsPage({
   params,
 }: {
@@ -39,9 +33,12 @@ export default async function SettingsPage({
   const canWrite = hasPermission(memberships, organizationId, PERMISSIONS.ORGANIZATION_WRITE);
   const canBrand = hasPermission(memberships, organizationId, PERMISSIONS.BRANDING_WRITE);
 
-  const [loaded, flags] = await Promise.all([
+  const canManageDomain = hasPermission(memberships, organizationId, PERMISSIONS.DOMAIN_MANAGE);
+
+  const [loaded, flags, domainClaim] = await Promise.all([
     loadOrganizationSettings(organizationId),
     loadOrganizationFlags(organizationId),
+    loadDomainClaim(organizationId),
   ]);
 
   if (!loaded) {
@@ -84,22 +81,29 @@ export default async function SettingsPage({
                 </td>
               </tr>
               <tr>
-                <th scope="row">Custom domain</th>
-                <td>
-                  {settings.customDomain ? <code>{settings.customDomain}</code> : <span className="teacher-muted">None</span>}
-                  <br />
-                  <small className="teacher-muted">
-                    {DOMAIN_STATUS_COPY[settings.customDomainStatus] ?? settings.customDomainStatus}
-                  </small>
-                </td>
-              </tr>
-              <tr>
                 <th scope="row">Created</th>
                 <td>{settings.createdAt.slice(0, 10)}</td>
               </tr>
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="teacher-section">
+        <h2 className="teacher-h2">Custom domain</h2>
+        <p className="teacher-sub">
+          Serve your academy on your own address. Ownership is verified with a DNS record, so a
+          domain only goes live once you have proven you control it.
+        </p>
+        {domainClaim ? (
+          <DomainManager
+            organizationId={organizationId}
+            claim={domainClaim}
+            canManage={canManageDomain}
+          />
+        ) : (
+          <div className="teacher-empty">Could not load the domain configuration right now.</div>
+        )}
       </section>
 
       <section className="teacher-section">

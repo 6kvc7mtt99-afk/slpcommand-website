@@ -334,6 +334,51 @@
   background: var(--bg2); padding: 2px 6px; border-radius: var(--radius-sm);
 }
 
+/* FASE PLATFORM-DOMAINS-001 — custom domain management.
+   A domain is a PROCESS, not a text field: the status must be legible at a
+   glance and the DNS record must be trivially copyable, because the admin is
+   pasting it into another provider's console in another tab. */
+
+.teacher-domain { max-width: 68ch; }
+.teacher-domain-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.teacher-domain-name {
+  font-family: var(--font-mono, monospace); font-size: var(--fs-support);
+  background: var(--bg2); padding: 3px 8px; border-radius: var(--radius-sm);
+}
+
+/* Status carries a WORD as well as a colour — colour alone is not a status
+   indicator for anyone who cannot distinguish these hues. */
+.teacher-status-pill {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: var(--fs-label); font-weight: 700; letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.teacher-status-pill.tone-ok { background: var(--ok-bg); color: var(--ok); }
+.teacher-status-pill.tone-warn { background: var(--note-bg); color: var(--warn); }
+.teacher-status-pill.tone-bad { background: var(--bad-bg); color: var(--bad); }
+.teacher-status-pill.tone-neutral { background: var(--bg2); color: var(--muted); }
+
+.teacher-steps { margin: 0 0 20px; padding-left: 20px; max-width: 68ch; }
+.teacher-steps li { font-size: var(--fs-support); margin-bottom: 6px; color: var(--ink2); }
+.teacher-steps strong { color: var(--ink); }
+
+.teacher-dns-block {
+  background: var(--elevated); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 18px 20px; margin: 16px 0;
+}
+.teacher-h3 { font-size: var(--fs-body); margin: 0 0 8px; }
+
+.teacher-copy-row { display: flex; gap: 8px; align-items: stretch; }
+.teacher-copy-row input {
+  flex: 1; min-width: 0; font-family: var(--font-mono, monospace);
+  font-size: var(--fs-meta); padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink);
+}
+.teacher-copy-row .btn { white-space: nowrap; }
+
+.teacher-meta-line { font-size: var(--fs-meta); margin: 2px 0; }
+
 @media (max-width: 860px) {
   .teacher-shell { flex-direction: column; }
   .teacher-sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); }

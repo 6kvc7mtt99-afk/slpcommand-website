@@ -117,3 +117,51 @@ describe("the routes that existed before are untouched", () => {
     expect(decidePolicy("GET", "/api/internal/anything")).toMatchObject({ action: "deny" });
   });
 });
+
+describe("PLATFORM-DOMAINS-001 — the custom domain lifecycle", () => {
+  const base = `/api/teacher/organizations/${ORG}/domain`;
+
+  it("forwards each lifecycle route with exactly its own method", () => {
+    expect(decidePolicy("GET", base)).toEqual(forward);
+    expect(decidePolicy("POST", base)).toEqual(forward);
+    expect(decidePolicy("DELETE", base)).toEqual(forward);
+    for (const action of ["verify", "activate", "deactivate"]) {
+      expect(decidePolicy("POST", `${base}/${action}`), action).toEqual(forward);
+    }
+  });
+
+  it("does not open methods those routes do not have", () => {
+    expect(decidePolicy("PATCH", base)).not.toEqual(forward);
+    expect(decidePolicy("PUT", base)).not.toEqual(forward);
+    // verify/activate/deactivate WRITE, so they are POST-only. A GET that
+    // triggered a DNS lookup and a status change would be a route a browser
+    // prefetcher could fire on its own.
+    expect(decidePolicy("GET", `${base}/verify`)).not.toEqual(forward);
+    expect(decidePolicy("GET", `${base}/activate`)).not.toEqual(forward);
+    expect(decidePolicy("DELETE", `${base}/verify`)).not.toEqual(forward);
+  });
+
+  it("does not open an invented lifecycle action", () => {
+    // The alternation is explicit, not `[^/]+` — so a future endpoint has to
+    // be added here deliberately rather than being reachable the day it lands.
+    expect(decidePolicy("POST", `${base}/force-activate`)).not.toEqual(forward);
+    expect(decidePolicy("POST", `${base}/verify/extra`)).not.toEqual(forward);
+  });
+});
+
+describe("PLATFORM-ACADEMY-001 — group rename", () => {
+  it("forwards PATCH on a single group", () => {
+    expect(decidePolicy("PATCH", `/api/teacher/organizations/${ORG}/groups/group-1`)).toEqual(forward);
+  });
+
+  it("does not open DELETE on a group", () => {
+    // There is no delete-group endpoint. Deleting a cohort with students in it
+    // is a product decision nobody has made, and the proxy should not be the
+    // place it becomes reachable.
+    expect(decidePolicy("DELETE", `/api/teacher/organizations/${ORG}/groups/group-1`)).not.toEqual(forward);
+  });
+
+  it("does not let the group id swallow a slash", () => {
+    expect(decidePolicy("PATCH", `/api/teacher/organizations/${ORG}/groups/a/b`)).not.toEqual(forward);
+  });
+});

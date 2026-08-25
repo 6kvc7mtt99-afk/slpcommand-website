@@ -183,6 +183,16 @@ const ALLOW: Rule[] = [
   { method: "PATCH", pattern: /^\/api\/teacher\/organizations\/[^/]+\/flags\/[^/]+$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/reports\/(overview|activity|proficiency|groups)$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/audit$/, reason: "ok" },
+
+  // FASE PLATFORM-DOMAINS-001 — the custom-domain lifecycle. Each pinned to
+  // one method: verify/activate/deactivate are POST because they WRITE (a DNS
+  // lookup result, a status transition), not because of habit.
+  { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/domain$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/teacher\/organizations\/[^/]+\/domain$/, reason: "ok" },
+  { method: "DELETE", pattern: /^\/api\/teacher\/organizations\/[^/]+\/domain$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/teacher\/organizations\/[^/]+\/domain\/(verify|activate|deactivate)$/, reason: "ok" },
+  // FASE PLATFORM-ACADEMY-001 — rename a cohort.
+  { method: "PATCH", pattern: /^\/api\/teacher\/organizations\/[^/]+\/groups\/[^/]+$/, reason: "ok" },
 ];
 
 export type PolicyDecision =

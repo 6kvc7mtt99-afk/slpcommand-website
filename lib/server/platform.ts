@@ -13,7 +13,7 @@ import { backendJson } from "./backend";
 import type {
   Branding, OrganizationSettings, OrganizationMember, OrganizationInvite,
   ResolvedFlags, OrganizationOverview, ActivityTrend, OrganizationProficiency,
-  GroupBreakdown, AuditPage, ResolvedTenant,
+  GroupBreakdown, AuditPage, ResolvedTenant, DomainClaim,
 } from "@/lib/platform/types";
 
 export const loadOrganizationSettings = cache(
@@ -143,4 +143,20 @@ export const resolveTenant = cache(async (host: string): Promise<ResolvedTenant 
   });
   if (result.status !== 200 || !result.data) return null;
   return result.data.tenant;
+});
+
+/**
+ * FASE PLATFORM-DOMAINS-001 — this organization's custom-domain claim.
+ *
+ * Returns null only when the read itself failed; an organization with no
+ * domain returns a real claim whose status is "none". The distinction matters
+ * to the UI: "we could not load this" and "there is no domain" are different
+ * screens.
+ */
+export const loadDomainClaim = cache(async (organizationId: string): Promise<DomainClaim | null> => {
+  const result = await backendJson<{ ok: true; domain: DomainClaim }>({
+    path: `/api/teacher/organizations/${organizationId}/domain`,
+    cache: "no-store",
+  });
+  return result.status === 200 ? (result.data?.domain ?? null) : null;
 });
