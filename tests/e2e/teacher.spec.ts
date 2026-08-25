@@ -32,10 +32,18 @@ test.describe("Teacher — rendered pages", () => {
     await expect(page).toHaveURL(new RegExp(`/teacher/${ORG}$`));
   });
 
-  test("dashboard shows real counts and the shell names the organization", async ({ page }) => {
+  test("the Academy dashboard leads with what needs doing, and names the organization", async ({ page }) => {
+    // PLATFORM-ACADEMY-001 renamed this from "Overview" to "Academy" and
+    // reordered it around the question an owner actually asks first. The
+    // assertion follows the product, and now checks the ORDER too: attention
+    // before vanity metrics is the whole point of the redesign.
     await page.goto(`/teacher/${ORG}`);
     await expect(page.getByText("SLP Command E2E Academy")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Academy", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Needs attention" })).toBeVisible();
+
+    const headings = await page.getByRole("heading", { level: 2 }).allTextContents();
+    expect(headings[0], "attention must come first — it is the actionable section").toBe("Needs attention");
   });
 
   test("roster lists the real student and links to Student 360", async ({ page }) => {

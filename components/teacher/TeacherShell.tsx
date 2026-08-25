@@ -20,7 +20,7 @@ import type { Permission } from "@/lib/platform/permissions";
 type NavItem = { seg: string; label: string; permission?: Permission };
 
 const NAV: NavItem[] = [
-  { seg: "", label: "Overview" },
+  { seg: "", label: "Academy" },
   { seg: "students", label: "Students" },
   { seg: "groups", label: "Groups" },
   { seg: "alerts", label: "Alerts" },
