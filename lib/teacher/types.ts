@@ -19,8 +19,16 @@ export interface TeacherMeResponse {
 
 export interface RosterStudent {
   studentId: string;
+  // PLATFORM-GROUPS-001 — the roster used to carry only the id, and the UI
+  // rendered it verbatim: a teacher looking at their own class saw thirty-six
+  // hex characters where a name belongs. Both are nullable and stay nullable:
+  // about a third of real users have no name recorded in Auth, and the honest
+  // answer there is "no name recorded", never the id dressed up as one.
+  name: string | null;
+  email: string | null;
   memberSince: string;
   groupId: string | null;
+  groupName: string | null;
   targetLevel: string | null;
   lastActivityAt: string | null;
   lastActivityDate: string | null;

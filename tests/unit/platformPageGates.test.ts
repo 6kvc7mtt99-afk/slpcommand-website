@@ -11,7 +11,15 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const loadTeacherMemberships = vi.fn();
 const notFound = vi.fn(() => { throw new Error("NOT_FOUND"); });
 
-vi.mock("@/lib/server/teacher", () => ({ loadTeacherMemberships: () => loadTeacherMemberships() }));
+vi.mock("@/lib/server/teacher", () => ({
+  loadTeacherMemberships: () => loadTeacherMemberships(),
+  // PLATFORM-GROUPS-001 — People now offers a group selector per row, so the
+  // page loads the organization's groups. Added to the mock as capability;
+  // no assertion in this file changed, and an empty list is the shape a
+  // gate test wants — it is about who may reach the page, not what is on it.
+  loadOrganizationGroups: vi.fn(async () => ({ ok: true, groups: [], unassignedCount: 0 })),
+  loadOrganizationStudents: vi.fn(async () => ({ ok: true, students: [], total: 0 })),
+}));
 vi.mock("next/navigation", () => ({ notFound, redirect: vi.fn() }));
 vi.mock("@/lib/server/platform", () => ({
   loadOrganizationMembers: vi.fn(async () => []),

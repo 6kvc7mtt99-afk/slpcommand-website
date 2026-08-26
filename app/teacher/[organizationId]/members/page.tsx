@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { loadTeacherMemberships } from "@/lib/server/teacher";
+import { loadTeacherMemberships, loadOrganizationGroups } from "@/lib/server/teacher";
 import { loadOrganizationMembers, loadOrganizationInvites } from "@/lib/server/platform";
 import { hasPermission, PERMISSIONS } from "@/lib/platform/permissions";
 import { readAuthCookies } from "@/lib/server/authCookies";
@@ -30,10 +30,17 @@ export default async function MembersPage({
 
   const canManage = hasPermission(memberships, organizationId, PERMISSIONS.MEMBERS_MANAGE);
   const canInvite = hasPermission(memberships, organizationId, PERMISSIONS.MEMBERS_INVITE);
+  // PLATFORM-GROUPS-001 — a separate permission from MEMBERS_MANAGE, and
+  // deliberately so: a teacher may organise their class into cohorts without
+  // being able to change anybody's role or remove them.
+  const canWriteGroups = hasPermission(memberships, organizationId, PERMISSIONS.GROUPS_WRITE);
 
-  const [members, invites, auth] = await Promise.all([
+  const [members, invites, groupsResult, auth] = await Promise.all([
     loadOrganizationMembers(organizationId),
     canInvite ? loadOrganizationInvites(organizationId) : Promise.resolve(null),
+    // Only fetched when it could be used. Someone who cannot change groups has
+    // no reason to spend a round trip discovering what the groups are.
+    canWriteGroups ? loadOrganizationGroups(organizationId) : Promise.resolve(null),
     readAuthCookies(),
   ]);
 
@@ -60,6 +67,8 @@ export default async function MembersPage({
         members={members}
         canManage={canManage}
         currentUserId={auth.userId ?? null}
+        groups={groupsResult?.groups ?? []}
+        canWriteGroups={canWriteGroups}
       />
 
       {canInvite && invites ? (

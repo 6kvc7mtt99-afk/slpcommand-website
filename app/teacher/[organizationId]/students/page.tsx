@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { loadOrganizationStudents, loadOrganizationGroups } from "@/lib/server/teacher";
+import { loadTeacherMemberships, loadOrganizationStudents, loadOrganizationGroups } from "@/lib/server/teacher";
+import { hasPermission, PERMISSIONS } from "@/lib/platform/permissions";
+import { GroupRoster } from "@/components/teacher/GroupRoster";
 
 // B7 — Student Roster. Server-side pagination via ?page=.
 //
@@ -23,16 +25,20 @@ export default async function StudentRoster({
   const page = Math.max(1, Number(pageParam) || 1);
   const offset = (page - 1) * PAGE_SIZE;
 
-  const [roster, groupsResult] = await Promise.all([
+  const [roster, groupsResult, memberships] = await Promise.all([
     loadOrganizationStudents(organizationId, { limit: PAGE_SIZE, offset, groupId }),
     loadOrganizationGroups(organizationId),
+    loadTeacherMemberships(),
   ]);
+  // PLATFORM-GROUPS-001 — whether to render the group selector or plain text.
+  // The backend re-decides on every PATCH from the caller's real membership;
+  // this only chooses what to draw.
+  const canWriteGroups = hasPermission(memberships, organizationId, PERMISSIONS.GROUPS_WRITE);
 
   if (!roster) {
     return <div className="teacher-empty">Could not load the roster right now.</div>;
   }
 
-  const groupNameById = new Map((groupsResult?.groups ?? []).map((g) => [g.id, g.name]));
   const hasAnyGroups = (groupsResult?.groups.length ?? 0) > 0 || (groupsResult?.unassignedCount ?? 0) > 0;
 
   if (roster.total === 0 && !groupId) {
@@ -68,28 +74,17 @@ export default async function StudentRoster({
         </div>
       ) : null}
 
-      {roster.total === 0 ? (
-        <div className="teacher-empty">No students match this filter.</div>
-      ) : (
-        <div className="teacher-table-scroll">
-          <table className="teacher-table">
-            <thead>
-              <tr><th>Student</th><th>Group</th><th>Target</th><th>Last activity</th><th>Member since</th></tr>
-            </thead>
-            <tbody>
-              {roster.students.map((s) => (
-                <tr key={s.studentId}>
-                  <td><Link href={`/teacher/${organizationId}/students/${s.studentId}`}>{s.studentId}</Link></td>
-                  <td>{s.groupId ? (groupNameById.get(s.groupId) ?? "—") : "—"}</td>
-                  <td>{s.targetLevel ?? "—"}</td>
-                  <td>{s.lastActivityDate ?? "No activity recorded"}</td>
-                  <td>{new Date(s.memberSince).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {/* PLATFORM-GROUPS-001 — the same table the group detail page renders.
+          It used to print s.studentId in the Student column, so a teacher saw
+          a UUID per row; the roster carries real identity now. Sharing one
+          component is what keeps the two views from drifting apart. */}
+      <GroupRoster
+        organizationId={organizationId}
+        students={roster.students}
+        groups={groupsResult?.groups ?? []}
+        canWriteGroups={canWriteGroups}
+        emptyLabel="No students match this filter."
+      />
       {lastPage > 1 && (
         <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
           {page > 1 && <Link href={`?page=${page - 1}${groupId ? `&groupId=${groupId}` : ""}`}>← Previous</Link>}

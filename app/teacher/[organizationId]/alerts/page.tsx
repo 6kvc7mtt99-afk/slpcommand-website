@@ -40,7 +40,18 @@ export default async function AlertsPage({
           <tbody>
             {sorted.map((s) => (
               <tr key={s.studentId}>
-                <td><Link href={`/teacher/${organizationId}/students/${s.studentId}`}>{s.studentId}</Link></td>
+                {/* PLATFORM-GROUPS-001 — Alerts is a student roster too, and it
+                    was printing the raw studentId in the Student column. The
+                    identity is available here now (AlertStudent extends
+                    RosterStudent, which the same backend query fills), so
+                    leaving it would have shipped one screen showing UUIDs
+                    beside two showing names. Same honest null as everywhere
+                    else: no invented placeholder, and never the id as a name. */}
+                <td>
+                  <Link href={`/teacher/${organizationId}/students/${s.studentId}`}>
+                    {s.name ?? <span className="teacher-muted">No name recorded</span>}
+                  </Link>
+                </td>
                 <td><span className={`risk-pill risk-${s.risk.status}`}>{s.risk.status.replace("_", " ")}</span></td>
                 <td>{s.risk.idleDays !== null ? `${s.risk.idleDays}d` : "—"}</td>
                 <td>{s.lastActivityDate ?? "Never recorded"}</td>

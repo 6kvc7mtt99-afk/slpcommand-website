@@ -17,8 +17,31 @@ function withBody(req, cb) {
 // round-trip a real create → list and create-invite → accept flow, the same
 // discipline as the rest of this fixture (real requests, real responses, no
 // production data).
-const MOCK_GROUPS = [{ id: "group-1", name: "Morning cohort", created_at: "2026-01-01T00:00:00Z", studentCount: 0 }];
+// FASE PLATFORM-GROUPS-001 — TWO groups, because a single one cannot show a
+// MOVE, and moving a student between cohorts is the workflow D3 exists for.
+const MOCK_GROUPS = [
+  { id: "group-1", name: "Morning cohort", created_at: "2026-01-01T00:00:00Z" },
+  { id: "group-2", name: "Evening cohort", created_at: "2026-01-02T00:00:00Z" },
+];
 const MOCK_INVITES = new Map();
+
+// FASE PLATFORM-GROUPS-001 — who is in which cohort, held per process so an
+// assignment made by one request is visible to the next. A mock that accepted
+// the PATCH and then kept answering with the old group would let an E2E test
+// pass while the feature did nothing, which is the specific failure mode this
+// state exists to prevent.
+const MOCK_MEMBER_GROUPS = new Map([["student-e2e", "group-1"]]);
+
+/** Live count, derived — never a stored number that can disagree with the map. */
+function groupsWithCounts() {
+  return MOCK_GROUPS.map((g) => ({
+    ...g,
+    studentCount: [...MOCK_MEMBER_GROUPS.values()].filter((v) => v === g.id).length,
+  }));
+}
+function unassignedCount() {
+  return [...MOCK_MEMBER_GROUPS.values()].filter((v) => v === null).length;
+}
 
 const COACH_PLAN = {
   version: "1.1.0",
@@ -562,14 +585,27 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/students`) {
-    res.end(JSON.stringify({
-      ok: true,
-      total: 1,
-      students: [{
-        studentId: TEACHER_STUDENT, memberSince: "2026-01-15T00:00:00Z",
-        targetLevel: "3", lastActivityAt: "2026-08-20T09:00:00Z", lastActivityDate: "2026-08-20",
-      }],
-    }));
+    // PLATFORM-GROUPS-001 — the roster carries NAME and EMAIL now. It used to
+    // return the id alone and the Web printed it, so a teacher saw a UUID per
+    // row. It also honours ?groupId=, including the literal "unassigned",
+    // because the group detail page and the unassigned view are both built on
+    // exactly this one endpoint.
+    const current = MOCK_MEMBER_GROUPS.get(TEACHER_STUDENT) ?? null;
+    const filter = url.searchParams.get("groupId");
+    const matches =
+      filter === null ? true : filter === "unassigned" ? current === null : current === filter;
+    const students = matches
+      ? [{
+          studentId: TEACHER_STUDENT,
+          name: "E2E Student",
+          email: "student@example.com",
+          memberSince: "2026-01-15T00:00:00Z",
+          groupId: current,
+          groupName: current ? (MOCK_GROUPS.find((g) => g.id === current)?.name ?? null) : null,
+          targetLevel: "3", lastActivityAt: "2026-08-20T09:00:00Z", lastActivityDate: "2026-08-20",
+        }]
+      : [];
+    res.end(JSON.stringify({ ok: true, total: students.length, students }));
     return;
   }
   if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/students/${TEACHER_STUDENT}`) {
@@ -643,8 +679,15 @@ const server = http.createServer((req, res) => {
       members: [
         { membershipId: "m-owner", userId: "teacher-1", name: "E2E Owner", email: "owner@example.com",
           role: callerRole, status: "active", groupId: null, groupName: null, joinedAt: "2026-01-01T00:00:00Z" },
-        { membershipId: "m-student", userId: TEACHER_STUDENT, name: "E2E Student", email: "student@example.com",
-          role: "student", status: "active", groupId: "group-1", groupName: "Morning cohort", joinedAt: "2026-01-02T00:00:00Z" },
+        // PLATFORM-GROUPS-001 — read from the live map so People reflects an
+        // assignment made anywhere else in the flow.
+        (() => {
+          const g = MOCK_MEMBER_GROUPS.get(TEACHER_STUDENT) ?? null;
+          return { membershipId: "m-student", userId: TEACHER_STUDENT, name: "E2E Student", email: "student@example.com",
+            role: "student", status: "active", groupId: g,
+            groupName: g ? (MOCK_GROUPS.find((x) => x.id === g)?.name ?? null) : null,
+            joinedAt: "2026-01-02T00:00:00Z" };
+        })(),
       ],
     }));
     return;
@@ -752,7 +795,23 @@ const server = http.createServer((req, res) => {
   }
 
   if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/alerts`) {
-    res.end(JSON.stringify({ ok: true, totalStudents: 1, students: [] }));
+    // PLATFORM-GROUPS-001 — one real row, so the page is actually exercised.
+    // It returned an empty list before, which meant the Alerts table rendered
+    // no rows at all and the switch from printing a raw studentId to printing
+    // a name was covered by nothing.
+    res.end(JSON.stringify({
+      ok: true,
+      totalStudents: 1,
+      students: [{
+        studentId: TEACHER_STUDENT,
+        name: "E2E Student",
+        email: "student@example.com",
+        memberSince: "2026-01-15T00:00:00Z",
+        groupId: null, groupName: null, targetLevel: "3",
+        lastActivityAt: "2026-07-01T09:00:00Z", lastActivityDate: "2026-07-01",
+        risk: { status: "AT_RISK", idleDays: 56 },
+      }],
+    }));
     return;
   }
   if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/groups`) {
@@ -770,7 +829,69 @@ const server = http.createServer((req, res) => {
       });
       return;
     }
-    res.end(JSON.stringify({ ok: true, groups: MOCK_GROUPS, unassignedCount: 1 }));
+    res.end(JSON.stringify({ ok: true, groups: groupsWithCounts(), unassignedCount: unassignedCount() }));
+    return;
+  }
+
+  // ── FASE PLATFORM-GROUPS-001 — the two PATCHes D3 needs ──────────────────
+  // Neither existed in this fixture: it had no PATCH handler of any kind, so
+  // the group-assignment and rename endpoints could not be exercised end to
+  // end at all. Both model the real backend's refusals, not just its successes
+  // — a mock that only ever succeeds proves nothing about error handling.
+
+  const renameMatch = url.pathname.match(
+    new RegExp(`^/api/teacher/organizations/${TEACHER_ORG}/groups/([^/]+)$`),
+  );
+  if (renameMatch && req.method === "PATCH") {
+    withBody(req, (body) => {
+      const groupId = renameMatch[1];
+      const name = typeof body.name === "string" ? body.name.trim() : "";
+      const group = MOCK_GROUPS.find((g) => g.id === groupId);
+      if (!group) {
+        res.statusCode = 404;
+        res.end(JSON.stringify({ error: "not_found", reason: "not_found", message: "No such group." }));
+        return;
+      }
+      if (!name || name.length > 100) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ error: "invalid_name", reason: "invalid_name", message: "Enter a group name." }));
+        return;
+      }
+      // UNIQUE (organization_id, name) — the real constraint, so the 409 the
+      // rename form has its own message for is genuinely reachable here.
+      if (MOCK_GROUPS.some((g) => g.id !== groupId && g.name === name)) {
+        res.statusCode = 409;
+        res.end(JSON.stringify({ error: "duplicate_name", reason: "duplicate_name", message: "A group with this name already exists." }));
+        return;
+      }
+      group.name = name;
+      res.end(JSON.stringify({ ok: true, group: { id: group.id, name: group.name, created_at: group.created_at } }));
+    });
+    return;
+  }
+
+  const assignMatch = url.pathname.match(
+    new RegExp(`^/api/teacher/organizations/${TEACHER_ORG}/members/([^/]+)/group$`),
+  );
+  if (assignMatch && req.method === "PATCH") {
+    withBody(req, (body) => {
+      const userId = assignMatch[1];
+      const groupId = body.groupId ?? null;
+      if (!MOCK_MEMBER_GROUPS.has(userId)) {
+        res.statusCode = 404;
+        res.end(JSON.stringify({ error: "not_found", reason: "not_found", message: "no such active membership" }));
+        return;
+      }
+      // null is a real removal, not a missing value: it is how the product
+      // returns somebody to Unassigned.
+      if (groupId !== null && !MOCK_GROUPS.some((g) => g.id === groupId)) {
+        res.statusCode = 404;
+        res.end(JSON.stringify({ error: "group_not_found", reason: "group_not_found", message: "no such group in this organization" }));
+        return;
+      }
+      MOCK_MEMBER_GROUPS.set(userId, groupId);
+      res.end(JSON.stringify({ ok: true, member: { userId, role: body.role ?? "student", groupId } }));
+    });
     return;
   }
   if (url.pathname === `/api/teacher/organizations/${TEACHER_ORG}/invites` && req.method === "POST") {

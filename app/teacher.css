@@ -395,3 +395,79 @@
   .teacher-form-inline { flex-direction: column; align-items: stretch; }
   .teacher-field-grid { grid-template-columns: 1fr; }
 }
+
+/* FASE PLATFORM-GROUPS-001 — cohort management controls.
+   Same rules as everything above: `teacher-` prefixed, and this file is still
+   imported only from app/teacher/layout.tsx. No new button styles — `.btn` and
+   `.btn-primary` come from the global design system. */
+
+.teacher-group-assign {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.teacher-group-assign select {
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--fs-support);
+  max-width: 180px;
+}
+.teacher-group-assign select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.teacher-group-assign select:disabled { opacity: 0.6; }
+
+/* The per-row status sits beside the select rather than under it: a table row
+   that grows taller when somebody changes a group makes every row below it
+   jump, which is worse than a slightly wider cell. */
+.teacher-assign-note {
+  font-size: var(--fs-meta);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.teacher-breadcrumb {
+  margin: 0 0 12px;
+  font-size: var(--fs-support);
+}
+.teacher-breadcrumb a { color: var(--muted); text-decoration: none; }
+.teacher-breadcrumb a:hover { color: var(--ink); text-decoration: underline; }
+
+.teacher-group-rename { max-width: 420px; }
+
+.teacher-pager {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.teacher-pager .teacher-sub { margin: 0; }
+
+/* An email address is the widest thing in a roster row and the least
+   useful one to read in full at a glance. Unconstrained it pushed the
+   students table past a 375px viewport — measured, not guessed: the document
+   scrolled horizontally at 436px, and clamping this one cell brought it back
+   to 375. The full address is still there, selectable, and shown untruncated
+   on People where there is room for it. */
+.teacher-cell-email {
+  max-width: min(24ch, 26vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* PLATFORM-GROUPS-001 — the group detail empty state puts links inside a
+   sentence of muted text. axe caught it as `link-in-text-block`, serious:
+   the link colour (#2d5be3) against the muted surrounding text (#6b6b72) is a
+   contrast ratio of 1.06 where 3 is required, so the link was distinguishable
+   by colour ALONE. Underlining is the fix that does not depend on seeing
+   colour at all. Scoped to empty states rather than applied to every teacher
+   link, because elsewhere links sit in their own block and are already
+   distinguishable by position. */
+.teacher-empty a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

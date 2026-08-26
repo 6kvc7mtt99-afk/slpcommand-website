@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { apiRequest, FrontendError } from "@/lib/api/client";
 import { STAFF_ROLE_LABELS } from "@/lib/teacher/labels";
 import type { OrganizationMember } from "@/lib/platform/types";
-import type { TeacherRole } from "@/lib/teacher/types";
+import type { TeacherGroup, TeacherRole } from "@/lib/teacher/types";
+import { AssignGroupControl } from "./AssignGroupControl";
 
 // FASE PLATFORM-ENTERPRISE-001 — member administration.
 //
@@ -33,11 +34,21 @@ export function MemberTable({
   members,
   canManage,
   currentUserId,
+  groups = [],
+  canWriteGroups = false,
 }: {
   organizationId: string;
   members: OrganizationMember[];
   canManage: boolean;
   currentUserId: string | null;
+  // PLATFORM-GROUPS-001 — the cohorts a member may be filed into. Optional and
+  // empty by default so every existing call site keeps working unchanged: with
+  // no groups the column stays exactly the read-only text it has always been.
+  groups?: TeacherGroup[];
+  // groups.write, not members.manage. They are different permissions and a
+  // teacher holds the first without the second — being able to organise your
+  // own class does not make you an administrator of the organization.
+  canWriteGroups?: boolean;
 }) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -146,7 +157,23 @@ export function MemberTable({
                       </>
                     )}
                   </td>
-                  <td>{member.groupName ?? <span className="teacher-muted">Unassigned</span>}</td>
+                  <td>
+                    {canWriteGroups && groups.length > 0 ? (
+                      <AssignGroupControl
+                        organizationId={organizationId}
+                        userId={member.userId}
+                        // The row's REAL role, never an assumed "student":
+                        // it selects which membership row is updated.
+                        role={member.role}
+                        currentGroupId={member.groupId}
+                        groups={groups}
+                        disabled={busy}
+                        label={member.name ?? member.email ?? "this member"}
+                      />
+                    ) : (
+                      member.groupName ?? <span className="teacher-muted">Unassigned</span>
+                    )}
+                  </td>
                   <td>{member.joinedAt.slice(0, 10)}</td>
                   {canManage ? (
                     <td>

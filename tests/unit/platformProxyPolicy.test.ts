@@ -250,3 +250,52 @@ describe("PLATFORM-PROVISIONING-001 — academy creation", () => {
     expect(decidePolicy("POST", "/api/admin/organizations")).toEqual(forward);
   });
 });
+
+describe("PLATFORM-GROUPS-001 — cohort management needs NO new proxy rules", () => {
+  // D3 added a group detail page, a group selector and a rename form, and not
+  // one rule to the allowlist: every endpoint they call was already reachable.
+  // These tests exist so that stays true — and so the adjacent routes D3
+  // deliberately did NOT open cannot drift open later.
+  const ORG = "c6a7a68c-344c-43f6-92fd-a8561ddfd14a";
+  const USER = "0022cccf-5b8c-4cdb-891a-ff6068fe3e13";
+  const GROUP = "33333333-0000-4000-8000-0000000000a1";
+
+  it("forwards everything the cohort workflow actually calls", () => {
+    expect(decidePolicy("GET", `/api/teacher/organizations/${ORG}/groups`)).toEqual(forward);
+    expect(decidePolicy("POST", `/api/teacher/organizations/${ORG}/groups`)).toEqual(forward);
+    expect(decidePolicy("PATCH", `/api/teacher/organizations/${ORG}/groups/${GROUP}`)).toEqual(forward);
+    expect(decidePolicy("GET", `/api/teacher/organizations/${ORG}/students`)).toEqual(forward);
+    expect(decidePolicy("GET", `/api/teacher/organizations/${ORG}/students?groupId=${GROUP}`)).toEqual(forward);
+    expect(decidePolicy("GET", `/api/teacher/organizations/${ORG}/students?groupId=unassigned`)).toEqual(forward);
+    expect(decidePolicy("PATCH", `/api/teacher/organizations/${ORG}/members/${USER}/group`)).toEqual(forward);
+    expect(decidePolicy("GET", `/api/teacher/organizations/${ORG}/members`)).toEqual(forward);
+  });
+
+  it("does NOT open a group-detail read endpoint", () => {
+    // The detail page reuses GET …/groups and filters in memory rather than
+    // adding a route. If somebody later adds GET …/groups/:id they must open
+    // it deliberately, here, rather than discovering it already works.
+    expect(decidePolicy("GET", `/api/teacher/organizations/${ORG}/groups/${GROUP}`)).not.toEqual(forward);
+    expect(decidePolicy("GET", `/api/teacher/organizations/${ORG}/groups/${GROUP}/students`)).not.toEqual(forward);
+  });
+
+  it("does NOT open DELETE on a group", () => {
+    // Deleting a cohort sets every member's group_id to NULL via ON DELETE
+    // SET NULL. That is a product decision nobody has taken, and D3 explicitly
+    // did not take it.
+    expect(decidePolicy("DELETE", `/api/teacher/organizations/${ORG}/groups/${GROUP}`)).not.toEqual(forward);
+  });
+
+  it("pins the assignment route to PATCH alone", () => {
+    for (const m of ["GET", "POST", "PUT", "DELETE"]) {
+      expect(
+        decidePolicy(m, `/api/teacher/organizations/${ORG}/members/${USER}/group`),
+        `${m} on the group assignment route must not forward`,
+      ).not.toEqual(forward);
+    }
+  });
+
+  it("does not let a group id swallow a slash", () => {
+    expect(decidePolicy("PATCH", `/api/teacher/organizations/${ORG}/groups/a/b`)).not.toEqual(forward);
+  });
+});
