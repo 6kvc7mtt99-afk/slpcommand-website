@@ -7,6 +7,12 @@ import { STAFF_ROLE_LABELS } from "@/lib/teacher/labels";
 // anyone with none. Exactly one is the common case and skips the picker
 // entirely; more than one (a teacher on staff at two organizations) shows a
 // real choice, never a fabricated one.
+//
+// PLATFORM-PROVISIONING-001 — the picker is also where somebody who already
+// has an academy goes to start another. It is NOT the entry point for a first
+// academy: this page is behind TeacherLayout, which sends anyone with no
+// membership to /dashboard. /academy/new is reachable with a session alone,
+// which is what makes a first academy possible at all.
 export default async function TeacherOrgPicker() {
   const memberships = await loadTeacherMemberships();
 
@@ -33,6 +39,9 @@ export default async function TeacherOrgPicker() {
           </Link>
         ))}
       </div>
+      <p className="teacher-note" style={{ marginTop: 24 }}>
+        <Link href="/academy/new">Create another academy</Link>
+      </p>
     </main>
   );
 }
