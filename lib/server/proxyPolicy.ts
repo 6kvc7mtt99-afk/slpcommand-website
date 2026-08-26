@@ -193,6 +193,30 @@ const ALLOW: Rule[] = [
   { method: "POST", pattern: /^\/api\/teacher\/organizations\/[^/]+\/domain\/(verify|activate|deactivate)$/, reason: "ok" },
   // FASE PLATFORM-ACADEMY-001 — rename a cohort.
   { method: "PATCH", pattern: /^\/api\/teacher\/organizations\/[^/]+\/groups\/[^/]+$/, reason: "ok" },
+
+  // FASE PLATFORM-PROVISIONING-001 — creating an academy.
+  //
+  // These are the ONLY routes in this list a caller with no membership
+  // anywhere may reach, and that is the point rather than an oversight: the
+  // person creating their first academy has no organization to be scoped to
+  // yet. What stands in for the usual requireOrgMembership is the shape of
+  // what the backend will do — it can only ever create an academy owned by
+  // the caller themselves, at most a fixed number of times, rate-limited per
+  // user rather than per IP.
+  //
+  // Four exact paths, four exact methods, each anchored at both ends. NOT a
+  // /api/academies prefix: a broad pattern here would forward every future
+  // path under that namespace before anyone had decided the browser should
+  // reach it, including ones that do not exist yet. `GET /api/academies`
+  // (a listing) and `DELETE /api/academies` are deliberately absent — no such
+  // route exists, and the proxy must not be the thing that discovers it.
+  //
+  // decidePolicy strips the query string before matching, so the `$` anchors
+  // still hold for `?slug=` and `?name=`.
+  { method: "GET", pattern: /^\/api\/academies\/quota$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/academies\/slug-available$/, reason: "ok" },
+  { method: "GET", pattern: /^\/api\/academies\/suggest-slug$/, reason: "ok" },
+  { method: "POST", pattern: /^\/api\/academies$/, reason: "ok" },
 ];
 
 export type PolicyDecision =

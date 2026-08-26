@@ -165,3 +165,88 @@ describe("PLATFORM-ACADEMY-001 — group rename", () => {
     expect(decidePolicy("PATCH", `/api/teacher/organizations/${ORG}/groups/a/b`)).not.toEqual(forward);
   });
 });
+
+describe("PLATFORM-PROVISIONING-001 — academy creation", () => {
+  // These cases exist because their absence is what broke /academy/new in
+  // production. The page shipped, was gated correctly, and rendered "we could
+  // not load your account" for every authenticated user — because this
+  // deny-by-default allowlist had no rule for the routes it needed, and the
+  // page's own tests mocked the fetch layer and so could never have noticed.
+  // A route is not reachable from the browser until it appears here.
+
+  it("forwards the four routes the creation flow needs, and only with their own method", () => {
+    expect(decidePolicy("GET", "/api/academies/quota")).toEqual(forward);
+    expect(decidePolicy("GET", "/api/academies/slug-available")).toEqual(forward);
+    expect(decidePolicy("GET", "/api/academies/suggest-slug")).toEqual(forward);
+    expect(decidePolicy("POST", "/api/academies")).toEqual(forward);
+  });
+
+  it("still forwards them with their query strings attached", () => {
+    // decidePolicy strips the query before matching. If it ever stopped doing
+    // that, the `$` anchors would reject every real call from the form —
+    // which is exactly how these routes are used.
+    expect(decidePolicy("GET", "/api/academies/slug-available?slug=madrid")).toEqual(forward);
+    expect(decidePolicy("GET", "/api/academies/suggest-slug?name=Madrid%20Language%20Centre")).toEqual(forward);
+  });
+
+  it("does NOT open a listing at /api/academies", () => {
+    // No such endpoint exists. A listing would answer "what academies are
+    // there", which is not a question any tenant may ask of the platform.
+    expect(decidePolicy("GET", "/api/academies")).not.toEqual(forward);
+  });
+
+  it("does NOT open DELETE anywhere in the namespace", () => {
+    // There is no delete-organization path anywhere in this system — that is a
+    // stated limitation of D1/D2, not an omission the proxy should paper over.
+    expect(decidePolicy("DELETE", "/api/academies")).not.toEqual(forward);
+    expect(decidePolicy("DELETE", "/api/academies/quota")).not.toEqual(forward);
+    expect(decidePolicy("DELETE", "/api/academies/some-org-id")).not.toEqual(forward);
+  });
+
+  it("does NOT open the /api/academies prefix", () => {
+    // The single most important assertion here: a broad prefix rule would
+    // forward every future path under this namespace before anybody decided
+    // the browser should reach it.
+    for (const path of [
+      "/api/academies/anything-else",
+      "/api/academies/quota/extra",
+      "/api/academies/slug-available/extra",
+      "/api/academies/suggest-slug/extra",
+      "/api/academies/some-org-id",
+      "/api/academies/some-org-id/members",
+    ]) {
+      expect(decidePolicy("GET", path), `GET ${path} must not forward`).not.toEqual(forward);
+      expect(decidePolicy("POST", path), `POST ${path} must not forward`).not.toEqual(forward);
+    }
+  });
+
+  it("pins each route to ONE method — the adjacent-method matrix", () => {
+    const cases: Array<[string, string[]]> = [
+      ["/api/academies/quota", ["POST", "PATCH", "PUT", "DELETE"]],
+      ["/api/academies/slug-available", ["POST", "PATCH", "PUT", "DELETE"]],
+      ["/api/academies/suggest-slug", ["POST", "PATCH", "PUT", "DELETE"]],
+      // GET on the creation route would be a listing; PATCH/PUT/DELETE would be
+      // mutations that do not exist.
+      ["/api/academies", ["GET", "PATCH", "PUT", "DELETE"]],
+    ];
+    for (const [path, methods] of cases) {
+      for (const m of methods) {
+        expect(decidePolicy(m, path), `${m} ${path} must not forward`).not.toEqual(forward);
+      }
+    }
+  });
+
+  it("does not accidentally open a neighbouring namespace", () => {
+    for (const path of ["/api/academy", "/api/academy/new", "/api/academies-admin", "/api/academiesx"]) {
+      expect(decidePolicy("GET", path), `GET ${path}`).not.toEqual(forward);
+      expect(decidePolicy("POST", path), `POST ${path}`).not.toEqual(forward);
+    }
+  });
+
+  it("leaves the platform-admin provisioning route where it already was", () => {
+    // POST /api/admin/organizations was already reachable through the
+    // /api/admin/ rule and gated by requireAdminUser upstream. This change must
+    // not have altered that either way.
+    expect(decidePolicy("POST", "/api/admin/organizations")).toEqual(forward);
+  });
+});
