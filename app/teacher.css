@@ -471,3 +471,52 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* FASE PLATFORM-MAIL-001 — invitation delivery.
+   Same rules as everything above: `teacher-` prefixed, imported only from
+   app/teacher/layout.tsx, no new button system. */
+
+.teacher-invite-result {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.teacher-invite-result .teacher-token-box { margin-top: 10px; }
+.teacher-invite-result .btn { margin-top: 10px; }
+
+/* Actions wrap rather than forcing the table wider: two buttons in a cell is
+   what pushed the invitations table past a phone viewport. */
+.teacher-invite-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Delivery state is carried by the WORD; this only reinforces it. A reader
+   who cannot distinguish the colours still reads "Not delivered". */
+[data-delivery="sent"] { color: var(--ok); }
+[data-delivery="failed"] { color: var(--bad); }
+[data-delivery="pending"] { color: var(--muted); }
+[data-delivery="not_requested"] { color: var(--muted); }
+
+/* The provider's sanitised error, kept from dominating the row. */
+.teacher-delivery-detail {
+  font-size: var(--fs-meta);
+  display: inline-block;
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+/* Used by the invitation form's field descriptions. The academy shell has
+   `.academy-hint`; teacher.css had no equivalent because no teacher form had
+   needed per-field help text before. Same size and colour, so the two
+   surfaces read identically. */
+.teacher-hint {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  margin: 2px 0 0;
+  max-width: 60ch;
+}

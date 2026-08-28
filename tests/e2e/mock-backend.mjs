@@ -25,6 +25,68 @@ const MOCK_GROUPS = [
 ];
 const MOCK_INVITES = new Map();
 
+// FASE PLATFORM-MAIL-001 — a FAKE MAIL TRANSPORT.
+//
+// Nothing here can reach a real provider: there is no key, no fetch, no
+// network. Messages are appended to an array the E2E can read back, which is
+// what lets the workflow assert the RECIPIENT, the ORGANIZATION and the
+// TOKEN URL rather than just "the button said Sent".
+//
+// `failNext` is how provider failure becomes testable without pretending a
+// network exists. A test sets it, the next send is refused, and the UI has to
+// show the created-but-unsent state honestly.
+const MOCK_MAILBOX = [];
+let mailFailNext = null;
+
+/** Invitations, keyed by id, with the delivery lifecycle D4 added. */
+const MOCK_INVITE_ROWS = new Map();
+let inviteSeq = 0;
+
+const RESEND_COOLDOWN_MS = 5 * 60 * 1000;
+const MAX_SENDS_PER_INVITE = 5;
+
+function inviteView(row) {
+  const now = Date.now();
+  const expired = new Date(row.expiresAt).getTime() < now;
+  const cooling = row.lastSentAt && now - new Date(row.lastSentAt).getTime() < RESEND_COOLDOWN_MS;
+  return {
+    id: row.id, role: row.role, groupId: row.groupId ?? null, email: row.email ?? null,
+    status: row.status === "pending" && expired ? "expired" : row.status,
+    delivery: {
+      status: row.deliveryStatus, error: row.deliveryError ?? null,
+      lastSentAt: row.lastSentAt ?? null, sendCount: row.sendCount,
+      canResend: Boolean(row.email) && row.status === "pending" && !expired
+        && row.sendCount < MAX_SENDS_PER_INVITE && !cooling,
+    },
+    expiresAt: row.expiresAt, createdAt: row.createdAt,
+    acceptedAt: row.acceptedAt ?? null, invitedBy: "teacher-1", acceptedBy: row.acceptedBy ?? null,
+  };
+}
+
+/** Models deliverInvitation: attempt, then record the truth either way. */
+function fakeDeliver(row, token, organizationName) {
+  row.sendCount += 1;
+  row.lastSentAt = new Date().toISOString();
+  if (mailFailNext) {
+    const { retriable, error } = mailFailNext;
+    mailFailNext = null;
+    row.deliveryStatus = "failed";
+    row.deliveryError = error;
+    return { status: "failed", retriable, error };
+  }
+  row.deliveryStatus = "sent";
+  row.deliveryError = null;
+  MOCK_MAILBOX.push({
+    to: row.email,
+    subject: `You have been invited to ${organizationName} on SLP Command`,
+    organizationName,
+    url: `http://localhost:3000/invite/accept?token=${token}`,
+    token,
+    role: row.role,
+  });
+  return { status: "sent", retriable: false };
+}
+
 // FASE PLATFORM-GROUPS-001 — who is in which cohort, held per process so an
 // assignment made by one request is visible to the next. A mock that accepted
 // the PATCH and then kept answering with the old group would let an E2E test
@@ -693,14 +755,36 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === `${orgBase}/invites` && req.method === "GET") {
+    // PLATFORM-MAIL-001 — read from the mutable store so an invitation created
+    // by one request is visible to the next, with its real delivery state. A
+    // frozen fixture would let the whole workflow pass while doing nothing.
+    if (MOCK_INVITE_ROWS.size === 0) {
+      MOCK_INVITE_ROWS.set("invite-e2e", {
+        id: "invite-e2e", role: "student", groupId: null, email: null, status: "pending",
+        deliveryStatus: "not_requested", deliveryError: null, lastSentAt: null, sendCount: 0,
+        expiresAt: "2099-01-01T00:00:00Z", createdAt: "2026-01-03T00:00:00Z", acceptedAt: null,
+      });
+    }
     res.end(JSON.stringify({
       ok: true,
-      invites: [{
-        id: "invite-e2e", role: "student", status: "pending", groupId: null,
-        expiresAt: "2099-01-01T00:00:00Z", createdAt: "2026-01-03T00:00:00Z",
-        acceptedAt: null, invitedBy: "teacher-1", acceptedBy: null,
-      }],
+      invites: [...MOCK_INVITE_ROWS.values()].reverse().map(inviteView),
     }));
+    return;
+  }
+
+  // A test-only door into the fake transport. Not a product route: it exists
+  // so a spec can read what was "sent" and can arm a provider failure without
+  // a network. The real backend has no such endpoint.
+  if (url.pathname === "/__mock/mailbox") {
+    if (req.method === "DELETE") { MOCK_MAILBOX.length = 0; mailFailNext = null; res.end(JSON.stringify({ ok: true })); return; }
+    if (req.method === "POST") {
+      withBody(req, (body) => {
+        mailFailNext = body?.failNext ?? null;
+        res.end(JSON.stringify({ ok: true }));
+      });
+      return;
+    }
+    res.end(JSON.stringify({ ok: true, messages: MOCK_MAILBOX }));
     return;
   }
   if (url.pathname === `${orgBase}/settings`) {
@@ -898,14 +982,74 @@ const server = http.createServer((req, res) => {
     withBody(req, (body) => {
       const role = typeof body.role === "string" ? body.role : "student";
       const groupId = typeof body.groupId === "string" ? body.groupId : null;
+      const rawEmail = typeof body.email === "string" ? body.email.trim().toLowerCase() : null;
+      const email = rawEmail || null;
+
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ error: "invalid_email", reason: "invalid_email", field: "email",
+          message: "Enter a valid email address." }));
+        return;
+      }
+      // Duplicate detection, scoped to this organization exactly as the real
+      // backend does it.
+      if (email && [...MOCK_INVITE_ROWS.values()].some((r) => r.email === email && r.status === "pending")) {
+        res.statusCode = 409;
+        res.end(JSON.stringify({ error: "pending_invite", reason: "pending_invite", field: "email",
+          message: "There is already a pending invitation for that address." }));
+        return;
+      }
+
       const token = crypto.randomBytes(32).toString("hex");
-      MOCK_INVITES.set(token, { organizationId: TEACHER_ORG, role, groupId, used: false });
+      const id = `invite-${++inviteSeq}`;
+      const row = {
+        id, role, groupId, email, status: "pending",
+        deliveryStatus: "not_requested", deliveryError: null, lastSentAt: null, sendCount: 0,
+        expiresAt: "2099-01-01T00:00:00Z", createdAt: new Date().toISOString(), acceptedAt: null,
+      };
+      MOCK_INVITE_ROWS.set(id, row);
+      MOCK_INVITES.set(token, { organizationId: TEACHER_ORG, role, groupId, used: false, inviteId: id });
+
+      let delivery = { status: "not_requested", retriable: false };
+      if (email) delivery = fakeDeliver(row, token, "SLP Command E2E Academy");
+
       res.statusCode = 201;
       res.end(JSON.stringify({
         ok: true,
-        invite: { id: `invite-${MOCK_INVITES.size}`, role, expiresAt: "2026-09-01T00:00:00Z", token },
+        invite: { id, role, email, expiresAt: row.expiresAt, token,
+          url: `http://localhost:3000/invite/accept?token=${token}` },
+        delivery,
       }));
     });
+    return;
+  }
+
+  // PLATFORM-MAIL-001 — resend. ROTATES the token, leaves the expiry alone.
+  const resendMatch = url.pathname.match(
+    new RegExp(`^/api/teacher/organizations/${TEACHER_ORG}/invites/([^/]+)/resend$`));
+  if (resendMatch && req.method === "POST") {
+    const row = MOCK_INVITE_ROWS.get(resendMatch[1]);
+    if (!row) { res.statusCode = 404; res.end(JSON.stringify({ error: "not_found", reason: "not_found" })); return; }
+    const now = Date.now();
+    const refuse = (reason, message) => {
+      res.statusCode = 409;
+      res.end(JSON.stringify({ error: reason, reason, message }));
+    };
+    if (row.status !== "pending") return refuse("not_pending", "That invitation is no longer pending.");
+    if (!row.email) return refuse("link_only", "That invitation has no email address.");
+    if (row.sendCount >= MAX_SENDS_PER_INVITE) return refuse("max_sends", "Sent the maximum number of times.");
+    if (row.lastSentAt && now - new Date(row.lastSentAt).getTime() < RESEND_COOLDOWN_MS) {
+      return refuse("cooldown", "That invitation was sent very recently.");
+    }
+
+    // Rotation: the OLD token stops working, a NEW one is issued, and the
+    // expiry does not move.
+    for (const [tok, meta] of MOCK_INVITES) if (meta.inviteId === row.id) MOCK_INVITES.delete(tok);
+    const token = crypto.randomBytes(32).toString("hex");
+    MOCK_INVITES.set(token, { organizationId: TEACHER_ORG, role: row.role, groupId: row.groupId, used: false, inviteId: row.id });
+
+    const delivery = fakeDeliver(row, token, "SLP Command E2E Academy");
+    res.end(JSON.stringify({ ok: true, delivery, invite: inviteView(row) }));
     return;
   }
   if (url.pathname === "/api/teacher/invites/accept" && req.method === "POST") {

@@ -524,3 +524,161 @@ test.describe("Teacher — cohort controls are not reachable without staff acces
     }
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE PLATFORM-MAIL-001 — invitation delivery, end to end.
+//
+// Against a FAKE MAIL TRANSPORT in the mock backend. Nothing here can reach a
+// real provider — no key, no network — and the mailbox the specs read is an
+// in-process array. That is what lets them assert the RECIPIENT, the
+// ORGANIZATION and the TOKEN URL rather than only "the button said Sent".
+//
+// Serial and stateful on purpose: resend is only meaningful after a send, and
+// the cooldown is only meaningful after a resend.
+// ═══════════════════════════════════════════════════════════════════════════
+
+type MockMessage = { to: string; subject: string; organizationName: string; url: string; token: string };
+
+// The mock backend DIRECTLY, not through the Next proxy. /__mock/* is a
+// test-only door and is deliberately absent from the proxy allowlist — which
+// is deny-by-default, so routing this through /api/backend would (correctly)
+// 404. Reaching the fixture on its own port is the honest way to inspect it
+// without opening a hole in the policy the product ships.
+const MOCK_BACKEND = "http://127.0.0.1:3999";
+
+async function mailbox(page: import("@playwright/test").Page): Promise<MockMessage[]> {
+  const res = await page.request.get(`${MOCK_BACKEND}/__mock/mailbox`);
+  return res.ok() ? (await res.json()).messages : [];
+}
+
+async function armMailFailure(page: import("@playwright/test").Page, failNext: unknown) {
+  await page.request.post(`${MOCK_BACKEND}/__mock/mailbox`, {
+    headers: { "Content-Type": "application/json" },
+    data: { failNext },
+  });
+}
+
+test.describe.serial("Teacher — invitation delivery", () => {
+  test.beforeEach(async ({ context }) => {
+    await context.addCookies(teacherCookies);
+  });
+
+  test("1 — a LINK-ONLY invitation still works exactly as before", async ({ page }) => {
+    // The pre-D4 flow is a deliberate choice, not a legacy path. Breaking it
+    // would break every academy that sends links through its own channel.
+    await page.goto(`/teacher/${ORG}/invites`);
+    await expect(page.getByRole("button", { name: "Create invitation link" })).toBeVisible();
+    await page.getByRole("button", { name: "Create invitation link" }).click();
+    await expect(page.getByText(/\/invite\/accept\?token=/)).toBeVisible();
+    await expect(page.getByText(/shown only once/i)).toBeVisible();
+  });
+
+  test("2 — an EMAIL invitation is sent, and the fake transport received it", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/invites`);
+    await page.getByLabel(/Email address/i).fill("newcomer@example.com");
+    await expect(page.getByRole("button", { name: "Send invitation" })).toBeVisible();
+    await page.getByRole("button", { name: "Send invitation" }).click();
+    await expect(page.getByText(/Invitation sent to newcomer@example\.com/)).toBeVisible();
+
+    const messages = await mailbox(page);
+    const sent = messages.find((m) => m.to === "newcomer@example.com");
+    expect(sent, "the fake transport received nothing").toBeTruthy();
+    expect(sent!.organizationName).toContain("E2E Academy");
+    expect(sent!.subject).toContain("E2E Academy");
+    expect(sent!.url).toContain("/invite/accept?token=");
+  });
+
+  test("3 — it appears in the list with its recipient and delivery state", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/invites`);
+    const row = page.getByRole("row").filter({ hasText: "newcomer@example.com" });
+    await expect(row).toBeVisible();
+    await expect(row.getByText("Sent")).toBeVisible();
+  });
+
+  test("4 — a duplicate pending invitation is refused, and points at resend", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/invites`);
+    await page.getByLabel(/Email address/i).fill("newcomer@example.com");
+    await page.getByRole("button", { name: "Send invitation" }).click();
+    // Next renders its own route announcer with role="alert" on every page,
+    // so an unscoped getByRole("alert") is ambiguous. Scope to the form.
+    await expect(page.locator("form.teacher-form").getByRole("alert"))
+      .toContainText(/already a pending invitation/i);
+  });
+
+  test("5 — resend is DISABLED during cooldown, and says why", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/invites`);
+    const row = page.getByRole("row").filter({ hasText: "newcomer@example.com" });
+    const resend = row.getByRole("button", { name: "Resend" });
+    await expect(resend).toBeDisabled();
+    await expect(resend).toHaveAttribute("title", /sent very recently/i);
+  });
+
+  test("6 — an invalid address is refused before anything is created", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/invites`);
+    await page.getByLabel(/Email address/i).fill("not-an-email");
+    await page.getByRole("button", { name: "Send invitation" }).click();
+    await expect(page.locator("form.teacher-form").getByRole("alert"))
+      .toContainText(/valid email address/i);
+    expect((await mailbox(page)).some((m) => m.to === "not-an-email")).toBe(false);
+  });
+
+  test("7 — a PROVIDER FAILURE gives created-but-unsent, with both ways forward", async ({ page }) => {
+    // The state the whole failure contract exists to represent. The
+    // invitation is real; the email is not; neither fact is hidden.
+    await armMailFailure(page, { retriable: true, error: "503: upstream" });
+
+    await page.goto(`/teacher/${ORG}/invites`);
+    await page.getByLabel(/Email address/i).fill("unreachable@example.com");
+    await page.getByRole("button", { name: "Send invitation" }).click();
+
+    await expect(page.getByText(/Invitation created, but we could not send/i)).toBeVisible();
+    await expect(page.getByText(/\/invite\/accept\?token=/)).toBeVisible();
+    await expect(page.getByRole("button", { name: /Copy link/i })).toBeVisible();
+    // It must NOT claim success.
+    await expect(page.getByText(/Invitation sent to unreachable/i)).toHaveCount(0);
+  });
+
+  test("8 — the failed invitation is listed as Not delivered and can be retried", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/invites`);
+    const row = page.getByRole("row").filter({ hasText: "unreachable@example.com" });
+    await expect(row.getByText("Not delivered")).toBeVisible();
+    await expect(row.getByRole("button", { name: "Resend" })).toBeVisible();
+  });
+
+  test("9 — the invitations page is closed to a learner", async ({ context, page }) => {
+    await context.clearCookies();
+    await context.addCookies([
+      { name: "slp_at", value: "test-access", url: E2E_BASE_URL },
+      { name: "slp_rt", value: "test-refresh", url: E2E_BASE_URL },
+      { name: "slp_uid", value: "user-1", url: E2E_BASE_URL },
+      { name: "slp_em", value: "learner@example.com", url: E2E_BASE_URL },
+    ]);
+    await page.goto(`/teacher/${ORG}/invites`);
+    await expect(page).not.toHaveURL(/\/teacher\//);
+    await expect(page.getByRole("button", { name: /Send invitation/i })).toHaveCount(0);
+  });
+
+  test("10 — the invitations page has no serious axe violations", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/invites`);
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    expect(results.violations.filter((v) => v.impact === "critical" || v.impact === "serious")).toEqual([]);
+  });
+
+  test("11 — the invitations page does not scroll horizontally on a phone", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto(`/teacher/${ORG}/invites`);
+    const [sw, cw] = await page.evaluate(() => [
+      document.documentElement.scrollWidth, document.documentElement.clientWidth,
+    ]);
+    expect(sw, "/invites overflows a 375px viewport").toBeLessThanOrEqual(cw);
+  });
+
+  test("12 — no invitation token or hash is ever rendered in the list", async ({ page }) => {
+    await page.goto(`/teacher/${ORG}/invites`);
+    const table = page.getByRole("table");
+    const text = (await table.textContent()) ?? "";
+    expect(text).not.toMatch(/[a-f0-9]{64}/);
+  });
+});

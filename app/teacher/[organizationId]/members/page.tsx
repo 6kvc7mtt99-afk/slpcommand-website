@@ -74,7 +74,7 @@ export default async function MembersPage({
       {canInvite && invites ? (
         <section className="teacher-section">
           <h2 className="teacher-h2">Invitations</h2>
-          <InviteList organizationId={organizationId} invites={invites} />
+          <InviteList organizationId={organizationId} invites={invites} canInvite={canInvite} />
         </section>
       ) : null}
     </>

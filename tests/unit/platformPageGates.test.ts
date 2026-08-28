@@ -43,6 +43,7 @@ vi.mock("@/lib/server/platform", () => ({
 vi.mock("@/lib/server/authCookies", () => ({ readAuthCookies: vi.fn(async () => ({ userId: "u1" })) }));
 vi.mock("@/components/teacher/MemberTable", () => ({ MemberTable: () => null }));
 vi.mock("@/components/teacher/InviteList", () => ({ InviteList: () => null }));
+vi.mock("@/components/teacher/CreateInviteForm", () => ({ CreateInviteForm: () => null }));
 vi.mock("@/components/teacher/BrandingForm", () => ({ BrandingForm: () => null }));
 vi.mock("@/components/teacher/OrganizationNameForm", () => ({ OrganizationNameForm: () => null }));
 vi.mock("@/components/teacher/FlagToggles", () => ({ FlagToggles: () => null }));
@@ -69,6 +70,13 @@ const PAGES = [
   { name: "members", mod: "@/app/teacher/[organizationId]/members/page", allowedFor: ["owner", "admin", "teacher"] },
   { name: "settings", mod: "@/app/teacher/[organizationId]/settings/page", allowedFor: ["owner", "admin", "teacher"] },
   { name: "audit", mod: "@/app/teacher/[organizationId]/audit/page", allowedFor: ["owner", "admin"] },
+  // PLATFORM-MAIL-001 — /invites had NO permission gate: the navigation hid
+  // it, but typing the URL rendered the form for anyone who passed
+  // TeacherLayout. The backend refused every request it made, so nothing was
+  // exposed — but a page whose every control answers 403 is a worse
+  // experience than a 404, and this list is where that is now enforced.
+  // A teacher holds members.invite, so all three staff roles reach it.
+  { name: "invites", mod: "@/app/teacher/[organizationId]/invites/page", allowedFor: ["owner", "admin", "teacher"] },
 ];
 
 describe("cross-tenant: a member of another organization gets nothing", () => {
@@ -115,4 +123,49 @@ describe("the pages a teacher legitimately reaches still render", () => {
       expect(notFound).not.toHaveBeenCalled();
     });
   }
+});
+
+describe("PLATFORM-MAIL-001 — the /invites gate, and what distinguishes it", () => {
+  // /invites had no permission gate before D4. Adding one is only meaningful
+  // if something can tell the difference, and the cross-tenant tests above
+  // cannot: with the permission gate removed, the MEMBERSHIP check still
+  // refuses a member of another organization, and with the membership check
+  // removed, hasPermission still refuses them. That redundancy is correct
+  // defence in depth — and it means a mutation of either survives a suite that
+  // only tests the cross-tenant case.
+  //
+  // super_admin is what separates them. It is a real staff role: it passes
+  // TeacherRequireRole and TeacherLayout, so it HAS a membership here — and it
+  // is deliberately mapped to the empty permission set. Only the permission
+  // gate can refuse it.
+  it("a super_admin membership reaches the page's membership check and is refused by the PERMISSION", async () => {
+    loadTeacherMemberships.mockResolvedValue([membership(ORG, "super_admin")]);
+    await expect(renderPage("@/app/teacher/[organizationId]/invites/page", ORG)).rejects.toThrow("NOT_FOUND");
+  });
+
+  it("a student membership is refused too", async () => {
+    loadTeacherMemberships.mockResolvedValue([membership(ORG, "student")]);
+    await expect(renderPage("@/app/teacher/[organizationId]/invites/page", ORG)).rejects.toThrow("NOT_FOUND");
+  });
+
+  it("all three inviting roles reach it", async () => {
+    for (const role of ["owner", "admin", "teacher"]) {
+      notFound.mockClear();
+      loadTeacherMemberships.mockResolvedValue([membership(ORG, role)]);
+      await expect(renderPage("@/app/teacher/[organizationId]/invites/page", ORG)).resolves.toBeTruthy();
+      expect(notFound).not.toHaveBeenCalled();
+    }
+  });
+
+  it("the page carries BOTH gates in source — the membership one cannot be proven behaviourally", async () => {
+    // A weaker kind of test, here for the specific reason stated above: the
+    // two checks are mutually redundant against every input a real role can
+    // produce, so removing one changes no observable behaviour. Pinning it in
+    // source is what stops a refactor quietly dropping the outer gate.
+    const fs = await import("node:fs");
+    const src = fs.readFileSync(
+      new URL("../../app/teacher/[organizationId]/invites/page.tsx", import.meta.url), "utf8");
+    expect(src).toMatch(/memberships\.some\(\(m\) => m\.organizationId === organizationId\)\) notFound\(\)/);
+    expect(src).toMatch(/hasPermission\(memberships, organizationId, PERMISSIONS\.MEMBERS_INVITE\)\) notFound\(\)/);
+  });
 });

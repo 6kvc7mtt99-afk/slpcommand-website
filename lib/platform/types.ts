@@ -91,11 +91,30 @@ export interface OrganizationMember {
   joinedAt: string;
 }
 
+// FASE PLATFORM-MAIL-001 — an invitation's delivery lifecycle, separate from
+// the invitation's own status. The two answer different questions: `status`
+// is "can this still be redeemed", `delivery` is "did the email arrive". An
+// invitation can be perfectly valid and undelivered, which is exactly the
+// state the UI has to be able to show.
+export type InviteDeliveryStatus = "not_requested" | "pending" | "sent" | "failed";
+
+export interface InviteDelivery {
+  status: InviteDeliveryStatus;
+  error: string | null;
+  lastSentAt: string | null;
+  sendCount: number;
+  /** Server-decided: cooldown, send budget and invitation state all folded in. */
+  canResend: boolean;
+}
+
 export interface OrganizationInvite {
   id: string;
   role: TeacherRole;
   status: "pending" | "accepted" | "revoked" | "expired";
   groupId: string | null;
+  /** null = link-only invitation (the pre-D4 flow, still supported). */
+  email: string | null;
+  delivery: InviteDelivery;
   expiresAt: string;
   createdAt: string;
   acceptedAt: string | null;

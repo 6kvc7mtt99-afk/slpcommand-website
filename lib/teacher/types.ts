@@ -175,13 +175,32 @@ export interface GroupsResponse {
 export interface CreatedInvite {
   id: string;
   role: TeacherRole;
+  /** null = link-only. */
+  email: string | null;
   expiresAt: string;
+  /** Returned EXACTLY once. Also present when delivery failed, so the link
+   *  can still be copied by hand rather than being lost. */
   token: string;
+  url: string;
 }
 
 export interface CreateInviteResponse {
   ok: true;
   invite: CreatedInvite;
+  // PLATFORM-MAIL-001 — the honest half of the answer. The invitation was
+  // created either way; this says whether the email went. "created but not
+  // sent" is a real, recoverable outcome and never reported as success.
+  delivery: {
+    status: "not_requested" | "pending" | "sent" | "failed";
+    retriable?: boolean;
+    error?: string | null;
+    messageId?: string | null;
+  };
+}
+
+export interface ResendInviteResponse {
+  ok: true;
+  delivery: CreateInviteResponse["delivery"];
 }
 
 export interface AcceptInviteResponse {

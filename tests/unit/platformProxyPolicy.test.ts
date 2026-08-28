@@ -299,3 +299,57 @@ describe("PLATFORM-GROUPS-001 — cohort management needs NO new proxy rules", (
     expect(decidePolicy("PATCH", `/api/teacher/organizations/${ORG}/groups/a/b`)).not.toEqual(forward);
   });
 });
+
+describe("PLATFORM-MAIL-001 — invitation email delivery", () => {
+  const ORG = "c6a7a68c-344c-43f6-92fd-a8561ddfd14a";
+  const INVITE = "11111111-0000-4000-8000-00000000000a";
+
+  it("forwards the two routes the invitation flow calls", () => {
+    expect(decidePolicy("POST", `/api/teacher/organizations/${ORG}/invites`)).toEqual(forward);
+    expect(decidePolicy("POST", `/api/teacher/organizations/${ORG}/invites/${INVITE}/resend`)).toEqual(forward);
+  });
+
+  it("pins resend to POST — it WRITES, so no other method may reach it", () => {
+    // Resend rotates the invitation's token and calls the mail provider. A
+    // GET that did that would be triggerable by a prefetch or a link preview.
+    for (const m of ["GET", "PATCH", "PUT", "DELETE"]) {
+      expect(
+        decidePolicy(m, `/api/teacher/organizations/${ORG}/invites/${INVITE}/resend`),
+        `${m} on resend must not forward`,
+      ).not.toEqual(forward);
+    }
+  });
+
+  it("does NOT open the /invites/:id namespace generally", () => {
+    // The rule must be for resend specifically, not a prefix that would
+    // forward every future path under an invitation.
+    for (const path of [
+      `/api/teacher/organizations/${ORG}/invites/${INVITE}`,
+      `/api/teacher/organizations/${ORG}/invites/${INVITE}/anything-else`,
+      `/api/teacher/organizations/${ORG}/invites/${INVITE}/resend/extra`,
+      `/api/teacher/organizations/${ORG}/invites/${INVITE}/token`,
+      `/api/teacher/organizations/${ORG}/invites/anything`,
+    ]) {
+      expect(decidePolicy("POST", path), `POST ${path}`).not.toEqual(forward);
+      expect(decidePolicy("GET", path), `GET ${path}`).not.toEqual(forward);
+    }
+  });
+
+  it("keeps DELETE on a single invitation working — revoke is unchanged", () => {
+    expect(decidePolicy("DELETE", `/api/teacher/organizations/${ORG}/invites/${INVITE}`)).toEqual(forward);
+  });
+
+  it("does not let the invite id swallow a slash", () => {
+    expect(decidePolicy("POST", `/api/teacher/organizations/${ORG}/invites/a/b/resend`)).not.toEqual(forward);
+  });
+
+  it("does not open a neighbouring spelling", () => {
+    for (const path of [
+      `/api/teacher/organizations/${ORG}/invite/${INVITE}/resend`,
+      `/api/teacher/organizations/${ORG}/invitesx/${INVITE}/resend`,
+      `/api/invites/${INVITE}/resend`,
+    ]) {
+      expect(decidePolicy("POST", path), path).not.toEqual(forward);
+    }
+  });
+});

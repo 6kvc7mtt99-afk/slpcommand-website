@@ -154,6 +154,12 @@ const ALLOW: Rule[] = [
   { method: "GET", pattern: /^\/api\/teacher\/organizations\/[^/]+\/groups$/, reason: "ok" },
   { method: "POST", pattern: /^\/api\/teacher\/organizations\/[^/]+\/groups$/, reason: "ok" },
   { method: "POST", pattern: /^\/api\/teacher\/organizations\/[^/]+\/invites$/, reason: "ok" },
+  // FASE PLATFORM-MAIL-001 — resend one invitation's email. Anchored at both
+  // ends and pinned to POST: it WRITES (it rotates the invitation's token and
+  // calls the mail provider), so a GET of this path must not exist, and
+  // `/invites/<anything-else>` must stay unreachable. Tests in
+  // platformProxyPolicy.test.ts mutate this rule four ways.
+  { method: "POST", pattern: /^\/api\/teacher\/organizations\/[^/]+\/invites\/[^/]+\/resend$/, reason: "ok" },
   { method: "POST", pattern: /^\/api\/teacher\/invites\/accept$/, reason: "ok" },
 
   // FASE PLATFORM-TENANT-001 / PLATFORM-ENTERPRISE-001 — Enterprise
