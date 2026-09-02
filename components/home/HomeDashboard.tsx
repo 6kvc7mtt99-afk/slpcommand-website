@@ -170,6 +170,28 @@ export function HomeDashboard({
                   ))}
                 </div>
               ) : null}
+              {/* MONETIZATION-BOUNDARY-001 — the offer, where the coaching
+                  would have been.
+
+                  The backend nulls `mission.coachLine`, `roi` and
+                  `coachSummary` on a Free plan and attaches `proLock` in their
+                  place. Its presence is the whole signal: the client never
+                  decides who is on which plan, it renders what it was sent.
+
+                  It sits after the plan and before the primary action, because
+                  that is where the withheld coaching would have read — and a
+                  learner who has just seen today's blocks is exactly who the
+                  ranking is worth something to. */}
+              {today.proLock ? (
+                <Link className="home-prolock" href="/subscription">
+                  <strong>{today.proLock.title}</strong>
+                  <span className="muted">{today.proLock.body}</span>
+                  <span className="home-prolock-cta">
+                    {today.proLock.cta}
+                    <span aria-hidden="true"> →</span>
+                  </span>
+                </Link>
+              ) : null}
               <div className="p-hero-actions">
                 {href && block ? (
                   <Link className="btn btn-primary btn-hero" href={href}>

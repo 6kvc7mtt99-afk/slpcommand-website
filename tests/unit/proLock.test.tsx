@@ -158,3 +158,60 @@ describe("TodaySessionCard — the offer is rendered where the coaching was", ()
     expect(screen.queryByText("Know what to train first")).toBeNull();
   });
 });
+
+// ── LA RAZÓN POR LA QUE ESTE BLOQUE EXISTE ─────────────────────────────────
+//
+// Los tests de arriba pasaban, el decodificador llevaba la oferta y la página
+// desplegada seguía sin mostrarla. `TodaySessionCard` NO ESTÁ MONTADA EN NINGÚN
+// SITIO: `grep -rn TodaySessionCard app components` sólo encuentra su propia
+// definición. La home real es `HomeDashboard`, que pinta la misión en línea y
+// nunca la importa.
+//
+// La oferta se había escrito en un componente que nadie usa, así que no habría
+// aparecido por muchas veces que se desplegara. Estos tests son sobre la ruta
+// que un usuario recorre de verdad, y fallarían si alguien volviera a mover el
+// render a un componente huérfano.
+
+import { HomeDashboard } from "../../components/home/HomeDashboard";
+import { vi } from "vitest";
+
+vi.mock("../../lib/api/client", () => ({
+  apiRequest: vi.fn(() => Promise.reject(new Error("isolated"))),
+}));
+
+function initialWith(payload: unknown) {
+  return {
+    flags: {
+      reading_enabled: true, listening_enabled: true, writing_enabled: true,
+      speaking_enabled: true, academy_enabled: true, home_v3_enabled: false,
+      web_billing_enabled: true,
+    },
+    entitlements: { status: "noPlan" as const },
+    progress: null,
+    sessionToday: decodeSessionToday(payload),
+    streak: null,
+    achievements: null,
+    recent: null,
+    greetingName: "Rafa",
+  };
+}
+
+describe("HomeDashboard — the offer on the page a learner actually loads", () => {
+  it("renders the offer for a Free learner, as a link to /subscription", () => {
+    render(<HomeDashboard initial={initialWith(FREE_PAYLOAD) as never} userId="u1" />);
+    const link = screen.getByRole("link", { name: /Know what to train first/i });
+    expect(link.getAttribute("href")).toBe("/subscription");
+    expect(screen.getByText("See Pro")).toBeTruthy();
+  });
+
+  it("renders no offer when nothing was withheld", () => {
+    render(<HomeDashboard initial={initialWith(PRO_PAYLOAD) as never} userId="u1" />);
+    expect(screen.queryByText("Know what to train first")).toBeNull();
+  });
+
+  it("still shows the mission and blocks a Free learner is entitled to", () => {
+    render(<HomeDashboard initial={initialWith(FREE_PAYLOAD) as never} userId="u1" />);
+    expect(screen.getByText("Fill in the picture")).toBeTruthy();
+    expect(screen.getAllByText(/listening|reading/i).length).toBeGreaterThan(0);
+  });
+});
