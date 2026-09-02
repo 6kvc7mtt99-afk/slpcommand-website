@@ -57,12 +57,30 @@ export function TodaySessionCard({ today }: { today: SessionToday | null }) {
         </div>
       ) : null}
 
-      {coach.headline || coach.why || coach.focus ? (
+      {/* MONETIZATION-BOUNDARY-001 — `coachLine` is nulled on a Free plan
+          (it is the instructor's voice on today's plan, i.e. adaptive_coach),
+          so this is now a null check rather than an empty-string check. */}
+      {coach && (coach.headline || coach.why || coach.focus) ? (
         <div className="home-coachline">
           {coach.headline ? <p><strong>{coach.headline}</strong></p> : null}
           {coach.why ? <p className="muted">{coach.why}</p> : null}
           {coach.focus ? <p className="muted">{coach.focus}</p> : null}
         </div>
+      ) : null}
+
+      {/* The offer, rendered exactly where the coaching would have been. A
+          withheld field that is silently absent converts nobody, because the
+          learner never learns there was something there. Present only when
+          the backend withheld something, so Pro never sees it. */}
+      {today.proLock ? (
+        <Link className="home-prolock" href="/subscription">
+          <strong>{today.proLock.title}</strong>
+          <span className="muted">{today.proLock.body}</span>
+          <span className="home-prolock-cta">
+            {today.proLock.cta}
+            <span aria-hidden="true"> →</span>
+          </span>
+        </Link>
       ) : null}
 
       {firstHref && firstSkill ? (

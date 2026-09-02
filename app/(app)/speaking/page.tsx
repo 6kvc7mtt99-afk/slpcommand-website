@@ -12,7 +12,7 @@ export default async function SpeakingHome() {
     loadCoachAvailability(),
   ]);
   const access = featureAccess(entitlements, "speaking_ai_feedback");
-  const planNote = "Speaking evaluation is not available on your current plan. Subscriptions are managed in the iOS app.";
+  const planNote = "Speaking evaluation is not available on your current plan. Pro makes AI evaluation unlimited.";
 
   const destinations: Destination[] = [
     {

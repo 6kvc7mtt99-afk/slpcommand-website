@@ -35,7 +35,7 @@ export default async function ListeningTopicPage({
         <div className="lesson-block" data-reveal>
           <CommercialCard
             title="This topic is part of the complete Academy, included in SLP Command Pro."
-            body="Subscriptions are managed in the iOS app until web billing exists."
+            body="Pro opens every Academy topic, in every skill."
           />
         </div>
       </div>

@@ -22,7 +22,9 @@ export type SessionToday = {
   mission: {
     headline: string;
     reason: string;
-    coachLine: { headline: string; why: string; focus: string };
+    // MONETIZATION-BOUNDARY-001 — nulled on a Free plan: the coach's voice on
+    // today's plan is `adaptive_coach`.
+    coachLine: { headline: string; why: string; focus: string } | null;
   };
   session: {
     blocks: SessionTodayBlock[];
@@ -45,9 +47,32 @@ export type SessionToday = {
     passProbability: null;
     passProbabilityWhy: string;
   };
-  roi: { best: { skill: string; because: string[] } };
-  coachSummary: { headline: string; body: string };
+  // MONETIZATION-BOUNDARY-001 — both nulled on a Free plan. The priority
+  // ranking and its reasons, and the plan restated as coaching, are the two
+  // clearest expressions of `adaptive_coach`.
+  roi: { best: { skill: string; because: string[] } } | null;
+  coachSummary: { headline: string; body: string } | null;
   intelligenceSummary: { findings: Array<{ question: string; answer: string }>; plannedMinutes: number };
+  // Present only when something above was withheld — carries the offer to
+  // render in its place. Absent for Pro.
+  proLock?: ProLock;
+};
+
+/**
+ * MONETIZATION-BOUNDARY-001 — the offer that replaces a withheld field.
+ *
+ * Some endpoints cannot be denied to a Free plan because they carry ordinary
+ * navigation alongside the Pro coaching decision (/api/session/today IS the
+ * Home session). So the backend narrows the payload and attaches this, and the
+ * client renders it exactly where the value would have been. A field that is
+ * silently absent converts nobody, because the learner never learns it existed.
+ */
+export type ProLock = {
+  /** Entitlement key: "adaptive_coach" | "mastery_trends". */
+  feature: string;
+  title: string;
+  body: string;
+  cta: string;
 };
 
 export type ProgressSkill = {

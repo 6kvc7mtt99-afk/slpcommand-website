@@ -44,7 +44,14 @@ export function AuthContext({ mode }: { mode: "signup" | "login" }) {
           </li>
           <li>
             <span className="fact-label">Exam simulation</span>
-            <span className="fact-value">{q.examPerMonth} / month</span>
+            {/* One credit PER SKILL, not one in total. All FOUR skills have
+                their own monthly counter — reading_exam_simulation,
+                listening_exam_simulation, writing_exam_simulation and
+                speaking_exam_simulation, each 1/monthly on the free plan,
+                verified against quota_definitions in production. The rendered
+                copy says "each skill" rather than naming them, so it cannot
+                drift from the database the way this comment already had. */}
+            <span className="fact-value">{q.examPerMonthPerSkill} / month, each skill</span>
           </li>
         </ul>
       ) : null}

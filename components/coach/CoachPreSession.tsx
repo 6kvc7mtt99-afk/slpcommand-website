@@ -339,16 +339,44 @@ function Gate({
           ? "Your purchased credits are used up, and they do not expire — anything you add stays. Recorded Speaking Practice stays unlimited on your allowance."
           : "The AI Coach is part of Pro, which includes 30 minutes each month. Recorded Speaking Practice — record, submit, get a full assessment — stays unlimited on your allowance.";
 
+  // True only where a purchase can actually be made: a learner who is not on
+  // Pro. `outOfMinutes` on a plan that DOES grant them is a renewal, not a
+  // sale.
+  const sellsPro = needsPro || (outOfMinutes && !hasPlanAllowance && mission.purchasedMinutes === 0);
+
   return (
     <div className="coach-deadend">
       <p>
         <strong>{deadEndTitle}</strong>
       </p>
       <p className="muted">{deadEndBody}</p>
+      {/* FASE COACH-CTA-001 — every branch of this screen used to end in a
+          single "Open Speaking Practice" link, including the two that tell a
+          learner the Coach is part of Pro. So the moment someone reached for
+          the most differentiated paid feature in the product, the only thing
+          on offer routed them AWAY from the purchase, to the free alternative.
+
+          `sellsPro` is true exactly where there IS something to sell. It is
+          deliberately NOT true for a Pro subscriber who has spent the month's
+          allowance: there is no top-up SKU, so a "buy more minutes" button
+          would be a dead end — the same defect, in a new place. That learner
+          is told when the allowance renews and pointed at unlimited recorded
+          Speaking, which is the true and useful answer. */}
       <div className="cta-row">
-        <Link className="btn btn-primary" href="/speaking/practice">
-          Open Speaking Practice
-        </Link>
+        {sellsPro ? (
+          <>
+            <Link className="btn btn-primary" href="/subscription">
+              See what Pro adds
+            </Link>
+            <Link className="btn btn-outline" href="/speaking/practice">
+              Open Speaking Practice
+            </Link>
+          </>
+        ) : (
+          <Link className="btn btn-primary" href="/speaking/practice">
+            Open Speaking Practice
+          </Link>
+        )}
       </div>
     </div>
   );

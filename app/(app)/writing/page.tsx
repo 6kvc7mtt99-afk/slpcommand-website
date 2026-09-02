@@ -5,7 +5,7 @@ import { loadEntitlements, loadProgress } from "@/lib/server/home";
 export default async function WritingHome() {
   const [entitlements, progress] = await Promise.all([loadEntitlements(), loadProgress()]);
   const access = featureAccess(entitlements, "writing_ai_feedback");
-  const planNote = "Writing evaluation is not available on your current plan. Subscriptions are managed in the iOS app.";
+  const planNote = "Writing evaluation is not available on your current plan. Pro makes AI evaluation unlimited.";
 
   const destinations: Destination[] = [
     {

@@ -1,5 +1,5 @@
 import { asBool, asNumber, asString, isRecord } from "./decode";
-import type { SessionToday, SessionTodayBlock } from "./types";
+import type { ProLock, SessionToday, SessionTodayBlock } from "./types";
 
 export const DEFAULT_SESSION_MINUTES = 25;
 export const MIN_SESSION_MINUTES = 5;
@@ -23,6 +23,43 @@ function decodeBlock(value: unknown): SessionTodayBlock | null {
   };
 }
 
+/**
+ * MONETIZATION-BOUNDARY-001 — the offer that replaces a withheld field.
+ *
+ * The backend attaches `proLock` only when it actually withheld something, so
+ * its mere presence is the signal. A Pro plan never carries one.
+ *
+ * All four strings must be present. A half-decoded offer would render a card
+ * with a blank heading or a button with no label, which is worse than showing
+ * nothing — so an incomplete payload decodes to `null` and the card simply does
+ * not appear.
+ */
+function decodeProLock(value: unknown): ProLock | null {
+  if (!isRecord(value)) return null;
+  const feature = asString(value.feature);
+  const title = asString(value.title);
+  const body = asString(value.body);
+  const cta = asString(value.cta);
+  if (!feature || !title || !body || !cta) return null;
+  return { feature, title, body, cta };
+}
+
+/**
+ * A block the backend nulls on a Free plan.
+ *
+ * `isRecord(...) ? ... : {}` was the right shape when every field always
+ * arrived and the only risk was a malformed payload. Since
+ * MONETIZATION-BOUNDARY-001 the backend sends an explicit `null` to mean
+ * "withheld", and coercing that to `{}` produced an object full of empty
+ * strings — indistinguishable, to every caller, from a coaching line the
+ * engine had nothing to say in. `null` keeps the distinction the backend went
+ * to the trouble of making.
+ */
+function decodeWithheld<T>(value: unknown, decode: (record: Record<string, unknown>) => T): T | null {
+  if (!isRecord(value)) return null;
+  return decode(value);
+}
+
 function decodePairs(value: unknown, a: string, b: string): Array<Record<string, string>> {
   if (!Array.isArray(value)) return [];
   return value.filter(isRecord).map((item) => ({
@@ -34,13 +71,9 @@ function decodePairs(value: unknown, a: string, b: string): Array<Record<string,
 export function decodeSessionToday(raw: unknown): SessionToday | null {
   if (!isRecord(raw)) return null;
   const mission = isRecord(raw.mission) ? raw.mission : {};
-  const coachLine = isRecord(mission.coachLine) ? mission.coachLine : {};
   const session = isRecord(raw.session) ? raw.session : {};
   const difficulty = isRecord(session.difficulty) ? session.difficulty : {};
   const expected = isRecord(raw.expectedOutcome) ? raw.expectedOutcome : {};
-  const roi = isRecord(raw.roi) ? raw.roi : {};
-  const roiBest = isRecord(roi.best) ? roi.best : {};
-  const coachSummary = isRecord(raw.coachSummary) ? raw.coachSummary : {};
   const intel = isRecord(raw.intelligenceSummary) ? raw.intelligenceSummary : {};
 
   const blocks = Array.isArray(session.blocks)
@@ -54,11 +87,13 @@ export function decodeSessionToday(raw: unknown): SessionToday | null {
     mission: {
       headline: asString(mission.headline),
       reason: asString(mission.reason),
-      coachLine: {
-        headline: asString(coachLine.headline),
-        why: asString(coachLine.why),
-        focus: asString(coachLine.focus),
-      },
+      // Nulled on a Free plan: the coach's voice on today's plan is
+      // `adaptive_coach`. The diagnosis above it stays free.
+      coachLine: decodeWithheld(mission.coachLine, (r) => ({
+        headline: asString(r.headline),
+        why: asString(r.why),
+        focus: asString(r.focus),
+      })),
     },
     session: {
       blocks,
@@ -101,16 +136,22 @@ export function decodeSessionToday(raw: unknown): SessionToday | null {
       passProbability: null,
       passProbabilityWhy: asString(expected.passProbabilityWhy, "Not calibrated."),
     },
-    roi: {
-      best: {
-        skill: asString(roiBest.skill),
-        because: Array.isArray(roiBest.because) ? roiBest.because.map((x) => asString(x)).filter(Boolean) : [],
-      },
-    },
-    coachSummary: {
-      headline: asString(coachSummary.headline),
-      body: asString(coachSummary.body),
-    },
+    // Both nulled on a Free plan. The priority ranking and its reasons, and
+    // the plan restated as coaching, are the clearest expressions of
+    // `adaptive_coach`.
+    roi: decodeWithheld(raw.roi, (r) => {
+      const best = isRecord(r.best) ? r.best : {};
+      return {
+        best: {
+          skill: asString(best.skill),
+          because: Array.isArray(best.because) ? best.because.map((x) => asString(x)).filter(Boolean) : [],
+        },
+      };
+    }),
+    coachSummary: decodeWithheld(raw.coachSummary, (r) => ({
+      headline: asString(r.headline),
+      body: asString(r.body),
+    })),
     intelligenceSummary: {
       findings: Array.isArray(intel.findings)
         ? intel.findings.filter(isRecord).map((item) => ({
@@ -120,6 +161,10 @@ export function decodeSessionToday(raw: unknown): SessionToday | null {
         : [],
       plannedMinutes: asNumber(intel.plannedMinutes),
     },
+    // Present only when something above was withheld — it carries the offer to
+    // render in its place. `undefined` rather than `null` so the field simply
+    // is not there for Pro, matching the optional `proLock?` in the type.
+    proLock: decodeProLock(raw.proLock) ?? undefined,
   };
 }
 

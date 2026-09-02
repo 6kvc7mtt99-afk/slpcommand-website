@@ -175,9 +175,21 @@ export function SkillLaunch({
  * one honest, universal next step is the real plan page — not a
  * fabricated benefits list this component cannot verify per caller.
  */
+// MONETIZATION-COHERENCE-001 — the default body used to read "Subscriptions
+// are managed in the iOS app until web billing exists."
+//
+// Both halves of that were wrong, and it sat on the highest-intent moment in
+// the product. `web_billing_enabled` is TRUE in production and
+// /api/billing/checkout builds a real hosted checkout with the learner's own
+// App User ID — so web billing exists. And the iOS app is not on the App Store
+// yet, which the site's own pricing footnote says. A learner who hit a limit
+// was told to go and buy in a place with nothing for sale.
+//
+// The copy now names what they just ran out of and sends them to the one page
+// that can actually sell it.
 export function CommercialCard({
   title = "You have used the allowance on your current plan.",
-  body = "Subscriptions are managed in the iOS app until web billing exists.",
+  body = "Pro removes the weekly and monthly caps, and adds unlimited AI evaluation.",
 }: {
   title?: string;
   body?: string;

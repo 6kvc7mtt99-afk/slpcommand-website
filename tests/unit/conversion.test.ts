@@ -38,7 +38,11 @@ describe("conversion path", () => {
       [FREE_PLAN_QUOTAS.listeningPerWeek, /Listening Practice — (\d+) sessions \/ week/],
       [FREE_PLAN_QUOTAS.writingPerMonth, /Writing, AI-scored — (\d+) submissions \/ month/],
       [FREE_PLAN_QUOTAS.speakingPerMonth, /Speaking, AI-scored — (\d+) evaluations \/ month/],
-      [FREE_PLAN_QUOTAS.examPerMonth, /Exam Simulation — (\d+) full exam \/ month/],
+      // One exam PER SKILL. The previous claim ("1 full exam / month", full
+      // stop) was true of no plan that has ever shipped: the credits are
+      // separate features with separate counters, so Free has always had one
+      // of each. Undersold, on the pricing card, by two thirds.
+      [FREE_PLAN_QUOTAS.examPerMonthPerSkill, /Exam Simulation — (\d+) full exam \/ month/],
     ];
     for (const [expected, pattern] of claims) {
       const found = pricing.match(pattern);

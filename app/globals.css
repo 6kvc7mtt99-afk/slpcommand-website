@@ -125,6 +125,24 @@ input, select {
   padding-top: 12px;
   border-top: 1px solid var(--line);
 }
+/* MONETIZATION-BOUNDARY-001 — the offer that stands where a withheld field
+   would have been (Free plans only; the backend decides, not the client).
+   Deliberately quiet: it sits inside the session card a learner uses every
+   day, so it must read as the next thing available rather than as an ad. */
+.home-prolock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+}
+.home-prolock strong { font-weight: 600; }
+.home-prolock .muted { font-size: 0.9em; }
+.home-prolock-cta { font-size: 0.9em; font-weight: 600; color: var(--brand, currentColor); }
+.home-prolock:hover .home-prolock-cta { text-decoration: underline; }
 .home-slp-top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
 .home-ring {
   width: 88px; height: 88px; border-radius: 50%;

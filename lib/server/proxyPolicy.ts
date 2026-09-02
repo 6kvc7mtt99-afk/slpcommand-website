@@ -11,6 +11,11 @@ const QUOTA_PATHS = new Set([
   "POST /api/writing/sentence-feedback",
   "POST /api/writing/intelligence/transform",
   "POST /api/speaking/evaluate",
+  // EXAM-QUOTA-SPEAKING-001 — the Speaking real exam now spends a credit on
+  // start, so a retried start must carry an idempotency key like every other
+  // charged route. Without this entry a dropped response on a slow connection
+  // would bill a second exam for one sitting.
+  "POST /api/speaking/exam/start",
 ]);
 
 type Rule = { method?: string; pattern: RegExp; reason: string };
@@ -117,11 +122,19 @@ const ALLOW: Rule[] = [
   { method: "POST", pattern: /^\/api\/speaking\/coach\/consent$/, reason: "ok" },
   { method: "POST", pattern: /^\/api\/speaking\/coach\/session$/, reason: "ok" },
   { method: "GET", pattern: /^\/api\/speaking\/coach\/session\/[^/]+$/, reason: "ok" },
-  // EXAM-REAL-003, Checkpoint 3 — SLP3 Real Exam Speaking. No requireQuota on the backend
-  // (EXAM_MODULE has no SPEAKING entry — documented, deliberate omission, see server.js),
-  // so these are not in QUOTA_PATHS below either: there is no charge to protect against a
-  // retry double-firing. Session-start duplication is instead guarded client-side
-  // (lib/speaking/examSession.ts's inflight/cached memoization, mirroring Listening's).
+  // EXAM-REAL-003, Checkpoint 3 — SLP3 Real Exam Speaking.
+  //
+  // EXAM-QUOTA-SPEAKING-001 UPDATE. This block used to record that the backend
+  // applied no requireQuota here, because EXAM_MODULE had no SPEAKING entry —
+  // "documented, deliberate omission". It now has one: `/exam/start` spends a
+  // `speaking_exam_simulation` credit (Free 1/month, Pro unlimited), which is
+  // why that path — and only that path — appears in QUOTA_PATHS above.
+  //
+  // The other four stay uncharged on purpose: they continue a sitting that has
+  // already been paid for, so billing them would charge a candidate for the
+  // length of their own exam. Client-side inflight/cached memoization in
+  // lib/speaking/examSession.ts still prevents duplicate starts; the
+  // idempotency key is now the server-side backstop behind it.
   { method: "POST", pattern: /^\/api\/speaking\/exam\/start$/, reason: "ok" },
   { method: "POST", pattern: /^\/api\/speaking\/exam\/warmup\/respond$/, reason: "ok" },
   { method: "POST", pattern: /^\/api\/speaking\/exam\/respond$/, reason: "ok" },

@@ -6,7 +6,7 @@ export default async function ListeningHome() {
   const [entitlements, progress] = await Promise.all([loadEntitlements(), loadProgress()]);
   const practice = featureAccess(entitlements, "listening_practice");
   const exam = featureAccess(entitlements, "listening_exam_simulation");
-  const planNote = "Not available on your current plan. Subscriptions are managed in the iOS app.";
+  const planNote = "Not available on your current plan. Pro removes the weekly cap on Listening practice.";
 
   const destinations: Destination[] = [
     {

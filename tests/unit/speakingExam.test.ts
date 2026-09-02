@@ -245,8 +245,23 @@ describe("speaking real exam — proxy policy", () => {
     expect(decidePolicy("GET", "/api/speaking/exam/state")).toEqual({ action: "forward" });
   });
 
-  it("does not require an idempotency key — there is no quota to protect against a retry (documented backend omission)", () => {
-    expect(requiresIdempotency("POST", "/api/speaking/exam/start")).toBe(false);
+  // EXAM-QUOTA-SPEAKING-001 — this assertion used to read "does not require an
+  // idempotency key — there is no quota to protect against a retry (documented
+  // backend omission)". The omission has been closed: `/exam/start` now spends
+  // a `speaking_exam_simulation` credit (Free 1/month, Pro unlimited), so a
+  // retried start MUST carry a key or a dropped response bills a second exam
+  // for one sitting.
+  it("requires an idempotency key on start — it now spends an exam credit", () => {
+    expect(requiresIdempotency("POST", "/api/speaking/exam/start")).toBe(true);
+  });
+
+  it("does NOT charge the turn-by-turn routes — they continue a sitting already paid for", () => {
+    // Billing per turn would charge a candidate for the length of their own
+    // exam. Only the start is a purchase; the rest is the thing purchased.
+    expect(requiresIdempotency("POST", "/api/speaking/exam/warmup/respond")).toBe(false);
+    expect(requiresIdempotency("POST", "/api/speaking/exam/respond")).toBe(false);
+    expect(requiresIdempotency("POST", "/api/speaking/exam/finish")).toBe(false);
+    expect(requiresIdempotency("GET", "/api/speaking/exam/state")).toBe(false);
   });
 
   it("still denies an unrelated speaking path with no matching rule", () => {

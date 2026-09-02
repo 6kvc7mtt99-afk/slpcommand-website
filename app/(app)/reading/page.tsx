@@ -6,7 +6,7 @@ export default async function ReadingHome() {
   const [entitlements, progress] = await Promise.all([loadEntitlements(), loadProgress()]);
   const practice = featureAccess(entitlements, "reading_practice");
   const exam = featureAccess(entitlements, "reading_exam_simulation");
-  const planNote = "Not available on your current plan. Subscriptions are managed in the iOS app.";
+  const planNote = "Not available on your current plan. Pro removes the weekly cap on Reading practice.";
 
   const destinations: Destination[] = [
     {
