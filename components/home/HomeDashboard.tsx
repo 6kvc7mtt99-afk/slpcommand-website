@@ -170,6 +170,34 @@ export function HomeDashboard({
                   ))}
                 </div>
               ) : null}
+              {/* MONETIZATION-BOUNDARY-001 — the coaching itself, for the
+                  plan that bought it.
+
+                  `mission.coachLine` is what the backend calls "the
+                  instructor's voice on today's plan". It is nulled for Free,
+                  so this block and the offer below it are mutually exclusive
+                  by construction: whichever the payload carries is the one
+                  that renders. The client never asks which plan someone is on.
+
+                  It reads as a paragraph rather than a card because that is
+                  what an instructor's remark is, and because the home is
+                  stages, not cards. */}
+              {today.mission.coachLine ? (
+                <div className="p-coachline">
+                  {today.mission.coachLine.headline ? (
+                    <p className="p-coachline-lead">{today.mission.coachLine.headline}</p>
+                  ) : null}
+                  {today.mission.coachLine.why ? (
+                    <p className="p-coachline-why">{today.mission.coachLine.why}</p>
+                  ) : null}
+                  {today.mission.coachLine.focus ? (
+                    <p className="p-coachline-focus">
+                      <span className="p-coachline-tag">Focus</span>
+                      {today.mission.coachLine.focus}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
               {/* MONETIZATION-BOUNDARY-001 — the offer, where the coaching
                   would have been.
 
@@ -259,7 +287,7 @@ export function HomeDashboard({
         </aside>
       </section>
 
-      {today && (today.expectedOutcome.certainties.length > 0 || today.expectedOutcome.projections.length > 0 || block?.why) ? (
+      {today && (today.expectedOutcome.certainties.length > 0 || today.expectedOutcome.projections.length > 0 || block?.why || today.roi || today.session.skillsSkipped.length > 0 || today.coachSummary) ? (
         <section className="p-section" data-reveal>
           <div className="p-section-head">
             <div>
@@ -292,6 +320,54 @@ export function HomeDashboard({
               </p>
             ))}
           </div>
+
+          {/* MONETIZATION-BOUNDARY-001 — the prescription, for the plan that
+              bought it. Three fields the backend computes and nulls for Free:
+              which skill to train FIRST and why (`roi`), what to leave alone
+              (`session.skillsSkipped` — the payload calls it "half of what an
+              instructor is for"), and the plan restated in the coach's words
+              (`coachSummary`).
+
+              They live inside the outcomes stage rather than in cards of their
+              own: this section already answers "what will today move", and
+              "train this first" and "skip that" are the same question. */}
+          {today.roi || today.session.skillsSkipped.length > 0 ? (
+            <div className="p-prescription">
+              {today.roi ? (
+                <div className="p-prescription-first">
+                  <p className="p-prescription-label">Train first</p>
+                  <p className="p-prescription-skill">{today.roi.best.skill}</p>
+                  {today.roi.best.because.length > 0 ? (
+                    <ul className="p-prescription-why">
+                      {today.roi.best.because.map((reason, index) => (
+                        <li key={`roi-${index}`}>{reason}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              ) : null}
+              {today.session.skillsSkipped.length > 0 ? (
+                <div className="p-prescription-skip">
+                  <p className="p-prescription-label">Leave for another day</p>
+                  <ul className="p-prescription-why">
+                    {today.session.skillsSkipped.map((item, index) => (
+                      <li key={`skip-${item.skill}-${index}`}>
+                        <b>{item.skill}</b>
+                        {item.why ? ` — ${item.why}` : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {today.coachSummary && (today.coachSummary.headline || today.coachSummary.body) ? (
+            <div className="p-coachsummary">
+              {today.coachSummary.headline ? <p className="p-coachsummary-head">{today.coachSummary.headline}</p> : null}
+              {today.coachSummary.body ? <p className="p-coachsummary-body">{today.coachSummary.body}</p> : null}
+            </div>
+          ) : null}
         </section>
       ) : null}
 

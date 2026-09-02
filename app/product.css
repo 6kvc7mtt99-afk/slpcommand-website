@@ -1392,3 +1392,108 @@ a.p-dest.mode-assess:hover { border-color: color-mix(in srgb, var(--p-skill) 62%
 }
 .app-shell .app-plan:hover { color: var(--p-ink); }
 .app-shell .app-plan.is-unknown { font-style: italic; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MONETIZATION-BOUNDARY-001 — lo que Pro compra, hecho visible.
+
+   El backend calcula cinco campos que sólo un plan Pro recibe. Hasta ahora la
+   Home pintaba uno (`projections`); los otros cuatro llegaban al cliente y se
+   descartaban. Estos estilos son para esos cuatro.
+
+   Deliberadamente sobrios y sin tarjeta propia: la home es "stages, not
+   cards", y esto es la voz de un instructor dentro de una sección que ya
+   existe, no un widget nuevo. Si se leyera como un banner promocional estaría
+   mal — el usuario ya ha pagado; esto es el producto, no la oferta.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* La observación del instructor sobre el plan de hoy. Ocupa exactamente el
+   hueco donde un plan Free ve la oferta: son mutuamente excluyentes. */
+.p-coachline {
+  margin: 20px 0 4px;
+  padding-left: 14px;
+  border-left: 2px solid var(--p-accent);
+}
+.p-coachline-lead {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--p-ink);
+  font-weight: 600;
+}
+.p-coachline-why {
+  margin: 4px 0 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--p-muted);
+}
+.p-coachline-focus {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--p-muted);
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.p-coachline-tag {
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--p-accent-ink);
+  font-weight: 700;
+}
+
+/* La prescripción: qué entrenar primero y qué dejar. Dos columnas en pantallas
+   anchas, una sola en móvil — sin media query propia, con grid auto-fit, para
+   que 375 px no dependa de un breakpoint que alguien olvide mantener. */
+.p-prescription {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 22px;
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--p-line);
+}
+.p-prescription-label {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--p-muted);
+  font-weight: 700;
+}
+.p-prescription-skill {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 650;
+  color: var(--p-ink);
+  text-transform: capitalize;
+}
+.p-prescription-why {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--p-muted);
+}
+.p-prescription-why li { margin-bottom: 5px; }
+.p-prescription-why li:last-child { margin-bottom: 0; }
+.p-prescription-skip .p-prescription-why b { color: var(--p-ink); text-transform: capitalize; }
+
+/* El plan contado otra vez, con las palabras del coach. Cierra la sección. */
+.p-coachsummary {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--p-line);
+}
+.p-coachsummary-head {
+  margin: 0 0 5px;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--p-ink);
+}
+.p-coachsummary-body {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--p-muted);
+}

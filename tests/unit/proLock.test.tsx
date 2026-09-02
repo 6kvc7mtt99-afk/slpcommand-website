@@ -171,3 +171,111 @@ describe("HomeDashboard — the offer on the page a learner actually loads", () 
     expect(screen.getAllByText(/listening|reading/i).length).toBeGreaterThan(0);
   });
 });
+
+// ── A002-01 · lo que Pro compra tiene que verse ────────────────────────────
+//
+// GLOBAL AUDIT 002 midió que `commercialPayload.js` retiene CINCO campos a un
+// plan Free —`mission.coachLine`, `session.skillsSkipped`,
+// `expectedOutcome.projections`, `roi` y `coachSummary`— y que sólo
+// `projections` llegaba a pintarse. `skillsSkipped` y `roi` aparecían nada más
+// que en la consola de admin interna; `coachLine` y `coachSummary`, en ningún
+// sitio.
+//
+// El efecto comercial era el peor posible: acabábamos de desplegar una oferta
+// que invita a comprar `adaptive_coach`, y quien la aceptara habría recibido,
+// sobre lo que ya tenía, una lista más.
+//
+// Estos tests fijan las dos direcciones. Que Pro los VEA, y que Free NO — sin
+// que el cliente decida nunca de qué plan se trata: renderiza lo que llegó.
+
+const PRO_FULL = {
+  ...FREE_PAYLOAD,
+  mission: {
+    ...FREE_PAYLOAD.mission,
+    coachLine: { headline: "Short clips first", why: "Accuracy before speed.", focus: "gist" },
+  },
+  session: {
+    ...FREE_PAYLOAD.session,
+    skillsSkipped: [{ skill: "writing", why: "Two sessions ago; nothing has aged." }],
+  },
+  expectedOutcome: {
+    certainties: [{ skill: "reading", text: "Reading: 8 more answers behind the estimate." }],
+    projections: [{ skill: "listening", text: "Listening: likely +0.2 with two sittings." }],
+  },
+  roi: { best: { skill: "listening", because: ["Biggest gap to target.", "Cheapest minutes to move."] } },
+  coachSummary: { headline: "Twenty minutes, two skills", body: "Listening leads because it is furthest behind." },
+  proLock: undefined,
+};
+
+describe("A002-01 — the four fields Pro buys and could not see", () => {
+  it("renders coachLine for Pro, in the slot the offer occupies for Free", () => {
+    render(<HomeDashboard initial={initialWith(PRO_FULL) as never} userId="u1" />);
+    expect(screen.getByText("Short clips first")).toBeTruthy();
+    expect(screen.getByText("Accuracy before speed.")).toBeTruthy();
+    expect(screen.getByText("gist")).toBeTruthy();
+    // ...y por tanto NO la oferta: son mutuamente excluyentes por construcción.
+    expect(screen.queryByText("Know what to train first")).toBeNull();
+  });
+
+  it("renders roi — which skill to train first, and why", () => {
+    render(<HomeDashboard initial={initialWith(PRO_FULL) as never} userId="u1" />);
+    expect(screen.getByText("Train first")).toBeTruthy();
+    expect(screen.getByText("Biggest gap to target.")).toBeTruthy();
+    expect(screen.getByText("Cheapest minutes to move.")).toBeTruthy();
+  });
+
+  it("renders skillsSkipped — what NOT to train", () => {
+    render(<HomeDashboard initial={initialWith(PRO_FULL) as never} userId="u1" />);
+    expect(screen.getByText("Leave for another day")).toBeTruthy();
+    expect(screen.getByText(/nothing has aged/)).toBeTruthy();
+  });
+
+  it("renders coachSummary — the plan restated in the coach's words", () => {
+    render(<HomeDashboard initial={initialWith(PRO_FULL) as never} userId="u1" />);
+    expect(screen.getByText("Twenty minutes, two skills")).toBeTruthy();
+    expect(screen.getByText(/furthest behind/)).toBeTruthy();
+  });
+
+  it("keeps rendering projections, which already worked", () => {
+    render(<HomeDashboard initial={initialWith(PRO_FULL) as never} userId="u1" />);
+    expect(screen.getByText(/likely \+0\.2 with two sittings/)).toBeTruthy();
+  });
+
+  it("leaks NONE of the four to a Free plan", () => {
+    render(<HomeDashboard initial={initialWith(FREE_PAYLOAD) as never} userId="u1" />);
+    for (const t of ["Short clips first", "Train first", "Leave for another day", "Twenty minutes, two skills"]) {
+      expect(screen.queryByText(t)).toBeNull();
+    }
+    // Free sí ve la oferta y su propio diagnóstico.
+    expect(screen.getByText("Know what to train first")).toBeTruthy();
+    expect(screen.getByText("Fill in the picture")).toBeTruthy();
+  });
+
+  it("does not break on the shapes Free actually receives", () => {
+    // Free recibe skillsSkipped como [] (no null) y roi/coachSummary como null.
+    // Un render que confunda "vacío porque no hay" con "vacío porque es Pro"
+    // pintaría cabeceras huérfanas.
+    render(<HomeDashboard initial={initialWith(FREE_PAYLOAD) as never} userId="u1" />);
+    expect(screen.queryByText("Train first")).toBeNull();
+    expect(screen.queryByText("Leave for another day")).toBeNull();
+  });
+
+  it("renders a Pro payload where only SOME fields are populated", () => {
+    // El backend puede tener coachLine y no tener roi. Ninguna cabecera puede
+    // quedarse sin su contenido.
+    const partial = { ...PRO_FULL, roi: null, coachSummary: null, session: { ...PRO_FULL.session, skillsSkipped: [] } };
+    render(<HomeDashboard initial={initialWith(partial) as never} userId="u1" />);
+    expect(screen.getByText("Short clips first")).toBeTruthy();
+    expect(screen.queryByText("Train first")).toBeNull();
+    expect(screen.queryByText("Leave for another day")).toBeNull();
+    expect(screen.queryByText("Twenty minutes, two skills")).toBeNull();
+  });
+
+  it("the client never decides the plan — remove the fields and nothing renders", () => {
+    const stripped = { ...PRO_FULL, mission: { ...PRO_FULL.mission, coachLine: null }, roi: null, coachSummary: null,
+                       session: { ...PRO_FULL.session, skillsSkipped: [] } };
+    render(<HomeDashboard initial={initialWith(stripped) as never} userId="u1" />);
+    expect(screen.queryByText("Short clips first")).toBeNull();
+    expect(screen.queryByText("Train first")).toBeNull();
+  });
+});
