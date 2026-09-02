@@ -6,11 +6,16 @@
 // ── QUÉ SE ROMPIÓ, Y POR QUÉ NO SE VEÍA ────────────────────────────────────
 //
 // El backend lleva desde `aece55b` en producción devolviendo `proLock` a las
-// cuentas Free, verificado en vivo. `TodaySessionCard` estaba preparada para
-// pintarlo. Y aun así no aparecía nada: `decodeSessionToday` — el único punto
-// por el que pasa la respuesta, tanto en servidor como en cliente — no copiaba
-// `proLock` al objeto que construye. El campo se perdía entre la API y la UI,
-// en una línea que nadie había escrito.
+// cuentas Free, verificado en vivo, y aun así no aparecía nada. Dos causas
+// independientes, no una:
+//
+//   1. `decodeSessionToday` — el único punto por el que pasa la respuesta,
+//      tanto en servidor como en cliente — no copiaba `proLock` al objeto que
+//      construye. El campo se perdía entre la API y la UI, en una línea que
+//      nadie había escrito.
+//   2. La oferta se había escrito en `TodaySessionCard`, un componente que
+//      NADIE MONTABA desde que 8e076a0 reconstruyó la home «as stages, not
+//      cards». Ya está borrado; la home real es `HomeDashboard`.
 //
 // Además el decodificador convertía `null` en `{}` para `coachLine`, `roi` y
 // `coachSummary`. Era correcto cuando el único riesgo era un payload
@@ -24,7 +29,6 @@
 
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { TodaySessionCard } from "../../components/home/TodaySessionCard";
 import { decodeSessionToday } from "../../lib/api/sessionToday";
 
 afterEach(() => {
@@ -117,60 +121,12 @@ describe("decodeSessionToday — the offer survives the decoder", () => {
   });
 });
 
-describe("TodaySessionCard — the offer is rendered where the coaching was", () => {
-  it("shows the offer to a Free learner, linking to the subscription page", () => {
-    render(<TodaySessionCard today={decodeSessionToday(FREE_PAYLOAD)} />);
-
-    expect(screen.getByText("Know what to train first")).toBeTruthy();
-    expect(screen.getByText(/ranks today's plan/)).toBeTruthy();
-
-    // Es un enlace real, no un div con onClick: navegable con teclado y
-    // anunciado como enlace por un lector de pantalla, sin trabajo extra.
-    const link = screen.getByRole("link", { name: /Know what to train first/i });
-    expect(link.getAttribute("href")).toBe("/subscription");
-  });
-
-  it("shows no offer to a plan that had nothing withheld", () => {
-    render(<TodaySessionCard today={decodeSessionToday(PRO_PAYLOAD)} />);
-    expect(screen.queryByText("Know what to train first")).toBeNull();
-    // ...y sí muestra el coaching que ese plan sí incluye.
-    expect(screen.getByText("Short clips")).toBeTruthy();
-  });
-
-  it("does not break when the coaching line is withheld", () => {
-    // La regresión que este cambio podía introducir: `coach.headline` sobre
-    // null. La tarjeta tiene que seguir pintando la sesión.
-    render(<TodaySessionCard today={decodeSessionToday(FREE_PAYLOAD)} />);
-    expect(screen.getByText("Fill in the picture")).toBeTruthy();
-    expect(screen.getByText(/Yesterday slipped/)).toBeTruthy();
-  });
-
-  it("renders nothing at all when there is no session to show", () => {
-    expect(render(<TodaySessionCard today={null} />).container.firstChild).toBeNull();
-  });
-
-  it("never lets the client decide the plan — the offer comes only from the payload", () => {
-    // El frontend no puede convertirse en fuente de verdad del entitlement.
-    // Sin `proLock` en la respuesta no hay oferta, dijera lo que dijera
-    // cualquier estado local.
-    const withoutOffer = decodeSessionToday({ ...FREE_PAYLOAD, proLock: null });
-    render(<TodaySessionCard today={withoutOffer} />);
-    expect(screen.queryByText("Know what to train first")).toBeNull();
-  });
-});
-
 // ── LA RAZÓN POR LA QUE ESTE BLOQUE EXISTE ─────────────────────────────────
 //
-// Los tests de arriba pasaban, el decodificador llevaba la oferta y la página
-// desplegada seguía sin mostrarla. `TodaySessionCard` NO ESTÁ MONTADA EN NINGÚN
-// SITIO: `grep -rn TodaySessionCard app components` sólo encuentra su propia
-// definición. La home real es `HomeDashboard`, que pinta la misión en línea y
-// nunca la importa.
-//
-// La oferta se había escrito en un componente que nadie usa, así que no habría
-// aparecido por muchas veces que se desplegara. Estos tests son sobre la ruta
-// que un usuario recorre de verdad, y fallarían si alguien volviera a mover el
-// render a un componente huérfano.
+// Los tests del decodificador pasaban, la oferta llegaba, y la página
+// desplegada seguía sin mostrarla: estaba escrita en un componente huérfano.
+// Estos tests son sobre la ruta que un usuario recorre de verdad, y fallarían
+// si alguien volviera a mover el render fuera de ella.
 
 import { HomeDashboard } from "../../components/home/HomeDashboard";
 import { vi } from "vitest";
