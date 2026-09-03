@@ -18,3 +18,6 @@ cloudflare-env.d.ts
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 graft/
+
+# Public-site visual QA captures (tests/e2e/public-visual-qa.spec.ts) — ~40 MB per run, reviewed locally, not versioned.
+docs/visual-qa/public/
