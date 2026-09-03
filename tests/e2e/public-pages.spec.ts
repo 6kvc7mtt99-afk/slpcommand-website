@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { allAuthorityPages } from "../../lib/authority";
+import { allMarketingPages } from "../../lib/site";
 
 const PAGES = [
-  "/",
+  ...allMarketingPages().map((page) => page.path),
   "/privacy",
   "/terms",
   "/ai-usage",
@@ -24,6 +25,9 @@ test("public pages return 200 and keep legal titles", async ({ page }) => {
   for (const path of PAGES) {
     const res = await page.goto(path);
     expect(res?.ok(), path).toBeTruthy();
+    // Every public page renders inside the site shell: one main landmark, the footer.
+    await expect(page.locator("main"), path).toHaveCount(1);
+    await expect(page.locator("footer.sf"), path).toHaveCount(1);
   }
   await page.goto("/privacy");
   await expect(page.locator("h1")).toContainText("Privacy Policy");
@@ -34,6 +38,21 @@ test("public pages return 200 and keep legal titles", async ({ page }) => {
 test(".html URLs redirect to extensionless", async ({ request }) => {
   const res = await request.get("/privacy.html", { maxRedirects: 0 });
   expect([301, 308]).toContain(res.status());
+});
+
+test("marketing pages ship canonical, card and one h1", async ({ page }) => {
+  for (const marketing of allMarketingPages()) {
+    await page.goto(marketing.path);
+    const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
+    // Next renders the homepage canonical without its trailing slash.
+    expect(canonical?.replace(/\/$/, ""), `${marketing.path} canonical`).toBe(`https://slpcommand.com${marketing.path}`.replace(/\/$/, ""));
+    const image = await page.locator('meta[property="og:image"]').getAttribute("content");
+    expect(image, `${marketing.path} og:image`).toContain(marketing.ogImage);
+    await expect(page.locator("h1"), marketing.path).toHaveCount(1);
+    // No horizontal overflow at the default desktop viewport.
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow, `${marketing.path} overflow`).toBeLessThanOrEqual(0);
+  }
 });
 
 test("robots disallows admin and app", async ({ request }) => {
@@ -90,7 +109,7 @@ test("breadcrumb schema matches the rendered trail", async ({ page }) => {
     "Writing",
   ]);
 
-  const visible = await page.locator(".authority-crumbs").innerText();
+  const visible = await page.locator('nav[aria-label="Breadcrumb"]').innerText();
   expect(visible).toContain("Guides");
   expect(visible).toContain("Writing");
 });

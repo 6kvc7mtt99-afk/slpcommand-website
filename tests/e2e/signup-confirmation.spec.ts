@@ -29,18 +29,29 @@ test.describe("signup feedback", () => {
         body: JSON.stringify({ userId: "u1", email: "new@example.com", needsEmailConfirmation: true }),
       });
     });
+    // Two screens now: account, then preparation. The request the second
+    // screen sends is unchanged; only the form in front of it is shorter.
     await page.goto("/signup");
     await page.getByLabel("Email").fill("new@example.com");
-    await page.getByLabel("Password").fill("correcthorsebattery");
-    await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByLabel(/^Password/).fill("correcthorsebattery");
     await page.getByLabel("First name").fill("New");
     await page.getByLabel("Last name").fill("Learner");
+    await page.getByRole("button", { name: "Continue" }).click();
+    // Focus lands on the first field of the new screen.
+    await expect(page.getByLabel("Country")).toBeFocused();
     await page.getByLabel("Country").fill("Spain");
-    await page.getByRole("button", { name: "Continue" }).click();
-    await page.getByRole("button", { name: "Continue" }).click();
-    await page.getByRole("button", { name: "Continue" }).click();
+    // Option labels are human-readable; the submitted values are the enums.
+    await expect(page.getByLabel("My goal")).toContainText("Pass a STANAG 6001 / SLP exam");
     await page.getByLabel(/16 or older/).check();
-    await page.getByRole("button", { name: "Create account" }).click();
+    const [request] = await Promise.all([
+      page.waitForRequest("**/api/auth/register"),
+      page.getByRole("button", { name: "Create account" }).click(),
+    ]);
+    const sent = request.postDataJSON() as Record<string, unknown>;
+    expect(sent.learningGoal).toBe("stanag_exam");
+    expect(sent.goalDeadline).toBe("flexible");
+    expect(sent.professionRole).toBe("military");
+    expect(sent).not.toHaveProperty("englishLevel");
 
     const banner = page.locator(".feedback-banner.info");
     await expect(banner).toBeVisible();

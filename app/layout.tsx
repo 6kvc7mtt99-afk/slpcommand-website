@@ -10,7 +10,11 @@ import "./lesson.css";
 import "./settings.css";
 import "./records.css";
 import "./instrument.css";
+// The public site's design system. Imported last so it wins every tie with
+// the product stylesheets; everything in it is scoped to `.site`, `.sh`, `.sf`.
+import "./site.css";
 import { SentryInit } from "./sentry-init";
+import { MARKETING_PAGES } from "@/lib/site";
 
 /**
  * The product had no typeface of its own — public site and app both ran on
@@ -27,11 +31,10 @@ const FONT_HREF =
 export const metadata: Metadata = {
   metadataBase: new URL("https://slpcommand.com"),
   title: {
-    default: "SLP Command — STANAG 6001 / SLP 2 & 3 Trainer",
+    default: MARKETING_PAGES.home.title,
     template: "%s — SLP Command",
   },
-  description:
-    "Independent military English training for STANAG 6001 / SLP Levels 2 and 3. Reading, Listening, Writing and Speaking — measured against the constructs the exam rates. Not an official assessment.",
+  description: MARKETING_PAGES.home.description,
   robots: { index: true, follow: true },
   /**
    * Search Console site verification.
@@ -50,7 +53,9 @@ export const metadata: Metadata = {
   verification: process.env.GOOGLE_SITE_VERIFICATION
     ? { google: process.env.GOOGLE_SITE_VERIFICATION }
     : undefined,
-  alternates: { canonical: "https://slpcommand.com/" },
+  // No root canonical: it would be inherited by noindex routes and the 404,
+  // where a canonical pointing at the homepage is a contradictory signal.
+  // Every indexable page declares its own.
   openGraph: {
     type: "website",
     siteName: "SLP Command",
@@ -63,15 +68,14 @@ export const metadata: Metadata = {
         url: "/assets/og/og-default.png",
         width: 1200,
         height: 630,
-        alt: "SLP Command — independent STANAG 6001 / SLP 2 and 3 trainer.",
+        alt: MARKETING_PAGES.home.ogAlt,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SLP Command — STANAG 6001 / SLP 2 & 3 Trainer",
-    description:
-      "Independent trainer for STANAG 6001 / SLP-style exams. Four skills. Two levels. Measured.",
+    title: MARKETING_PAGES.home.title,
+    description: MARKETING_PAGES.home.description,
     images: ["/assets/og/og-default.png"],
   },
 };

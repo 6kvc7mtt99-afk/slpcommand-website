@@ -74,7 +74,7 @@ export function LoginForm({
           <p className="home-kicker">Workspace</p>
           <h1>Log in</h1>
           {brandHeading ?? (
-            <p className="updated">Use the same email and password as the iOS app.</p>
+            <p className="updated">One account for the web app, and for the iOS app when it launches.</p>
           )}
           <form onSubmit={onSubmit}>
             <label htmlFor="email">Email</label>

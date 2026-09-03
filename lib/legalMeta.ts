@@ -1,7 +1,7 @@
 import * as legalContent from "@/content/legal";
 
+/** The legal and support documents. The homepage and marketing pages are registered in lib/site.ts. */
 export const PUBLIC_PAGES = [
-  { slug: "", title: "SLP Command — Military English Training Platform", path: "/" },
   { slug: "privacy", title: "Privacy Policy", path: "/privacy" },
   { slug: "terms", title: "Terms of Service", path: "/terms" },
   { slug: "ai-usage", title: "Responsible AI Policy", path: "/ai-usage" },
@@ -71,7 +71,6 @@ export function publicPageUpdated(slug: string): string | undefined {
  * below states what that specific document actually governs.
  */
 const DESCRIPTIONS: Record<string, string> = {
-  "/": "Independent training for STANAG 6001 / SLP Levels 2 and 3. Reading, Listening, Writing and Speaking, measured against the constructs the exam rates.",
   "/privacy": "What personal data SLP Command processes, the legal basis, retention periods, subprocessors, and your GDPR rights. Controller contact included.",
   "/terms": "The contract for using SLP Command: accounts, subscriptions and renewal, acceptable use, AI-generated feedback limits, liability and governing law.",
   "/ai-usage": "How SLP Command uses AI to score Writing and Speaking, what the models can and cannot judge, and why we publish no pass probability.",

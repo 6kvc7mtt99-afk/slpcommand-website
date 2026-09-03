@@ -35,7 +35,10 @@ export function Reveal() {
     for (const node of nodes) {
       const box = node.getBoundingClientRect();
       if (box.top < window.innerHeight * 0.92) {
-        node.classList.add("is-in");
+        // Already on screen: shown at once, with no fade. Content in the first
+        // viewport must never be sampled at partial opacity — by a reader, a
+        // contrast check, or the LCP timer.
+        node.classList.add("is-in", "is-instant");
       } else {
         observer.observe(node);
       }

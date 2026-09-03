@@ -203,7 +203,7 @@ export function breadcrumbTrail(page: AuthorityPageDef): { name: string; path: s
   } else if (page.path.startsWith("/es/") && page.path !== "/es/examen-slp") {
     trail.push({ name: "España", path: "/es/examen-slp" });
   }
-  trail.push({ name: page.kicker, path: page.path });
+  trail.push({ name: page.crumb ?? page.kicker, path: page.path });
   return trail;
 }
 
@@ -224,11 +224,20 @@ export function breadcrumbJsonLd(id: AuthorityId) {
 export const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": `${SITE_ORIGIN}/#organization`,
   name: "SLP Command",
   url: `${SITE_ORIGIN}/`,
-  logo: `${SITE_ORIGIN}/assets/og/og-default.png`,
+  // A square mark, not the 1200x630 social card: search engines render this
+  // as the entity's logo, and a landscape card crops badly.
+  logo: `${SITE_ORIGIN}/assets/brand/logo-512.png`,
   description:
-    "Independent educational platform for STANAG 6001 / SLP-style English exam preparation at Levels 2 and 3.",
+    "Independent training platform for STANAG 6001 / SLP English exam preparation at Levels 2 and 3, covering Reading, Listening, Writing and Speaking.",
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer support",
+    email: "support@slpcommand.com",
+    availableLanguage: ["en", "es"],
+  },
   knowsAbout: [
     "STANAG 6001",
     "Standardized Language Profile",
@@ -257,12 +266,11 @@ export const websiteJsonLd = {
 /**
  * What a reader can actually obtain today.
  *
- * The previous markup declared `operatingSystem: "iOS"` with a single €9.99
- * Offer and no availability. Both overstate the product: the iOS build is still
- * "coming to the App Store" (claim C08) and Professional is an Apple in-app
- * purchase, so that price cannot currently be transacted by anyone. The web
- * client and its free plan are what exist, so that is what is marked up, with
- * Professional declared as announced rather than for sale.
+ * The web application is the shipped product; the iOS build is still "coming
+ * to the App Store" (claim C08), so the operating system is Web. Both plans
+ * are marked up as purchasable because both are: the free plan at signup, and
+ * Professional through the web checkout (RevenueCat Web Billing, live since
+ * the `web_billing_enabled` flag was turned on), reached from /pricing.
  */
 export const softwareJsonLd = {
   "@context": "https://schema.org",
@@ -281,18 +289,26 @@ export const softwareJsonLd = {
       availability: "https://schema.org/InStock",
       url: `${SITE_ORIGIN}/signup`,
       description:
-        "Free plan: 10 Reading and 10 Listening practice sessions a week, 3 AI-scored Writing submissions and 3 Speaking evaluations a month, and one full exam simulation a month.",
+        "Free plan: 10 Reading and 10 Listening practice sessions a week, 3 AI-evaluated Writing submissions and 3 Speaking evaluations a month, 30 quick Writing tools a month, and one timed exam simulation a month in each of the four skills.",
     },
     {
       "@type": "Offer",
       name: "Professional",
       price: "9.99",
       priceCurrency: "EUR",
-      availability: "https://schema.org/PreOrder",
+      availability: "https://schema.org/InStock",
+      url: `${SITE_ORIGIN}/pricing`,
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: "9.99",
+        priceCurrency: "EUR",
+        billingDuration: "P1M",
+      },
       description:
-        "Announced price. Purchased inside the iOS app once it is published on the App Store.",
+        "Billed monthly, cancel anytime. Unlimited practice, AI evaluation and exam simulation, the Adaptive Coach and mastery trends, and 30 minutes a month of the live AI Speaking Coach. Purchased on the web from inside the app.",
     },
   ],
+  author: { "@id": `${SITE_ORIGIN}/#organization` },
   description:
-    "Independent trainer for STANAG 6001 / SLP-style exams, Levels 2 and 3, covering Reading, Listening, Writing and Speaking.",
+    "Independent training platform for STANAG 6001 / SLP exams at Levels 2 and 3, covering Reading, Listening, Writing and Speaking.",
 };

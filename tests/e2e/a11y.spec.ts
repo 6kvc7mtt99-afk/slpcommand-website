@@ -31,13 +31,28 @@ test("the authenticated home has no serious axe violations, with or without redu
 
 test("the public landing page has no serious axe violations, with or without reduced motion", async ({ page }) => {
   await page.goto("/");
-  const result = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  // The marketing pages are held to the full rule set, contrast included.
+  const result = await new AxeBuilder({ page }).analyze();
   expect(result.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
-  const reduced = await new AxeBuilder({ page }).disableRules(["color-contrast"]).analyze();
+  const reduced = await new AxeBuilder({ page }).analyze();
   expect(reduced.violations.filter((item) => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+});
+
+test("the product, pricing and academies pages have no serious axe violations, on desktop and on a phone", async ({ page }) => {
+  for (const path of ["/product", "/pricing", "/academies"]) {
+    await page.goto(path);
+    const desktop = await new AxeBuilder({ page }).analyze();
+    expect(desktop.violations.filter((item) => item.impact === "critical" || item.impact === "serious").map((v) => `${path}: ${v.id}`)).toEqual([]);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open menu" }).click();
+  await expect(page.getByRole("navigation", { name: "Primary, mobile" })).toBeVisible();
+  const phone = await new AxeBuilder({ page }).analyze();
+  expect(phone.violations.filter((item) => item.impact === "critical" || item.impact === "serious").map((v) => v.id)).toEqual([]);
 });
 
 test("login and a legal page have no serious axe violations", async ({ page }) => {

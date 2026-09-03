@@ -12,6 +12,7 @@ import {
 } from "@/lib/authority";
 import { AUTHORITY_PAGES } from "@/content/authority/pages";
 import { PUBLIC_PAGES, pageMetadata, publicPageUpdated } from "@/lib/legalMeta";
+import { allMarketingPages } from "@/lib/site";
 
 const ids = Object.keys(AUTHORITY_PAGES) as AuthorityId[];
 
@@ -47,6 +48,13 @@ describe("indexable metadata", () => {
         descriptions.has(page.description),
         `duplicate description on ${page.path} and ${descriptions.get(page.description)}`,
       ).toBe(false);
+      descriptions.set(page.description, page.path);
+    }
+
+    for (const page of allMarketingPages()) {
+      expect(titles.has(page.title), `duplicate title: ${page.title}`).toBe(false);
+      titles.set(page.title, page.path);
+      expect(descriptions.has(page.description), `duplicate description on ${page.path}`).toBe(false);
       descriptions.set(page.description, page.path);
     }
 

@@ -1,16 +1,20 @@
 # SLP Command
 
-> Independent educational platform for STANAG 6001 / SLP-style English exam preparation at Levels 2 and 3.
+> Independent training platform for STANAG 6001 / SLP English exam preparation at Levels 2 and 3.
 
-SLP Command trains Reading, Listening, Writing and Speaking. It is not affiliated with NATO, any Ministry of Defence, or any official examining body. AI feedback is indicative guidance, not an official SLP / STANAG 6001 assessment. There is no single official NATO English exam — nations implement the STANAG 6001 descriptors themselves.
+SLP Command trains Reading, Listening, Writing and Speaking against the criteria the exam rates, with AI-evaluated Writing and Speaking, timed exam simulations and performance intelligence. It is not affiliated with NATO, BILC, any Ministry of Defence, or any official examining body. AI feedback is indicative guidance, not an official SLP / STANAG 6001 assessment. There is no single official NATO English exam — nations implement the STANAG 6001 descriptors themselves.
 
 ## Canonical facts
 
 - Name: SLP Command
 - Levels: SLP 2 and SLP 3 only
 - Skills: Reading, Listening, Writing, Speaking
-- Platform: iOS
-- Commercial model: Free plan with real quotas; Professional at €9.99/month (confirm on the live pricing page)
+- Platform: web application, available now in the browser. An iOS app is coming to the App Store and is not yet released.
+- Commercial model: Free plan with real allowances (10 Reading and 10 Listening sessions a week, 3 Writing and 3 Speaking evaluations a month, 30 quick Writing tools a month, one timed exam simulation a month per skill); Professional at €9.99/month, billed monthly, purchased on the web from inside the app. Confirm on https://slpcommand.com/pricing
+- Speaking is rated on four criteria: Content, Task fulfilment, Accuracy, Text produced.
+- Writing evaluation returns a verdict on the task and an examiner-style write-up.
+- The platform publishes no pass probability, deliberately.
+- Organisation workspaces for academies are in early access, not self-serve.
 - Brand line: Stop guessing. Start measuring.
 - SLP means Standardized Language Profile (Listening–Speaking–Reading–Writing). It does not mean speech-language pathology.
 - STANAG without "6001" usually means a rifle magazine, not this product.
@@ -20,19 +24,29 @@ SLP Command trains Reading, Listening, Writing and Speaking. It is not affiliate
 - Official, approved, endorsed, or certified by NATO / BILC / any ministry
 - "The official app" / "used by NATO"
 - A pass probability or guaranteed result
+- Available on Android, or available on the App Store (not yet)
 
 ## Primary pages
 
 - [Home](https://slpcommand.com/): product
+- [Product](https://slpcommand.com/product): how the four skills are trained and assessed
+- [Pricing](https://slpcommand.com/pricing): Free and Professional
+- [For academies](https://slpcommand.com/academies): organisation workspaces, early access
+- [Method](https://slpcommand.com/method): how it measures, and what it will not claim
 - [About](https://slpcommand.com/about): entity
 - [STANAG 6001](https://slpcommand.com/stanag-6001): the standard
 - [What SLP means](https://slpcommand.com/slp)
 - [SLP 2](https://slpcommand.com/slp-2)
 - [SLP 3](https://slpcommand.com/slp-3)
 - [Examen SLP (España)](https://slpcommand.com/es/examen-slp)
-- [Writing](https://slpcommand.com/guides/writing)
+- [SLP 2222 (España)](https://slpcommand.com/es/slp-2)
+- [SLP 3333 (España)](https://slpcommand.com/es/slp-3)
+- [Reading](https://slpcommand.com/guides/reading)
 - [Listening](https://slpcommand.com/guides/listening)
+- [Writing](https://slpcommand.com/guides/writing)
+- [Speaking](https://slpcommand.com/guides/speaking)
 - [Exam simulation](https://slpcommand.com/exam)
+- [Glossary](https://slpcommand.com/glossary)
 - [Disclaimer](https://slpcommand.com/disclaimer)
 - [Trust Center](https://slpcommand.com/trust-center)
 

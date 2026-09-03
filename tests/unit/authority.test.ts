@@ -36,6 +36,10 @@ describe("authority pages", () => {
       const blob = `${page.h1} ${page.description} ${page.sections.map((s) => s.html).join(" ")}`;
       expect(blob, id).not.toMatch(/official NATO (app|exam|assessment)/i);
       expect(page.title.length).toBeGreaterThan(10);
+      // Titles pass through the "%s — SLP Command" template (14 characters) unless
+      // they already carry the brand. Search engines truncate around 60.
+      const rendered = page.title.includes("SLP Command") ? page.title : `${page.title} — SLP Command`;
+      expect(rendered.length, `${id} title renders as ${rendered.length} chars: ${rendered}`).toBeLessThanOrEqual(64);
       expect(page.description.length).toBeGreaterThan(40);
       expect(page.description.length).toBeLessThanOrEqual(180);
     }

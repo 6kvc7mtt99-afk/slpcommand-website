@@ -21,6 +21,11 @@ export default function robots(): MetadataRoute.Robots {
           "/subscription",
           "/spike",
           "/api",
+          // Organisation tooling and account flows: real routes, never search results.
+          "/teacher",
+          "/academy",
+          "/invite",
+          "/auth",
         ],
       },
     ],

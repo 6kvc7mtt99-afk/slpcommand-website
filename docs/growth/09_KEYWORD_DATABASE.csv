@@ -39,3 +39,7 @@ SLP speaking criteria,en,informational,UNKNOWN,NEEDS_DATA,low,high,high,P0,/guid
 STANAG 6001 glossary,en,informational,UNKNOWN,NEEDS_DATA,low,high,high,P1,/glossary,Extractable for AI answers
 SLP meaning,en,informational,UNKNOWN,NEEDS_DATA,medium,high,medium,P1,/glossary,Disambiguation vs speech pathology
 is SLP Command official,en,trust,UNKNOWN,NEEDS_DATA,none,high,high,P1,/method,Adversarial query — answer it ourselves
+SLP exam preparation,en,commercial,UNKNOWN,NEEDS_DATA,medium,high,high,P0,/,Homepage primary — the product's own category
+SLP English practice platform,en,commercial,UNKNOWN,NEEDS_DATA,medium,high,high,P1,/product,Product page primary
+SLP Command pricing,en,navigational,UNKNOWN,NEEDS_DATA,low,high,medium,P2,/pricing,Branded pricing query
+SLP preparation for academies,en,commercial,UNKNOWN,NEEDS_DATA,low,medium,medium,P2,/academies,B2B page primary

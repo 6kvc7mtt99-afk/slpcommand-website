@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { AUTHORITY_PAGES } from "@/content/authority/pages";
 import * as legalContent from "@/content/legal";
-import { landingHtml } from "@/content/landing";
+import { MARKETING_RENDERS, visibleText } from "./renderPublic";
 
 /**
  * Executable form of docs/growth/03_CLAIMS_REGISTRY.md.
@@ -124,7 +124,9 @@ function publicCopy(): { source: string; text: string }[] {
     surfaces.push({ source: `authority:${id}`, text: parts.join(" ") });
   }
 
-  surfaces.push({ source: "landing", text: stripTags(landingHtml) });
+  for (const page of MARKETING_RENDERS) {
+    surfaces.push({ source: `marketing:${page.path}`, text: visibleText(page.html) });
+  }
 
   for (const [key, html] of Object.entries(legalContent)) {
     if (typeof html === "string") {

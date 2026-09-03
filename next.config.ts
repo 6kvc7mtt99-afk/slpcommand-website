@@ -69,6 +69,9 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // The old static site's front door. Must precede the generic .html rule,
+      // which would otherwise send it to /index and a 404.
+      { source: "/index.html", destination: "/", permanent: true },
       { source: "/:path*.html", destination: "/:path*", permanent: true },
       { source: "/www", destination: "/", permanent: true },
       // `/es` is the natural shortening of the Spanish cluster and a likely

@@ -31,7 +31,7 @@ function loadKeywords(): Row[] {
 const rows = loadKeywords();
 const livePaths = new Set(allAuthorityPages().map((p) => p.path));
 // Routes that exist outside the authority model.
-const OTHER_LIVE = new Set(["/", "/signup", "/exam"]);
+const OTHER_LIVE = new Set(["/", "/signup", "/exam", "/product", "/pricing", "/academies"]);
 /** Values in recommended_url that mean "nothing is built for this yet". */
 const NOT_A_URL = /^(not built|later|future|do not|none|admin)/i;
 

@@ -12,6 +12,8 @@ export type AuthorityPageDef = {
   description: string;
   h1: string;
   kicker: string;
+  /** Breadcrumb label (visible trail and BreadcrumbList schema). Defaults to the kicker. */
+  crumb?: string;
   updated: string;
   primaryKeyword: string;
   secondaryKeywords: string[];
@@ -91,6 +93,7 @@ export const AUTHORITY_PAGES = {
       "STANAG 6001 is NATO’s language-proficiency standard, not a single official exam. How SLP profiles, levels 0–5, and national tests actually work.",
     h1: "STANAG 6001: the NATO language proficiency standard",
     kicker: "Reference",
+    crumb: "STANAG 6001",
     updated: UPDATED,
     primaryKeyword: "STANAG 6001",
     secondaryKeywords: ["NATO language proficiency", "BILC", "SLP", "STANAG 6001 exam"],
@@ -174,7 +177,7 @@ export const AUTHORITY_PAGES = {
     ],
     cta: {
       heading: "Measure the profile. Then train it.",
-      body: "SLP Command is an independent iOS trainer for SLP 2 and SLP 3 across all four skills. It will not invent a pass probability.",
+      body: "SLP Command is an independent trainer for SLP 2 and SLP 3 across all four skills, in the browser today and on iOS when the app reaches the App Store. It will not invent a pass probability.",
       href: "/#pricing",
       label: "See how the trainer works",
     },
@@ -188,6 +191,7 @@ export const AUTHORITY_PAGES = {
       "In military language testing, SLP is a Standardized Language Profile: four digits for Listening, Speaking, Reading and Writing. It is not a therapy qualification.",
     h1: "SLP means Standardized Language Profile — not speech therapy",
     kicker: "Terminology",
+    crumb: "SLP meaning",
     updated: UPDATED,
     primaryKeyword: "SLP STANAG",
     secondaryKeywords: ["Standardized Language Profile", "SLP 3333", "SLP 2222", "SLP exam"],
@@ -257,6 +261,7 @@ export const AUTHORITY_PAGES = {
       "SLP 2 is the functional STANAG 6001 profile: routine job and social language across listening, speaking, reading and writing. What it requires, and what it does not.",
     h1: "SLP 2 (functional): what the profile actually requires",
     kicker: "Level 2",
+    crumb: "SLP 2",
     updated: UPDATED,
     primaryKeyword: "SLP 2",
     secondaryKeywords: ["SLP 2222", "STANAG 6001 level 2", "functional English military"],
@@ -319,6 +324,7 @@ export const AUTHORITY_PAGES = {
       "SLP 3 is the professional STANAG 6001 profile. It asks for implication, argument, hypothesis and unexpected questions — not a longer Level 2 answer.",
     h1: "SLP 3 (professional): the jump most candidates underestimate",
     kicker: "Level 3",
+    crumb: "SLP 3",
     updated: UPDATED,
     primaryKeyword: "SLP 3",
     secondaryKeywords: ["SLP 3333", "STANAG 6001 level 3", "professional military English"],
@@ -458,6 +464,7 @@ export const AUTHORITY_PAGES = {
       "Qué exige el perfil SLP 2 (2222) según STANAG 6001: inglés funcional para el trabajo rutinario, no un B2 de academia genérica.",
     h1: "SLP 2 (funcional): lo que el perfil pide de verdad",
     kicker: "Nivel 2",
+    crumb: "SLP 2222",
     updated: UPDATED,
     primaryKeyword: "SLP 2222",
     secondaryKeywords: ["SLP 2", "nivel funcional STANAG", "preparar SLP 2"],
@@ -526,6 +533,7 @@ export const AUTHORITY_PAGES = {
       "SLP 3 pide argumentación, implicación e imprevistos. No es un SLP 2 más largo. Cómo cambia writing, listening, reading y speaking.",
     h1: "SLP 3 (profesional): el salto que más se subestima",
     kicker: "Nivel 3",
+    crumb: "SLP 3333",
     updated: UPDATED,
     primaryKeyword: "SLP 3333",
     secondaryKeywords: ["SLP 3", "preparar SLP 3", "nivel profesional STANAG"],
@@ -590,11 +598,12 @@ export const AUTHORITY_PAGES = {
     path: "/guides",
     lang: "en",
     schemaType: "CollectionPage" as const,
-    title: "STANAG 6001 / SLP guides",
+    title: "STANAG 6001 / SLP exam preparation guides",
     description:
       "Independent guides to STANAG 6001 and SLP preparation: levels, writing, listening, and exam simulation. Not an official NATO resource.",
     h1: "Guides to STANAG 6001 and SLP preparation",
     kicker: "Learn",
+    crumb: "Guides",
     updated: UPDATED,
     primaryKeyword: "STANAG 6001 preparation",
     secondaryKeywords: ["SLP preparation", "military English guides"],
@@ -642,7 +651,7 @@ export const AUTHORITY_PAGES = {
   "guides-writing": {
     path: "/guides/writing",
     lang: "en",
-    title: "STANAG / SLP writing: why good English still fails",
+    title: "SLP writing: why good English still fails",
     description:
       "SLP and STANAG writing is failed on the task more often than on grammar. How Level 2 memos differ from Level 3 reports, and what raters actually mark.",
     h1: "SLP / STANAG writing fails on the task more often than on the grammar",
@@ -703,7 +712,7 @@ export const AUTHORITY_PAGES = {
     ],
     cta: {
       heading: "See the reason, not just a band",
-      body: "Writing evaluation in SLP Command returns the improved version beside yours and says when the language was not the problem.",
+      body: "Writing evaluation in SLP Command returns a separate verdict on the task and an examiner-style write-up, and says when the language was not the problem.",
       href: "/#pricing",
       label: "See the trainer",
     },
@@ -712,7 +721,7 @@ export const AUTHORITY_PAGES = {
   "guides-reading": {
     path: "/guides/reading",
     lang: "en",
-    title: "STANAG / SLP reading: Level 3 is inference, not vocabulary",
+    title: "SLP reading: Level 3 is inference, not vocabulary",
     description:
       "SLP reading is failed on inference and time, not on rare words. What separates Level 2 fact-finding from Level 3 argument reading, and how to train it.",
     h1: "SLP reading: Level 2 finds the fact, Level 3 reconstructs the argument",
@@ -872,7 +881,7 @@ export const AUTHORITY_PAGES = {
   "guides-speaking": {
     path: "/guides/speaking",
     lang: "en",
-    title: "STANAG / SLP speaking: what a rater is actually judging",
+    title: "SLP speaking: what a rater is actually judging",
     description:
       "SLP speaking is rated on what your speech accomplishes, not on accent. The four factors behind a rating, why the weakest one caps the level, and how to train it.",
     h1: "SLP speaking is rated on what your speech does, not on how it sounds",
@@ -1073,7 +1082,7 @@ export const AUTHORITY_PAGES = {
   method: {
     path: "/method",
     lang: "en",
-    title: "How SLP Command measures, and what it refuses to claim",
+    title: "How SLP Command measures — and what it will not claim",
     description:
       "The evidence standard behind every estimate, the limits of AI feedback, and the specific claims this product will not make — including a pass probability.",
     h1: "How we measure, and what we will not claim",
@@ -1140,7 +1149,7 @@ export const AUTHORITY_PAGES = {
       {
         h2: "What the AI actually does, and where it is weak",
         html: `<p>AI evaluates Writing and Speaking. It is used because it can give a candidate a reasoned response in seconds where a teacher cannot, and it is constrained because it is not a rater.</p>
-<p><strong>Reasonable at:</strong> whether a response performed the task set, how a text is organised, whether accuracy is consistent enough to stop costing the reader effort, and producing an improved version beside yours so the difference is visible.</p>
+<p><strong>Reasonable at:</strong> whether a response performed the task set, how a text is organised, whether accuracy is consistent enough to stop costing the reader effort, and writing up what to change so the difference is visible.</p>
 <p><strong>Weak at:</strong> borderline calls between adjacent levels, unusual registers and humour, anything depending on the specific conventions of your national paper, and any judgement that needs more evidence than one response contains.</p>
 <p>Where the evidence is thin, the product is designed to say "limited evidence" rather than produce a confident number. An estimate that admits uncertainty is worth more than one that does not, even though it satisfies less.</p>`,
       },
@@ -1163,9 +1172,10 @@ export const AUTHORITY_PAGES = {
     lang: "en",
     title: "About SLP Command",
     description:
-      "SLP Command is an independent educational platform for STANAG 6001 / SLP-style exam preparation at Levels 2 and 3. What it is, what it is not, and how to name it.",
+      "Who builds SLP Command, what it is and what it is not: an independent training platform for STANAG 6001 / SLP exam preparation at Levels 2 and 3, operated from Spain.",
     h1: "About SLP Command",
     kicker: "Entity",
+    crumb: "About",
     updated: UPDATED,
     primaryKeyword: "SLP Command",
     secondaryKeywords: ["SLP Command app", "military English trainer"],
@@ -1186,37 +1196,45 @@ export const AUTHORITY_PAGES = {
       },
       {
         q: "What does the product cover?",
-        a: "Reading, Listening, Writing and Speaking at SLP Level 2 and Level 3, on iOS, with practice, exam simulation, Academy and Intelligence.",
+        a: "Reading, Listening, Writing and Speaking at SLP Level 2 and Level 3, in the browser today, with practice, timed exam simulation, AI-rated Writing and Speaking, Academy lessons and Intelligence. An iOS app is coming to the App Store.",
       },
     ],
     sections: [
       {
-        h2: "Canonical description",
+        h2: "What SLP Command is",
         html: `${DISCLAIMER_EN}
-<p><strong>SLP Command</strong> is an independent educational platform for STANAG 6001 / SLP-style English exam preparation at Levels 2 and 3. It trains Reading, Listening, Writing and Speaking. AI-generated feedback is indicative guidance, not an official SLP / STANAG 6001 assessment.</p>
-<p>Use that paragraph everywhere: App Store, biographies, press, and citations. Do not shorten it to “the NATO app”.</p>`,
+<p><strong>SLP Command</strong> is an independent training platform for the STANAG 6001 / SLP English exam at Levels 2 and 3. It trains Reading, Listening, Writing and Speaking against the criteria the exam rates. Writing and Speaking are rated by AI against those criteria, with the reasoning returned alongside each verdict; that feedback is indicative guidance for preparation, not an official SLP / STANAG 6001 assessment.</p>
+<p>It runs in the browser today. An iOS app is coming to the App Store and will use the same account.</p>`,
+      },
+      {
+        h2: "Who builds it",
+        html: `<p>SLP Command is built and operated independently from Spain. There is no institution behind it — no ministry, no academy, no examining body — and no unit, school or officer has endorsed it. The operator's legal identity is published in the <a href="/legal-notice">Legal Notice</a>; how personal data and AI are handled is set out on the <a href="/trust-center">Trust Center</a>.</p>
+<p>The product is built against the published STANAG 6001 descriptors and the public testing guidance that goes with them, and every explanatory page on this site cites the sources it relies on.</p>`,
       },
       {
         h2: "What it is not",
         html: `<ul>
-<li>Not an official examining body.</li>
+<li>Not an official examining body, and not affiliated with one.</li>
 <li>Not a speech-language pathology product.</li>
 <li>Not a vocabulary toy and not a general CEFR course.</li>
-<li>Not a pass-probability engine.</li>
+<li>Not a pass-probability engine — it will not tell you your chance of passing.</li>
 <li>Not available on Android at the time of this page.</li>
 </ul>`,
       },
       {
-        h2: "Method, in one sentence",
-        html: `<p>Nothing is asserted about your English without measurement, and every recommendation names the evidence that produced it. The public brand line is: <em>Stop guessing. Start measuring.</em></p>
-<p>Legal identity, privacy, and AI use are documented on the <a href="/trust-center">Trust Center</a>.</p>`,
+        h2: "How it measures",
+        html: `<p>One rule sits under everything: nothing is asserted about your English without measurement, and every recommendation names the evidence that produced it. Where the evidence is thin, the product says so rather than producing a confident number. The public brand line is <em>Stop guessing. Start measuring.</em> — and the full method, including where the AI is weak, is on <a href="/method">How we measure</a>.</p>`,
+      },
+      {
+        h2: "If you need to describe it",
+        html: `<p>For a citation, a listing or a briefing note, this is the accurate one-paragraph description: <em>SLP Command is an independent educational platform for STANAG 6001 / SLP-style English exam preparation at Levels 2 and 3. It trains Reading, Listening, Writing and Speaking. AI-generated feedback is indicative guidance, not an official SLP / STANAG 6001 assessment.</em> Please do not shorten it to “the NATO app”; it is not one.</p>`,
       },
     ],
     cta: {
-      heading: "Read the product, then the disclaimer",
-      body: "Features and pricing are on the homepage. The institutional disclaimer is binding copy, not footer decoration.",
-      href: "/disclaimer",
-      label: "Institutional disclaimer",
+      heading: "See how the trainer works",
+      body: "The four skills, the intelligence layer and the exam simulations, explained on one page — then the pricing.",
+      href: "/product",
+      label: "How it works",
     },
   },
 } satisfies Record<string, AuthorityPageDef>;

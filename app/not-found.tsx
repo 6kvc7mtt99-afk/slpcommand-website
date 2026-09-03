@@ -1,58 +1,48 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SiteFooter, SiteHeader } from "@/components/marketing/SiteChrome";
+import { SiteShell } from "@/components/site/SiteShell";
 
 /**
- * A branded 404.
- *
- * The site previously fell through to the stock Next.js page, so any decayed or
- * mistyped authority URL — the ones most likely to be reached from an old link,
- * a social post, or an AI answer citing a path that moved — ended on an unbranded
- * dead end with no route back into the guides cluster.
+ * A branded 404 inside the public shell, so a decayed link from a social post
+ * or an AI answer still lands on a page with the whole site reachable.
  */
 export const metadata: Metadata = {
   title: "Page not found",
-  description:
-    "That page is not on slpcommand.com. Start from the STANAG 6001 and SLP guides instead.",
+  description: "That page is not on slpcommand.com. Start from the product, the guides or the pricing instead.",
+  // The root layout declares index,follow; a 404 must not inherit it.
   robots: { index: false, follow: true },
 };
 
 const ROUTES = [
+  { href: "/product", label: "How SLP Command works", hint: "The four skills, intelligence and exam simulation" },
+  { href: "/pricing", label: "Pricing", hint: "Free and Professional, every allowance" },
   { href: "/stanag-6001", label: "What STANAG 6001 is", hint: "The standard, and why there is no single NATO exam" },
-  { href: "/slp", label: "What SLP means", hint: "The four-digit profile, in order" },
-  { href: "/slp-2", label: "SLP 2", hint: "The functional profile" },
   { href: "/slp-3", label: "SLP 3", hint: "The professional profile" },
-  { href: "/guides", label: "All guides", hint: "Writing, listening and exam preparation" },
+  { href: "/guides", label: "All guides", hint: "What the raters judge in each skill" },
   { href: "/es/examen-slp", label: "Examen SLP (español)", hint: "Qué es y cómo prepararlo" },
 ];
 
 export default function NotFound() {
   return (
-    <>
-      <SiteHeader />
-      <main className="wrap authority">
-        <p className="authority-kicker">404</p>
+    <SiteShell>
+      <div className="s-wrap lost">
+        <p className="s-eyebrow">404</p>
         <h1>That page is not here</h1>
+        <p>The address may have changed, or it was never a page on this site. These are the pages that do exist.</p>
+        <ul>
+          {ROUTES.map((route) => (
+            <li key={route.href}>
+              <Link href={route.href}>
+                <b>{route.label}</b>
+                <span>{route.hint}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
         <p>
-          The address may have changed, or it was never a page on this site. Nothing
-          below is a guess — these are the reference pages that do exist.
+          If you followed a link from somewhere on this site, please <Link href="/support">tell us</Link> so it can be fixed.
         </p>
-        <nav className="authority-related" aria-label="Main sections">
-          <ul>
-            {ROUTES.map((route) => (
-              <li key={route.href}>
-                <Link href={route.href}>{route.label}</Link>
-                <span className="muted"> — {route.hint}</span>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <p>
-          If you followed a link from somewhere on this site, please{" "}
-          <Link href="/support">tell us</Link> so it can be fixed.
-        </p>
-      </main>
-      <SiteFooter />
-    </>
+      </div>
+    </SiteShell>
   );
 }

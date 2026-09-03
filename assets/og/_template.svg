@@ -1,45 +1,59 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <!-- SLP Command Open Graph card. Source of truth: edit here, then run scripts/build-og.sh -->
-  <rect width="1200" height="630" fill="#e7e3d8"/>
+  <!-- SLP Command Open Graph card. Source of truth: edit here, then run scripts/build-og.sh.
+       The instrument stage: near-black ground, hairline grid, one signal line. -->
+  <defs>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" fill="none" stroke="#262b33" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="bloom" cx="85%" cy="0%" r="60%">
+      <stop offset="0%" stop-color="#7ea0ff" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#7ea0ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bar-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6cc2e2"/><stop offset="1" stop-color="#1e3a44"/></linearGradient>
+    <linearGradient id="bar-s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bba8f0"/><stop offset="1" stop-color="#352d4f"/></linearGradient>
+    <linearGradient id="bar-r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0ac5c"/><stop offset="1" stop-color="#4a3820"/></linearGradient>
+    <linearGradient id="bar-w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd2a2"/><stop offset="1" stop-color="#2a4633"/></linearGradient>
+  </defs>
 
-  <!-- ruled paper hairlines -->
-  <g stroke="#c8c2b5" stroke-width="1" opacity="0.55">
-    <line x1="0" y1="112" x2="1200" y2="112"/>
-    <line x1="0" y1="518" x2="1200" y2="518"/>
-  </g>
+  <rect width="1200" height="630" fill="#0b0d10"/>
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.55"/>
+  <rect width="1200" height="630" fill="url(#bloom)"/>
 
-  <!-- accent spine -->
-  <rect x="0" y="0" width="10" height="630" fill="#1638a6"/>
-
-  <!-- logomark -->
-  <rect x="72" y="52" width="44" height="44" rx="8" fill="#121214"/>
-  <text x="94" y="80" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15"
-        font-weight="800" letter-spacing="0.9" fill="#e7e3d8" text-anchor="middle">SLP</text>
-
-  <!-- wordmark -->
-  <text x="132" y="82" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="25"
-        font-weight="600" fill="#121214">SLP <tspan font-weight="400" fill="#3a3a40">Command</tspan></text>
+  <!-- logomark + wordmark -->
+  <rect x="72" y="56" width="40" height="40" rx="9" fill="#f2efe8"/>
+  <text x="92" y="82" font-family="IBM Plex Mono, Menlo, monospace" font-size="12" font-weight="600" letter-spacing="1.2" fill="#0b0d10" text-anchor="middle">SLP</text>
+  <text x="126" y="83" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="600" fill="#f2efe8">SLP <tspan font-weight="400" fill="#b9bec8">Command</tspan></text>
 
   <!-- kicker -->
-  <text x="72" y="188" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15"
-        font-weight="700" letter-spacing="2.6" fill="#8a6818">__KICKER__</text>
+  <text x="72" y="176" font-family="IBM Plex Mono, Menlo, monospace" font-size="15" letter-spacing="3" fill="#858c98">__KICKER__</text>
 
   <!-- headline -->
-  <text x="72" y="266" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="60"
-        font-weight="700" fill="#121214">__LINE1__</text>
-  <text x="72" y="338" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="60"
-        font-weight="700" fill="#121214">__LINE2__</text>
-
-  <!-- rule -->
-  <rect x="72" y="382" width="88" height="4" fill="#1638a6"/>
+  <text x="72" y="262" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="64" font-weight="700" letter-spacing="-2" fill="#f2efe8">__LINE1__</text>
+  <text x="72" y="336" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="64" font-weight="700" letter-spacing="-2" fill="#f2efe8">__LINE2__</text>
 
   <!-- subline -->
-  <text x="72" y="438" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="25"
-        font-weight="400" fill="#3a3a40">__SUB__</text>
+  <text x="72" y="404" font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="400" fill="#b9bec8">__SUB__</text>
 
-  <!-- footer disclaimer -->
-  <text x="72" y="570" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18"
-        font-weight="400" fill="#5c5c64">__FOOT__</text>
-  <text x="1128" y="570" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="18"
-        font-weight="600" fill="#5c5c64" text-anchor="end">slpcommand.com</text>
+  <!-- the profile: four bars in SLP order with the gate line -->
+  <g transform="translate(884 176)">
+    <line x1="0" y1="176" x2="244" y2="176" stroke="#262b33"/>
+    <line x1="0" y1="88" x2="244" y2="88" stroke="#262b33" stroke-dasharray="2 4"/>
+    <rect x="8"   y="88"  width="44" height="88"  rx="3" fill="url(#bar-l)"/>
+    <rect x="70"  y="88"  width="44" height="88"  rx="3" fill="url(#bar-s)"/>
+    <rect x="132" y="44"  width="44" height="132" rx="3" fill="url(#bar-r)"/>
+    <rect x="194" y="88"  width="44" height="88"  rx="3" fill="url(#bar-w)"/>
+    <line x1="-8" y1="88" x2="248" y2="88" stroke="#c8952b" stroke-width="1.5"/>
+    <text x="-16" y="92" font-family="IBM Plex Mono, Menlo, monospace" font-size="11" letter-spacing="1.5" fill="#c8952b" text-anchor="end">GATE · 2</text>
+    <g font-family="IBM Plex Mono, Menlo, monospace" font-size="20" fill="#f2efe8" text-anchor="middle">
+      <text x="30" y="74">2</text><text x="92" y="74">2</text><text x="154" y="30">3</text><text x="216" y="74">2</text>
+    </g>
+    <g font-family="IBM Plex Mono, Menlo, monospace" font-size="10" letter-spacing="1.2" fill="#858c98" text-anchor="middle">
+      <text x="30" y="200">L</text><text x="92" y="200">S</text><text x="154" y="200">R</text><text x="216" y="200">W</text>
+    </g>
+  </g>
+
+  <!-- footer -->
+  <line x1="72" y1="540" x2="1128" y2="540" stroke="#262b33"/>
+  <text x="72" y="576" font-family="IBM Plex Mono, Menlo, monospace" font-size="15" letter-spacing="0.5" fill="#858c98">__FOOT__</text>
+  <text x="1128" y="576" font-family="IBM Plex Mono, Menlo, monospace" font-size="15" letter-spacing="0.5" fill="#b9bec8" text-anchor="end">slpcommand.com</text>
 </svg>
