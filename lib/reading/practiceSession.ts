@@ -1,6 +1,11 @@
 import { apiRequest } from "@/lib/api/client";
 import { newIdempotencyKey } from "@/lib/api/idempotency";
-import { decodeReadingPassage, type ReadingPassage } from "@/lib/api/reading";
+import {
+  decodeReadingAnswer,
+  decodeReadingPassage,
+  type ReadingAnswerResult,
+  type ReadingPassage,
+} from "@/lib/api/reading";
 
 type Slot = {
   key: string;
@@ -41,12 +46,20 @@ export function loadReadingPassage(): Promise<ReadingPassage> {
   return slot.inflight;
 }
 
+/**
+ * Submit one answer and return the SERVER's verdict.
+ *
+ * This used to return the raw response and every caller ignored it, which is
+ * how the browser ended up grading itself — see decodeReadingAnswer for the
+ * full account. The decoded result is the only honest source of correctness
+ * for a Reading item, because the answer key never reaches the client.
+ */
 export async function submitReadingAnswer(input: {
   readingTextId: string;
   questionId: string;
   selectedIndex: number;
-}): Promise<unknown> {
-  return apiRequest("/reading/answer", {
+}): Promise<ReadingAnswerResult> {
+  const raw = await apiRequest<unknown>("/reading/answer", {
     method: "POST",
     body: {
       readingTextId: input.readingTextId,
@@ -55,4 +68,5 @@ export async function submitReadingAnswer(input: {
       mode: "training",
     },
   });
+  return decodeReadingAnswer(raw);
 }

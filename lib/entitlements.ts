@@ -102,6 +102,32 @@ export type FeatureAccess = {
 
 const UNKNOWN: FeatureAccess = { usable: false, remaining: null, limit: null, period: null, reason: "unknown" };
 
+/**
+ * Does the snapshot DESCRIBE this feature at all?
+ *
+ * `featureAccess` returns `reason: "notOnPlan"` both for a feature the plan
+ * explicitly disables and for one the payload simply never mentions — which is
+ * correct for gating (absent means not granted, fail closed) but wrong for
+ * choosing which meter to read.
+ *
+ * Reading and Listening exams are metered by their own `*_exam_simulation`
+ * credits; Writing and Speaking were reading their `*_ai_feedback` key
+ * instead, so a spent evaluation allowance locked an untouched exam credit and
+ * vice versa. Fixing that means switching to the exam key — but if a live plan
+ * payload does not enumerate it, switching blind would lock the exam for
+ * everyone. This lets a caller ask the one question that separates the two:
+ * "did the server tell me about this feature?" If it did, meter against it. If
+ * it did not, keep the previous behaviour rather than inventing a refusal.
+ *
+ * It is deliberately NOT an access check and grants nothing — the server still
+ * decides, here via `featureAccess` and upstream via `requireFeature` /
+ * `consume_quota`.
+ */
+export function featureIsDescribed(state: EntitlementsState, key: string): boolean {
+  if (state.status !== "ready") return false;
+  return Boolean(state.snapshot.features?.some((item) => item.key === key));
+}
+
 export function featureAccess(state: EntitlementsState, key: string): FeatureAccess {
   if (state.status !== "ready") {
     // noPlan is a real answer — the account is on Free and this feature is not

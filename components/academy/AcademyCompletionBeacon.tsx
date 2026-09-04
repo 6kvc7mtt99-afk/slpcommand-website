@@ -51,11 +51,82 @@ export function AcademyCompletionBeacon({
     // the correct behaviour is to record nothing.
     if (typeof IntersectionObserver === "undefined") return;
 
+    /**
+     * THE BUG THIS FIXES — the sentinel fired on OPEN for short lessons.
+     *
+     * IntersectionObserver invokes its callback immediately on observe() with
+     * the current intersection state, and a zero-height target that intersects
+     * reports ratio 1, clearing this 0.1 threshold. Every content block in
+     * AcademyLessonView is conditional and `decodeAcademyLesson` requires only
+     * id + title, so a thin lesson renders header + footer — roughly 700px,
+     * which fits above the fold on a maximised desktop window. The sentinel
+     * was then already visible at mount and the completion POSTed instantly.
+     *
+     * That is precisely what this component's own docstring says must never
+     * happen: it "would record OPENING a lesson as COMPLETING it, which would
+     * fill the one table meant to be evidence of learning with rows that are
+     * not evidence of anything". Those rows also surface to teachers as
+     * "Academy lessons" completed, so the false signal leaves the product.
+     *
+     * "Reached the end" needs a real signal, and which signal is available
+     * depends on the page:
+     *  - Scrollable lesson: the learner must actually scroll. Intersection
+     *    alone is then genuine evidence they moved through the content.
+     *  - Lesson that fits one screen: there is nothing to scroll, so
+     *    "scrolled past" cannot be observed at all. Dwell is the honest
+     *    substitute — the lesson held the screen for DWELL_MS.
+     * Either way the beacon can no longer fire on arrival.
+     */
+    const DWELL_MS = 8000;
+    let scrolled = false;
+    let dwellTimer: number | null = null;
+
+    const onScroll = () => {
+      scrolled = true;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    const scrollable = () =>
+      document.documentElement.scrollHeight > window.innerHeight + 40;
+
+    const clearDwell = () => {
+      if (dwellTimer != null) window.clearTimeout(dwellTimer);
+      dwellTimer = null;
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
-        if (!entries.some((e) => e.isIntersecting) || sent.current) return;
-        sent.current = true;
-        observer.disconnect();
+        if (sent.current) return;
+        if (!entries.some((e) => e.isIntersecting)) {
+          clearDwell();
+          return;
+        }
+        // A scrollable page that has never been scrolled means the sentinel is
+        // visible because the observer just started, not because the learner
+        // arrived at the end.
+        if (scrollable() && !scrolled) return;
+        if (dwellTimer != null) return;
+        dwellTimer = window.setTimeout(() => {
+          if (sent.current) return;
+          sent.current = true;
+          observer.disconnect();
+          record();
+        }, DWELL_MS);
+      },
+      // A sliver is enough: the sentinel sits after the last content block, so
+      // any part of it becoming visible means the content above it has been
+      // scrolled past.
+      { threshold: 0.1 }
+    );
+
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      clearDwell();
+      window.removeEventListener("scroll", onScroll);
+    };
+
+    function record() {
         void apiRequest("/academy/complete", {
           method: "POST",
           body: {
@@ -68,15 +139,7 @@ export function AcademyCompletionBeacon({
           // Released so a later visit in the same session can still record it.
           sent.current = false;
         });
-      },
-      // A sliver is enough: the sentinel sits after the last content block, so
-      // any part of it becoming visible means the content above it has been
-      // scrolled past.
-      { threshold: 0.1 }
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
+    }
   }, [skill, activityId]);
 
   return <div ref={sentinel} aria-hidden="true" data-academy-completion-sentinel />;

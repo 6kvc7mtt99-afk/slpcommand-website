@@ -70,7 +70,14 @@ export function ExerciseShell({
         <div className="task-bar-lead">
           <Link className="task-exit" href={backHref}>
             <span className="task-exit-glyph" aria-hidden="true">←</span>
-            <span>{exitLabel ?? `Exit ${key}`}</span>
+            {/* Named, not just labelled. Below 700px task.css used to
+                `display: none` this span, which removes it from the
+                accessibility tree — and since the glyph is aria-hidden, the
+                link was left with an EMPTY accessible name. During a task the
+                sidebar and topbar are both hidden, so on a phone this arrow is
+                the only way out of an exam. It is now clipped rather than
+                removed, so it stays announced. */}
+            <span className="task-exit-label">{exitLabel ?? `Exit ${key}`}</span>
           </Link>
           <span className="task-mode">
             <span className="task-mode-dot" aria-hidden="true" />
@@ -106,62 +113,6 @@ export function ExerciseShell({
   );
 }
 
-export function SkillLaunch({
-  skill,
-  title,
-  lead,
-  actions,
-}: {
-  skill: string;
-  title: string;
-  lead: string;
-  actions: Array<{ href: string; label: string; detail: string; disabled?: boolean; disabledReason?: string }>;
-}) {
-  const rank = (label: string) => {
-    const key = label.toLowerCase();
-    if (key === "practice") return 0;
-    if (key === "exam") return 1;
-    return 2;
-  };
-  const enabled = actions.filter((action) => !action.disabled);
-  const primary = [...enabled].sort((a, b) => rank(a.label) - rank(b.label))[0] ?? actions[0];
-  const rest = actions.filter((action) => action !== primary);
-
-  return (
-    <section className={`exercise page-skill skill-brief ${skillClass(skill)}`}>
-      <header>
-        <p className="section-eyebrow">{skill}</p>
-        <h1>{title}</h1>
-        <p className="muted lead">{lead}</p>
-        {primary && !primary.disabled ? (
-          <Link className="btn btn-primary btn-command" href={primary.href}>
-            {primary.label}
-          </Link>
-        ) : primary?.disabled ? (
-          <p className="muted">{primary.disabledReason ?? "Not available on your current plan."}</p>
-        ) : null}
-      </header>
-      <ul className="skill-index">
-        {rest.map((action) => (
-          <li key={action.href}>
-            {action.disabled ? (
-              <>
-                <strong>{action.label}</strong>
-                <p className="muted">{action.detail}</p>
-                <p className="muted">{action.disabledReason ?? "Not available on your current plan."}</p>
-              </>
-            ) : (
-              <>
-                <Link href={action.href}>{action.label}</Link>
-                <p className="muted">{action.detail}</p>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
 
 /**
  * The plan boundary.

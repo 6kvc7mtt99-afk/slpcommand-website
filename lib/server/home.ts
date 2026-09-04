@@ -27,14 +27,39 @@ export const loadFeatureFlags = cache(async (): Promise<FeatureFlags> => {
   return decodeFeatureFlags(result.data);
 });
 
-export const loadProgress = cache(async (): Promise<ProgressResponse | null> => {
+/**
+ * PROGRESS-TRUTH — "no record of you" and "we could not ask" are different facts.
+ *
+ * `loadProgress` collapses every `status >= 400` to `null`, and null is also
+ * what a genuinely empty profile produces. Downstream, `SkillStatus` reads
+ * `row?.available && row.level != null` and renders "No level yet — Your first
+ * attempts set the baseline" on the hero panel of the skill hub. So a 500, a
+ * proxy timeout or a cold Render dyno told a learner sitting at SLP 2.4 that
+ * the product has no record of them.
+ *
+ * lib/entitlements.ts already fixed exactly this class of bug for the plan
+ * label ("a server outage rendered to a paying subscriber as SLP Command
+ * Free"); progress never got the same treatment.
+ *
+ * This keeps ONE cached fetch and layers the honest signal on top of it, so
+ * the nine existing `loadProgress()` call sites are untouched and any surface
+ * that wants to distinguish the two states can.
+ */
+const loadProgressResult = cache(async (): Promise<{ progress: ProgressResponse | null; failed: boolean }> => {
   const result = await backendJson<unknown>({
     path: "/api/progress",
     cache: "no-store",
   });
-  if (result.status >= 400) return null;
-  return decodeProgress(result.data);
+  if (result.status >= 400) return { progress: null, failed: true };
+  return { progress: decodeProgress(result.data), failed: false };
 });
+
+export const loadProgress = async (): Promise<ProgressResponse | null> =>
+  (await loadProgressResult()).progress;
+
+/** True when the progress read did not come back — not when it came back empty. */
+export const loadProgressFailed = async (): Promise<boolean> =>
+  (await loadProgressResult()).failed;
 
 export async function loadSessionToday(minutes = DEFAULT_SESSION_MINUTES): Promise<SessionToday | null> {
   const clamped = clampSessionMinutes(minutes);

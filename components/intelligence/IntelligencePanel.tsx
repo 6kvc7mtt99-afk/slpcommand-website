@@ -1,123 +1,45 @@
-import Link from "next/link";
-import type { MissionItem, ReadinessCard, WeaknessItem } from "@/lib/api/intelligence";
+import { ProductState } from "@/components/ui/ProductState";
+/**
+ * What remains of the Phase-2 intelligence panels.
+ *
+ * `ReadinessCardView`, `MissionsSection` and `WeaknessSection` were removed:
+ * a repo-wide grep found zero references to any of them outside their own
+ * definitions. Every live Intelligence surface renders through
+ * `components/intelligence/Briefing.tsx` instead. Their two private helpers —
+ * `readinessPercent` and `percentFromAccuracy` — went with them, having no
+ * remaining callers; accuracy normalisation now happens once, in the decoder
+ * (`accuracyPercent` in lib/api/intelligence.ts), which is where it belongs.
+ *
+ * `IntelligenceError` below is still live — the two per-skill Intelligence
+ * routes and the Listening mastery route all render it.
+ */
 
-function readinessPercent(value: string | number): number {
-  const raw = typeof value === "number" ? value : Number(String(value).replace("%", ""));
-  if (!Number.isFinite(raw)) return 0;
-  return raw <= 1 ? Math.round(raw * 100) : Math.max(0, Math.min(100, raw));
-}
-
-function percentFromAccuracy(value: number | null | undefined): number | null {
-  if (value == null || Number.isNaN(value)) return null;
-  const n = value <= 1 ? value * 100 : value;
-  return Math.max(0, Math.min(100, Math.round(n)));
-}
-
-export function ReadinessCardView({ card }: { card: ReadinessCard }) {
-  return (
-    <article className="home-card intel-hero">
-      <p className="home-kicker">Where you are</p>
-      <div className="home-slp-top">
-        <div>
-          <h2>{card.label}</h2>
-          <p className="muted">This is a readiness score, not Estimated SLP.</p>
-          {card.milestone ? <p>{card.milestone}</p> : null}
-          <p className="muted">{card.totalAttempts} attempts recorded by the backend.</p>
-        </div>
-        <div
-          className="home-ring"
-          aria-label={`Readiness ${card.readiness}`}
-          style={{ ["--ring" as string]: readinessPercent(card.readiness) }}
-        >
-          {card.readiness}
-        </div>
-      </div>
-    </article>
-  );
-}
-
-export function MissionsSection({
-  missions,
-  hrefFor,
-  locked,
+/**
+ * An Intelligence route that could not load.
+ *
+ * This was an `article.home-card` with a kicker — a third visual identity for
+ * "this failed", alongside the Academy's bare heading and the practice
+ * screens' red one-liner. Same product, same event, three appearances, and
+ * none of them offered a way out. It now renders through ProductState's page
+ * scope like every other whole-route failure, and takes a route back.
+ */
+export function IntelligenceError({
+  message,
+  backHref,
+  backLabel,
 }: {
-  missions: MissionItem[];
-  hrefFor?: (mission: MissionItem) => string;
-  locked?: boolean;
+  message: string;
+  backHref?: string;
+  backLabel?: string;
 }) {
-  if (locked) {
-    return (
-      <article className="home-card">
-        <p className="home-kicker">What to do next</p>
-        <p className="muted">Adaptive missions are included in SLP Command Pro.</p>
-      </article>
-    );
-  }
   return (
-    <article className="home-card">
-      <p className="home-kicker">What to do next</p>
-      {missions.length ? (
-        <ul className="home-blocks">
-          {missions.map((mission) => (
-            <li key={mission.title}>
-              <strong>{mission.title}</strong>
-              <p className="muted">{mission.description || mission.reason}</p>
-              {hrefFor ? (
-                <Link className="btn btn-outline" href={hrefFor(mission)}>
-                  Continue
-                </Link>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="muted">No missions from the backend right now.</p>
-      )}
-    </article>
-  );
-}
-
-export function WeaknessSection({ items, hrefFor }: { items: WeaknessItem[]; hrefFor?: (item: WeaknessItem) => string }) {
-  return (
-    <article className="home-card">
-      <p className="home-kicker">What you are weak at</p>
-      {items.length ? (
-        <ul className="home-blocks">
-          {items.map((item) => {
-            const pct = item.reportable ? percentFromAccuracy(item.accuracy) : null;
-            return (
-              <li key={item.key || item.label}>
-                <strong>{item.label || item.key}</strong>
-                <p className="muted">
-                  {item.reportable && pct != null
-                    ? `${pct}% on ${item.attempts} attempts`
-                    : `Measured on ${item.attempts} attempts — too few to state a level yet.`}
-                  {item.trend ? ` · ${item.trend}` : ""}
-                </p>
-                {pct != null ? (
-                  <div className="weakness-bar" aria-hidden="true">
-                    <span style={{ width: `${pct}%` }} />
-                  </div>
-                ) : null}
-                {hrefFor ? (
-                  <Link href={hrefFor(item)}>Study this</Link>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <p className="muted">No weakness profile yet.</p>
-      )}
-    </article>
-  );
-}
-
-export function IntelligenceError({ message }: { message: string }) {
-  return (
-    <article className="home-card" role="alert">
-      <p className="home-kicker">Intelligence</p>
-      <p className="muted">{message}</p>
-    </article>
+    <ProductState
+      kind="error"
+      scope="page"
+      title="Intelligence"
+      body={message}
+      detail="Nothing about your record has changed. Try again in a moment."
+      actions={backHref ? [{ kind: "link", label: backLabel ?? "Back", href: backHref }] : undefined}
+    />
   );
 }

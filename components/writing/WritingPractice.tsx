@@ -72,8 +72,34 @@ export function WritingPractice() {
       });
       const correction = decodeWritingCorrection(raw);
       if (!correction) {
-        setMessage("We couldn’t read the evaluation. You were not charged.");
-        setPhase("error");
+        /**
+         * WRITING-TRUTH — two defects, one branch.
+         *
+         * (1) "You were not charged" was a billing claim the client cannot
+         *     make. `apiRequest` throws on any non-2xx, so reaching here means
+         *     the backend returned 2xx and `POST /writing/submit` — a
+         *     QUOTA_PATH — has already spent the learner's allowance. A Free
+         *     learner with three submissions a month was told a spent one was
+         *     free. (The identical sentence in lib/api/errors.ts is legitimate:
+         *     there it is bound to the backend's own `ai_parse_failed` reason,
+         *     where the SERVER states it did not charge.)
+         *
+         * (2) This set phase "error", which hides the whole workspace and
+         *     offers an ErrorState whose only action is `loadPrompt()` — a NEW
+         *     prompt. The learner's draft, possibly 300 words, was destroyed by
+         *     the only recovery on offer.
+         *
+         * Staying on "draft" keeps the text on screen and lets them submit the
+         * same words again. That resubmit genuinely costs nothing: the
+         * idempotency key is a SHA-256 of `promptId:userText`
+         * (lib/api/writing.ts:104-109), so an identical body is deduplicated
+         * upstream — which is the one half of this sentence the client CAN
+         * verify, and so the only half it asserts.
+         */
+        setMessage(
+          "The evaluation came back in a form we couldn’t display. Your submission was recorded — submit the same text again (it will not be charged twice), or check History.",
+        );
+        setPhase("draft");
         return;
       }
       setResult(correction);

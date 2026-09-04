@@ -104,14 +104,91 @@ export function displaySkillLevel(skill: ProgressSkill, effectiveLevel: string |
   return skill.level;
 }
 
+/**
+ * The learner's ALL-SKILLS level.
+ *
+ * THE TRUTH BUG THIS FIXES. This preferred `proficiencyEngine.effectiveLevel`,
+ * which is not a cross-skill figure at all: the backend assigns
+ * `body.proficiencyEngine = readingBlock` (server.js:15743) and gives the other
+ * three skills their own separate keys — proficiencyEngineListening,
+ * proficiencyEngineWriting, proficiencyEngineSpeaking. So the number was
+ * READING ALONE, and both surfaces that render it label it as everything:
+ * HomeDashboard prints "SLP {overall}" beside "estimated · all skills" and
+ * feeds the same value to the readiness instrument's centre dial, while
+ * /progress says "You are at SLP {overall}." A learner strong at Reading and
+ * weak at Speaking was told their overall SLP was their Reading SLP.
+ *
+ * `proficiencyOverall` is the field that actually answers the question. The
+ * backend builds it from all four skills through `resolveOverallProficiency`,
+ * falling back to each skill's legacy level where the V2 engine has no block,
+ * and caps its confidence at the weakest per-skill tier so the headline can
+ * never look fresher than its stalest component (server.js, OVERALL-
+ * PROFICIENCY-001). It has been decoded here since it shipped and rendered by
+ * nothing.
+ *
+ * Order: the real cross-skill projection, then the legacy overall, and never
+ * the Reading-only engine — choosing a different server field, not inventing a
+ * local calculation.
+ */
+/**
+ * A level of zero is not a measurement.
+ *
+ * Zero is not on this scale: the backend's own overall projection declares a
+ * minimum of 1.0, and learners are only ever shown 2 and 3. It reached the UI
+ * because "attempts exist but none credited" produced `level: 0` with
+ * `available: true`, and every null-guard let it through since 0 !== null. The
+ * readiness instrument already applies exactly this rule (it skips a ring for
+ * `raw <= 0`), so without it one screen printed "SLP 0" in the legend beside a
+ * ring it had deliberately omitted. Fixed at the source too; this is the
+ * belt-and-braces so no future producer can reintroduce it.
+ */
+export function isMeasuredLevel(level: unknown): boolean {
+  const n = typeof level === "number" ? level : Number(level);
+  return Number.isFinite(n) && n > 0;
+}
+
 export function displayOverallLevel(progress: ProgressResponse): string | number | null {
-  if (progress.proficiencyEngine.effectiveLevel != null) return progress.proficiencyEngine.effectiveLevel;
-  return progress.overall.level;
+  if (progress.proficiencyOverall.available && progress.proficiencyOverall.level != null) {
+    return formatSlpLevel(progress.proficiencyOverall.level);
+  }
+  return formatSlpLevel(progress.overall.level);
+}
+
+/**
+ * One decimal, everywhere, for every SLP level shown to a learner.
+ *
+ * `proficiencyOverall.level` is `Number(level.toFixed(4))` on the backend
+ * (proficiencyOverall.js) — four decimals kept for observability and test
+ * determinism, not for display. Rendering it verbatim printed "SLP 2.3167" on
+ * the Home hero, the instrument's centre dial and the /progress headline: a
+ * precision-weighted mean of four noisy per-skill estimates does not support
+ * one ten-thousandth of an SLP level, and claiming it undermines every honest
+ * number beside it.
+ *
+ * It also made the apparent precision depend on which branch fired — the
+ * legacy fallback is already rounded to 2dp server-side — so the same learner
+ * could see two differently-shaped claims about the same thing.
+ */
+export function formatSlpLevel(level: string | number | null): string | number | null {
+  if (level == null) return null;
+  const n = typeof level === "number" ? level : Number(level);
+  if (!Number.isFinite(n)) return level;
+  return Number(n.toFixed(1));
+}
+
+/**
+ * How many of the four skills the overall figure actually rests on.
+ *
+ * Returned so a surface can qualify the headline honestly rather than implying
+ * all four are measured. Empty when the backend did not say.
+ */
+export function overallSkillsMeasured(progress: ProgressResponse): string[] {
+  return progress.proficiencyOverall.available ? progress.proficiencyOverall.skillsAvailable : [];
 }
 
 export function shouldShowProgressRing(progress: ProgressResponse | null): boolean {
   if (!progress) return false;
-  if (!progress.overall.available && progress.proficiencyEngine.effectiveLevel == null) return false;
+  if (!progress.overall.available && !progress.proficiencyOverall.available) return false;
   return displayOverallLevel(progress) != null;
 }
 

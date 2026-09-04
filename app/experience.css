@@ -412,7 +412,14 @@
 .support-bubble.mine {
   align-self: flex-end;
   background: var(--ink);
-  color: var(--paper, #fff);
+  /* `--paper` is defined nowhere in the codebase, so the #fff fallback always
+     applied. Inside .app-shell `--ink` remaps to --p-ink, which is #f2efe8 in
+     dark mode — near-white text on a near-white bubble, 1.15:1. Every message
+     the learner typed disappeared the moment they sent it, on every
+     authenticated route (the assistant is mounted in the sidebar). --bg is the
+     ground the ink is drawn against, so it inverts correctly in both themes:
+     16.64:1 light, 16.94:1 dark. */
+  color: var(--bg);
 }
 .support-bubble.theirs {
   align-self: flex-start;

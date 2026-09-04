@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { decodeWritingCatalog, decodeWritingModuleTitles } from "@/lib/api/writing";
+import { StatePage } from "@/components/ui/StatePage";
+import { stateFromResult } from "@/lib/server/stateFromResult";
 import { backendJson } from "@/lib/server/backend";
 
 /**
@@ -13,13 +14,16 @@ import { backendJson } from "@/lib/server/backend";
  */
 export default async function WritingAcademyMapPage() {
   const result = await backendJson<unknown>({ path: "/api/writing/academy/lessons", cache: "no-store" });
-  if (result.status >= 400 || !result.data) {
-    return <EmptyAcademy title="Writing map" body="The competency map is unavailable right now." />;
-  }
-  const lessons = decodeWritingCatalog(result.data);
-  if (!lessons.length) {
-    return <EmptyAcademy title="Writing map" body="The competency map is unavailable right now." />;
-  }
+  // A 403 here is a plan boundary, not an outage — reporting it as "could not
+  // be loaded" told a Free learner the product was broken when it was working
+  // exactly as sold. stateFromResult keeps those two apart.
+  const lessons = result.status < 400 && result.data ? decodeWritingCatalog(result.data) : [];
+  // A catalog that decodes to zero lessons after a 2xx is a contract problem,
+  // not "could not be loaded" — the second branch here claimed a transport
+  // failure that had not happened.
+  const state = stateFromResult(result, { subject: "the competency map", unreadableWhen: !lessons.length });
+  if (state) return <StatePage state={state} title="Writing Academy" backHref="/writing/academy" backLabel="Back to Academy" />;
+  if (!result.data) return null;
   const moduleTitles = decodeWritingModuleTitles(result.data);
 
   const modules = new Map<string, typeof lessons>();

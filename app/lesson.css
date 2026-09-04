@@ -119,7 +119,8 @@
 .lesson-stage.is-current .lesson-stage-dot {
   background: var(--p-skill, var(--p-accent));
   border-color: var(--p-skill, var(--p-accent));
-  color: #fff;
+  /* Skill fills are LIGHT in dark mode; #fff was 1.76-2.11:1 there. */
+  color: var(--p-skill-ink, var(--p-accent-ink));
   box-shadow: 0 0 0 5px var(--p-skill-glow);
 }
 .lesson-stage.is-current .lesson-stage-label { color: var(--p-ink); }

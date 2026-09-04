@@ -62,12 +62,19 @@ async function refreshPair(refreshToken: string): Promise<{
   accessToken: string;
   refreshToken: string;
 } | null> {
-  const res = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ refreshToken }),
-    signal: AbortSignal.timeout(15_000),
-  });
+  // A refresh that cannot reach the backend is "no new pair", not a crash.
+  // Both call sites already treat null as "could not refresh".
+  let res: Response;
+  try {
+    res = await fetch(`${BACKEND_URL}/api/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ refreshToken }),
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch {
+    return null;
+  }
   if (!res.ok) return null;
   const data = (await res.json()) as { accessToken?: string; refreshToken?: string };
   if (!data.accessToken || !data.refreshToken) return null;
@@ -96,9 +103,89 @@ async function callExpress(opts: {
   };
   if (opts.cache) init.cache = opts.cache;
   if (opts.revalidate != null) init.next = { revalidate: opts.revalidate };
-  const res = await fetch(opts.url, init);
-  const bodyText = await res.text();
+  /**
+   * An unreachable backend is a 504, not an exception.
+   *
+   * THE BUG THIS FIXES. `fetch` REJECTS — it does not resolve — when the
+   * request aborts on `AbortSignal.timeout`, when DNS fails, when the
+   * connection is refused, or when the socket dies mid-flight. This call had
+   * no try/catch, so that rejection propagated out of `backendFetch`, out of
+   * `loadEntitlements()`, and out of the server component in
+   * `app/(app)/layout.tsx` that awaits it. There is no error.tsx anywhere under
+   * app/, so Next had nothing to catch it with and rendered its own error page:
+   * the ENTIRE authenticated product, down.
+   *
+   * That is not a hypothetical. Render's free tier spins the dyno down and a
+   * cold start was measured at 32s against a 20s default timeout here — so the
+   * first visit after an idle period is exactly the case that took the app out.
+   *
+   * Returning a synthetic 504 puts the failure back on the path every caller
+   * already handles: loadProgress/loadEntitlements/loadFeatureFlags all branch
+   * on `status >= 400`, SkillStatus renders "Standing unavailable", the plan
+   * chip renders "Plan unavailable", and the learner sees the shell with honest
+   * empty instruments instead of a stack trace. 504 (not 503) because the web
+   * tier reached its own limit waiting for an upstream it proxies.
+   */
+  let res: Response;
+  try {
+    res = await fetch(opts.url, init);
+  } catch {
+    return {
+      status: 504,
+      headers: new Headers({ "content-type": "application/json" }),
+      bodyText: JSON.stringify({ error: "upstream_unreachable" }),
+    };
+  }
+  let bodyText: string;
+  try {
+    bodyText = await res.text();
+  } catch {
+    // Headers arrived, the body did not — a truncated upstream response.
+    return {
+      status: 502,
+      headers: new Headers({ "content-type": "application/json" }),
+      bodyText: JSON.stringify({ error: "upstream_body_unreadable" }),
+    };
+  }
   return { status: res.status, headers: res.headers, bodyText };
+}
+
+
+/**
+ * Persist a refreshed pair when the runtime allows it, and never fail the render.
+ *
+ * THE BUG THIS FIXES, which Phase 4 created. `backendFetch` runs in BOTH
+ * contexts: inside Route Handlers (where `cookies().set()` is legal) and inside
+ * server components such as `loadEntitlements()` in app/(app)/layout.tsx (where
+ * Next throws "Cookies can only be modified in a Server Action or Route
+ * Handler"). Before Phase 4 the refresh branch was unreachable during a render,
+ * because `slp_rt` was scoped to /api and page requests never carried it — so
+ * the illegal write never happened. Widening the cookie path to fix the hourly
+ * logout made that branch live, and the throw propagated out of the layout into
+ * the error boundary: the returning learner got "This screen didn't load"
+ * instead of their dashboard.
+ *
+ * The refresh itself is still fully effective for the request in flight — the
+ * new access token is used for the upstream call either way. Only the
+ * PERSISTENCE is best-effort here, and losing it is harmless: the client's own
+ * 401→refresh path (lib/api/client.ts → /api/auth/refresh, a Route Handler)
+ * writes the pair properly on the next API call, and until then each render
+ * simply refreshes again.
+ *
+ * This deliberately swallows only the write. A failed refresh is a different
+ * thing and is still handled by the caller.
+ */
+async function persistSessionCookies(pair: {
+  accessToken: string;
+  refreshToken: string;
+  userId: string;
+  email: string;
+}): Promise<void> {
+  try {
+    await setSessionCookies(pair);
+  } catch {
+    // Read-only context (a server component render). See above.
+  }
 }
 
 export async function backendFetch(init: BackendFetchInit): Promise<BackendFetchResult> {
@@ -134,7 +221,7 @@ export async function backendFetch(init: BackendFetchInit): Promise<BackendFetch
   if (!accessToken && auth.refreshToken && init.allowRefresh !== false) {
     const pair = await refreshPair(auth.refreshToken);
     if (pair && auth.userId && auth.email) {
-      await setSessionCookies({
+      await persistSessionCookies({
         accessToken: pair.accessToken,
         refreshToken: pair.refreshToken,
         userId: auth.userId,
@@ -183,7 +270,7 @@ export async function backendFetch(init: BackendFetchInit): Promise<BackendFetch
     const pair = await refreshPair(auth.refreshToken);
     if (pair) {
       if (auth.userId && auth.email) {
-        await setSessionCookies({
+        await persistSessionCookies({
           accessToken: pair.accessToken,
           refreshToken: pair.refreshToken,
           userId: auth.userId,

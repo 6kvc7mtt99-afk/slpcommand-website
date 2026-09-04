@@ -6,13 +6,22 @@ import { apiRequest, FrontendError } from "@/lib/api/client";
 import { newIdempotencyKey } from "@/lib/api/idempotency";
 import { decodeExaminer, decodeOrchestrator, decodeTransform, type ExaminerResult, type OrchestratorNext, type TransformResult } from "@/lib/api/writingTools";
 import { CommercialDialog } from "@/components/exercise/CommercialDialog";
+import { ProductState } from "@/components/ui/ProductState";
+import type { ResolvedState } from "@/lib/server/stateFromResult";
 
 export function WritingToolsHome({
   targetLevel,
   orchestrator,
+  /**
+   * Why there is no next step, when the loader knows. "The orchestrator did not
+   * return a next step" was printed for an unreachable backend too — a claim
+   * about what the orchestrator decided, made without having asked it.
+   */
+  orchestratorState,
 }: {
   targetLevel: "2" | "3";
   orchestrator: OrchestratorNext | null;
+  orchestratorState?: ResolvedState | null;
 }) {
   return (
     <section className="exercise page-skill skill-writing">
@@ -36,6 +45,15 @@ export function WritingToolsHome({
             </Link>
           ) : null}
         </article>
+      ) : orchestratorState ? (
+        <ProductState
+          kind={orchestratorState.kind}
+          scope="panel"
+          title="What should I do next"
+          body={orchestratorState.body}
+          detail={orchestratorState.detail}
+          lockReason={orchestratorState.lockReason}
+        />
       ) : (
         <p className="muted">The orchestrator did not return a next step.</p>
       )}

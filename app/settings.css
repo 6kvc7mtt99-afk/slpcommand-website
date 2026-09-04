@@ -128,7 +128,7 @@
 .settings-seg button:hover { color: var(--p-ink); }
 .settings-seg button[aria-pressed="true"] {
   background: var(--p-accent);
-  color: #fff;
+  color: var(--p-accent-ink);
 }
 .settings-seg button:focus-visible { outline: 2px solid var(--p-accent); outline-offset: 2px; }
 

@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { readAuthCookies } from "@/lib/server/authCookies";
+/**
+ * CSS-OWNERSHIP-001 — this root is part of the PRODUCT, so it loads the
+ * product's style layer explicitly.
+ *
+ * app/product.css no longer ships from the root layout (it reached every public
+ * URL and matched nothing there). It still owns the token remap that gives this
+ * root its palette — see the `.teacher-shell, .academy-main` block in that file
+ * — so without this import the tokens resolve to the pre-convergence defaults
+ * and the surface silently paints the old colours.
+ */
+import "../product.css";
 import "../academy.css";
 
 // FASE PLATFORM-PROVISIONING-001 — deliberately NOT under /teacher/*.

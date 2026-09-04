@@ -9,7 +9,7 @@ export default async function ReadingIntelligencePage() {
     backendJson<unknown>({ path: "/api/reading/intelligence/missions", cache: "no-store" }),
   ]);
   if (readiness.status >= 500) {
-    return <IntelligenceError message="Intelligence is unavailable right now." />;
+    return <IntelligenceError message="Reading Intelligence could not be loaded just now." backHref="/reading" backLabel="Back to Reading" />;
   }
   const card = decodeReadiness(readiness.data);
   const locked = missions.status === 403;

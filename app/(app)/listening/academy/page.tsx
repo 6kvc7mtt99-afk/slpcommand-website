@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { CoverageBar } from "@/components/academy/AcademyLessonView";
 import { AcademyPath, type PathUnit } from "@/components/academy/AcademyPath";
 import { PriorityAction } from "@/components/training/PriorityAction";
 import {
@@ -9,8 +9,10 @@ import {
   topicForSkillOrSubSkill,
   topicsFor,
 } from "@/lib/listening/academyCatalog";
+import { ProductState } from "@/components/ui/ProductState";
 import { backendJson } from "@/lib/server/backend";
 import { loadEntitlements } from "@/lib/server/home";
+import { stateFromResult } from "@/lib/server/stateFromResult";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
 export default async function ListeningAcademyPage() {
@@ -25,6 +27,7 @@ export default async function ListeningAcademyPage() {
     cache: "no-store",
   });
   const data = result.status < 400 && result.data ? result.data : {};
+  const standingState = stateFromResult(result, { subject: "your Academy standing" });
   const decision = isRecord(data.decision) ? data.decision : {};
   const reason = isRecord(decision.reason) ? decision.reason : {};
   const counts = isRecord(data.counts) ? data.counts : {};
@@ -70,7 +73,19 @@ export default async function ListeningAcademyPage() {
         </div>
       )}
 
-      {result.status >= 400 ? <EmptyAcademy title="Cloud standing" body="Cloud Academy standing is unavailable. The catalog below still follows the free-set rule." /> : null}
+      {/* The catalog below is local and always correct; only the STANDING came
+          from the backend, so the banner must describe that and nothing else.
+          A 403 here is a plan boundary, not an outage. */}
+      {standingState ? (
+        <ProductState
+          kind={standingState.kind}
+          scope="panel"
+          title="Cloud standing"
+          body={standingState.body}
+          detail={`${standingState.detail ?? ""} The catalog below still follows the free-set rule.`.trim()}
+          lockReason={standingState.lockReason}
+        />
+      ) : null}
 
       <section className="p-section" data-reveal>
         <p className="p-eyebrow">Where you stand</p>

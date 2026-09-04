@@ -10,6 +10,36 @@ export function pickRecorderMime(): string {
   return types.find((type) => MediaRecorder.isTypeSupported(type)) ?? "";
 }
 
+/**
+ * The formats the pipeline carries end to end.
+ *
+ * Measured against real engines, running the negotiation above:
+ *   Chromium (Chrome, Edge) → audio/mp4
+ *   WebKit  (Safari)        → audio/mp4
+ *   Firefox                 → audio/webm;codecs=opus
+ *
+ * All three are now supported. WebM used to be refused — the web tier tried to
+ * transcode it with ffmpeg, which cannot run on Cloudflare Workers, and the
+ * backend's allowlist would have rejected it anyway. Both tiers now accept it
+ * directly, because the only consumer of this audio is OpenAI whisper-1, which
+ * reads WebM and Ogg natively. See lib/server/speakingAudio.ts.
+ *
+ * This list must stay in step with ALLOWED there and with
+ * SPEAKING_ALLOWED_MIME on the backend; tests/unit/speakingAudioContract.test.ts
+ * pins all three together.
+ */
+export function recorderFormatSupported(mime: string): boolean {
+  const base = mime.split(";")[0]?.trim().toLowerCase() ?? "";
+  return (
+    base === "audio/mp4" ||
+    base === "audio/aac" ||
+    base === "audio/m4a" ||
+    base === "audio/x-m4a" ||
+    base === "audio/webm" ||
+    base === "audio/ogg"
+  );
+}
+
 export function SpeakingRecorder({
   maxSeconds,
   minSubmitSeconds = 0,
@@ -19,11 +49,31 @@ export function SpeakingRecorder({
   maxSeconds: number;
   minSubmitSeconds?: number;
   allowRerecord?: boolean;
-  onBlob: (blob: Blob | null, seconds: number) => void;
+  /**
+   * `takeId` is minted here, once per recording, and identifies THIS take for
+   * the life of the blob. It is what makes the evaluate idempotency key unique
+   * per attempt while still letting a retry of the same upload de-duplicate.
+   */
+  onBlob: (blob: Blob | null, seconds: number, takeId: string | null) => void;
 }) {
   const [state, setState] = useState<RecorderState>("idle");
   const [seconds, setSeconds] = useState(0);
   const [url, setUrl] = useState<string | null>(null);
+  /**
+   * What this browser will actually record, resolved after mount.
+   *
+   * MediaRecorder does not exist during SSR, so this cannot be computed in
+   * render without the server and client disagreeing. `null` means "not yet
+   * known" and renders the normal recorder, so nothing flashes for the
+   * browsers that work.
+   */
+  const [negotiated, setNegotiated] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setNegotiated(pickRecorderMime());
+    setMounted(true);
+  }, []);
   const media = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const stream = useRef<MediaStream | null>(null);
@@ -45,7 +95,7 @@ export function SpeakingRecorder({
       setUrl(null);
       setSeconds(0);
       setState("interrupted");
-      onBlob(null, 0);
+      onBlob(null, 0, null);
     }
     function onHide() {
       if (document.hidden && media.current?.state === "recording") discard();
@@ -143,7 +193,13 @@ export function SpeakingRecorder({
         const objectUrl = URL.createObjectURL(blob);
         setUrl(objectUrl);
         setState("stopped");
-        onBlob(blob, secondsRef.current);
+        // crypto.randomUUID is available in every browser that has MediaRecorder;
+      // the fallback keeps this total rather than throwing on an exotic engine.
+      const takeId =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `take-${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      onBlob(blob, secondsRef.current, takeId);
       };
       media.current = recorder;
       secondsRef.current = 0;
@@ -157,7 +213,7 @@ export function SpeakingRecorder({
       }, 1000);
     } catch {
       setState("denied");
-      onBlob(null, 0);
+      onBlob(null, 0, null);
     }
   }
 
@@ -170,6 +226,32 @@ export function SpeakingRecorder({
 
   const canSubmit = seconds >= minSubmitSeconds;
 
+  // Checked once on mount: MediaRecorder support does not change at runtime,
+  // and reading it during render would differ between server and client.
+  const unsupportedFormat = mounted && negotiated !== null && !recorderFormatSupported(negotiated);
+
+  if (unsupportedFormat) {
+    return (
+      <div className="recorder is-unsupported">
+        <p className="home-kicker">Microphone</p>
+        {/* Still correct for a browser that offers no usable recording format
+            at all — but no longer reached by Firefox, whose WebM/Opus output is
+            now accepted end to end. */}
+        <section className="state state-error is-panel" role="alert">
+          <strong>This browser can’t record audio for assessment</strong>
+          <p>
+            Speaking evaluation needs an audio format this browser does not offer. Nothing has been
+            recorded and no credit has been used.
+          </p>
+          <p className="muted">
+            Chrome, Edge, Safari and Firefox are all supported. Open Speaking in one of those to
+            record and submit.
+          </p>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className={`recorder is-${state}${state === "recording" ? " is-recording" : ""}`}>
       <p className="home-kicker">Microphone</p>
@@ -177,10 +259,21 @@ export function SpeakingRecorder({
         <div className={`recorder-ring${state === "recording" ? " p-live-ring" : ""}`} ref={ringRef} aria-hidden="true">
           <span className="recorder-dot" />
         </div>
-        <p className="recorder-clock" role="timer" aria-label="Recording" aria-live="polite">
+        {/* Not a live region. aria-live="polite" on a clock whose text changes
+            every second meant one announcement per second for the entire take
+            — up to three minutes of uninterrupted chatter that told the
+            listener nothing they did not already know. role="timer" plus a
+            descriptive label conveys the same thing on demand; the state
+            changes that matter (recording started, recording stopped) are
+            announced separately below. */}
+        <p className="recorder-clock" role="timer" aria-label={`${state === "recording" ? "Recording" : "Recording length"} ${formatClock(seconds)}`}>
           {state === "recording" ? "Recording" : "Recording length"} {formatClock(seconds)} of a {Math.round(maxSeconds / 60)} minute maximum
         </p>
       </div>
+      {/* The transitions worth hearing, announced once each. */}
+      <span className="visually-hidden" role="status" aria-live="polite">
+        {state === "recording" ? "Recording started." : state === "stopped" ? "Recording stopped." : ""}
+      </span>
       {state === "denied" ? <p className="err" role="alert">Microphone permission was denied. Speaking cannot start without it.</p> : null}
       {state === "interrupted" ? <p className="muted">The recording was discarded because the tab was hidden.</p> : null}
       <div className="admin-row" style={{ marginTop: 12 }}>

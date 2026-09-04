@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { StatePage } from "@/components/ui/StatePage";
+import { stateFromResult } from "@/lib/server/stateFromResult";
 import { backendJson } from "@/lib/server/backend";
 
 export default async function WritingAcademySearchPage({
@@ -46,9 +47,12 @@ export default async function WritingAcademySearchPage({
     search: `?q=${encodeURIComponent(q)}`,
     cache: "no-store",
   });
-  if (result.status >= 400 || !result.data) {
-    return <EmptyAcademy title="Writing library" body="Search is unavailable right now." />;
-  }
+  // A 403 here is a plan boundary, not an outage — reporting it as "could not
+  // be loaded" told a Free learner the product was broken when it was working
+  // exactly as sold. stateFromResult keeps those two apart.
+  const state = stateFromResult(result, { subject: "the library", unreadableWhen: !result.data });
+  if (state) return <StatePage state={state} title="Writing Academy" backHref="/writing/academy" backLabel="Back to Academy" />;
+  if (!result.data) return null;
   const lessons = (Array.isArray(result.data.lessons) ? result.data.lessons : []).filter(isRecord);
   const count = Number(asString(result.data.count, String(lessons.length))) || lessons.length;
 

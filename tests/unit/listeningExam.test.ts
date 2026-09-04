@@ -100,4 +100,64 @@ describe("listening exam session", () => {
     expect(fetchApi.mock.calls[0][0]).toBe("/listening/slp/exam/start");
     expect(fetchApi.mock.calls[1][0]).toBe("/listening/slp/exam/play");
   });
+
+  /**
+   * ER-02 — the answer POST reports what happened instead of swallowing it.
+   *
+   * `retryable` is the load-bearing field: the write is an UPDATE keyed by
+   * (session, position), so re-sending is safe and free, but a 409 means the
+   * session is gone and retrying would only repeat the refusal.
+   */
+  it("classifies answer outcomes so a dropped POST is never mistaken for a save", async () => {
+    const { submitListeningExamAnswer } = await import("../../lib/listening/examSession");
+
+    fetchApi.mockResolvedValueOnce({ ok: true, saved: true, position: 3, secondsRemaining: 900 });
+    expect(await submitListeningExamAnswer("lex-1", 3, 2)).toEqual({
+      status: "saved",
+      position: 3,
+      secondsRemaining: 900,
+    });
+
+    // A 2xx whose body does not confirm the write is NOT evidence of a save.
+    fetchApi.mockResolvedValueOnce({ something: "else" });
+    expect(await submitListeningExamAnswer("lex-1", 3, 2)).toMatchObject({
+      status: "failed",
+      retryable: true,
+      reason: "unconfirmed",
+    });
+
+    fetchApi.mockRejectedValueOnce(Object.assign(new Error("closed"), { status: 409 }));
+    expect(await submitListeningExamAnswer("lex-1", 3, 2)).toMatchObject({
+      status: "failed",
+      retryable: false,
+      reason: "session_closed",
+    });
+
+    fetchApi.mockRejectedValueOnce(Object.assign(new Error("boom"), { status: 503 }));
+    expect(await submitListeningExamAnswer("lex-1", 3, 2)).toMatchObject({ status: "failed", retryable: true });
+
+    fetchApi.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    expect(await submitListeningExamAnswer("lex-1", 3, 2)).toMatchObject({
+      status: "failed",
+      retryable: true,
+      reason: "transport",
+    });
+  });
+
+  /**
+   * The predicate that stands between a learner and a silently blank answer.
+   * `finishListeningExam` posts no answers, so anything this returns is exactly
+   * what the server would score as unanswered.
+   */
+  it("counts an answered-but-unconfirmed item as unsent, and an untouched one as neither", async () => {
+    const { unsentAnswerPositions } = await import("../../lib/listening/examSession");
+    const items = [{ position: 1 }, { position: 2 }, { position: 3 }];
+
+    expect(unsentAnswerPositions(items, [0, 1, 2], { 1: "saved", 2: "saved", 3: "saved" })).toEqual([]);
+    // In flight is not confirmed.
+    expect(unsentAnswerPositions(items, [0, 1, 2], { 1: "saved", 2: "saving", 3: "failed" })).toEqual([2, 3]);
+    // Never answered: not unsent, and never reported as a loss.
+    expect(unsentAnswerPositions(items, [0, -1, -1], { 1: "saved" })).toEqual([]);
+    expect(unsentAnswerPositions(items, [-1, 1, -1], {})).toEqual([2]);
+  });
 });

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { decodeAchievements, decodeRecent, decodeStreak } from "../../lib/api/activity";
 import { decodeFeatureFlags } from "../../lib/api/featureFlags";
-import { decodeProgress, displayOverallLevel, shouldShowProgressRing } from "../../lib/api/progress";
+import { decodeProgress, displayOverallLevel,
+  overallSkillsMeasured, shouldShowProgressRing } from "../../lib/api/progress";
 import {
   clampSessionMinutes,
   decodeSessionToday,
@@ -91,7 +92,17 @@ describe("session today adapter", () => {
 });
 
 describe("progress adapter", () => {
-  it("prefers effectiveLevel and confidence_label without inventing a ring", () => {
+  /**
+   * The headline level must be the ALL-SKILLS figure, not Reading's.
+   *
+   * This test previously asserted the opposite — that displayOverallLevel
+   * "prefers effectiveLevel" — and so pinned a truth bug in place. The backend
+   * assigns `body.proficiencyEngine = readingBlock` (server.js:15743) and gives
+   * the other three skills their own keys, so effectiveLevel is READING ALONE
+   * while HomeDashboard and /progress both label the value "all skills".
+   * `proficiencyOverall` is the real cross-skill projection.
+   */
+  it("uses the all-skills projection, never Reading's own engine", () => {
     const progress = decodeProgress({
       overall: { level: 2.1, confidence: "medium", available: true },
       skills: {
@@ -102,14 +113,37 @@ describe("progress adapter", () => {
           confidenceLabel: "ignored alias",
         },
       },
+      // Reading alone says 2.4; all four skills together say 2.2.
       proficiencyEngine: { effectiveLevel: 2.4, sigma2: 9, weightedMean: 99, mode: "secret" },
+      proficiencyOverall: {
+        available: true,
+        level: 2.2,
+        band: "2",
+        confidence: "medium",
+        coverage: 0.75,
+        skillsAvailable: ["reading", "listening", "writing"],
+      },
     });
     expect(progress).not.toBeNull();
-    expect(displayOverallLevel(progress!)).toBe(2.4);
+    expect(displayOverallLevel(progress!)).toBe(2.2);
+    expect(displayOverallLevel(progress!)).not.toBe(2.4);
+    expect(overallSkillsMeasured(progress!)).toEqual(["reading", "listening", "writing"]);
     expect(progress!.skills.reading.confidence_label).toBe("Fairly reliable");
     expect(shouldShowProgressRing(progress)).toBe(true);
+    // Internal engine state must never reach the client payload.
     expect(JSON.stringify(progress)).not.toContain("sigma2");
     expect(JSON.stringify(progress)).not.toContain("weightedMean");
+  });
+
+  /** Without the cross-skill block, fall back to the legacy overall — still not Reading's engine. */
+  it("falls back to the legacy overall, not to the Reading engine", () => {
+    const progress = decodeProgress({
+      overall: { level: 2.1, confidence: "medium", available: true },
+      skills: { reading: { level: 2.0, available: true } },
+      proficiencyEngine: { effectiveLevel: 2.4 },
+    });
+    expect(displayOverallLevel(progress!)).toBe(2.1);
+    expect(overallSkillsMeasured(progress!)).toEqual([]);
   });
 
   it("hides the ring when progress is missing or unavailable without a level", () => {
@@ -167,6 +201,37 @@ describe("activity adapters", () => {
     });
     expect(recent).toHaveLength(5);
     expect(recent[0]?.title).toBe("Item 1");
+  });
+
+  /**
+   * The envelope `GET /api/activity/recent` actually returns.
+   *
+   * The fixture above is hand-written and uses `title`, which the endpoint
+   * never sends — that is why the decoder could ask for the wrong field names
+   * and still pass. This pins the real shape, so the list can never silently
+   * empty itself again.
+   */
+  it("decodes the real /activity/recent envelope (displayTitle, activityId)", () => {
+    const recent = decodeRecent({
+      items: [
+        {
+          activityId: "evt-1",
+          activityType: "practice",
+          skill: "listening",
+          occurredAt: "2026-09-02T10:00:00.000Z",
+          activityDate: "2026-09-02",
+          displayTitle: "Listening practice",
+          sourceType: "listening_attempt",
+          isAcademy: false,
+          isExam: false,
+        },
+      ],
+    });
+    expect(recent).toHaveLength(1);
+    expect(recent[0]?.title).toBe("Listening practice");
+    expect(recent[0]?.id).toBe("evt-1");
+    expect(recent[0]?.skill).toBe("listening");
+    expect(recent[0]?.at).toBe("2026-09-02T10:00:00.000Z");
   });
 
   it("decodes achievements from several envelope shapes", () => {

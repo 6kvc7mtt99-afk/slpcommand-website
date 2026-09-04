@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FrontendError } from "@/lib/api/client";
 import { postSpeakingEvaluate } from "@/lib/api/speaking";
-import { canSubmitSpeaking, decodeSpeakingEvaluate, speakingEvaluateKey, type SpeakingEvaluateResult } from "@/lib/speaking/evaluate";
+import { canSubmitSpeaking, decodeSpeakingEvaluate, speakingEvaluateKey, summariseExamTasks, type SpeakingEvaluateResult } from "@/lib/speaking/evaluate";
 import { selectExamPrompts } from "@/lib/speaking/prompts";
 import { ExamDisclaimerGate } from "@/components/exercise/ExamDisclaimerGate";
 import { CommercialCard, ExerciseShell } from "@/components/exercise/ExerciseShell";
@@ -20,7 +20,11 @@ export function SpeakingExam({ userId, level }: { userId: string; level: "2" | "
   const [phase, setPhase] = useState<Phase>("gate");
   const [index, setIndex] = useState(0);
   const [prepLeft, setPrepLeft] = useState(60);
-  const [clips, setClips] = useState<Array<{ blob: Blob; seconds: number } | null>>([null, null, null]);
+  // `takeId` rides with each clip: the evaluate key was a hash of a constant
+  // filename plus the whole-second duration, so two clips of the same length —
+  // in one sitting or across two — collided and the second was answered from
+  // the first's cached evaluation. See speakingEvaluateKey.
+  const [clips, setClips] = useState<Array<{ blob: Blob; seconds: number; takeId: string } | null>>([null, null, null]);
   const [results, setResults] = useState<SpeakingEvaluateResult[]>([]);
   const [message, setMessage] = useState("");
   const prompt = prompts[index];
@@ -101,7 +105,7 @@ export function SpeakingExam({ userId, level }: { userId: string; level: "2" | "
       form.set("mode", "exam");
       form.set("exam_session_id", examSessionId);
       try {
-        const key = await speakingEvaluateKey(`speaking.m4a:${i}`, clip.seconds);
+        const key = await speakingEvaluateKey(clip.takeId, clip.seconds);
         const raw = await postSpeakingEvaluate(form, key);
         const decoded = decodeSpeakingEvaluate(raw);
         if (decoded) nextResults.push(decoded);
@@ -153,15 +157,15 @@ export function SpeakingExam({ userId, level }: { userId: string; level: "2" | "
           maxSeconds={prompt.suggestedSeconds || 90}
           minSubmitSeconds={15}
           allowRerecord={false}
-          onBlob={(blob, seconds) => {
+          onBlob={(blob, seconds, takeId) => {
             if (!blob) {
               setPhase("failed");
               setMessage("The recording was interrupted. The exam cannot continue.");
               return;
             }
             if (!canSubmitSpeaking(seconds, 15)) return;
-            const next = clips.slice() as Array<{ blob: Blob; seconds: number } | null>;
-            next[index] = { blob, seconds };
+            const next = clips.slice() as Array<{ blob: Blob; seconds: number; takeId: string } | null>;
+            next[index] = { blob, seconds, takeId: takeId ?? `clip-${index}-${seconds}` };
             setClips(next);
           }}
         />
@@ -218,12 +222,38 @@ export function SpeakingExam({ userId, level }: { userId: string; level: "2" | "
     );
   }
 
-  const credited = results.filter((item) => item.rating.credited).length;
+  /**
+   * An UNASSESSED task is not a failed one.
+   *
+   * THE BUG THIS FIXES. The denominator was `results.length` — every task
+   * attempted — while the numerator counted only `rating.credited`. A take the
+   * engine declined to judge (too short to rate, no verdict returned) is
+   * neither credited nor rated, so it was silently absorbed into the failures:
+   * a learner who met the standard on one task, missed it on one, and had one
+   * that was never assessed read "You met the full standard in 1 of 3 tasks."
+   *
+   * The card below each task already says "This take was not assessed", so this
+   * line was also contradicting the detail directly under it. The rated tasks
+   * are the ones a proportion can honestly be taken over; the rest are counted
+   * out loud rather than folded in.
+   */
+  const { rated, credited, unassessed } = summariseExamTasks(results);
   return (
     <ExerciseShell skill="Speaking" mode="Exam" title="Exam result">
-      <p>
-        You met the full standard in {credited} of {results.length} tasks.
-      </p>
+      {rated > 0 ? (
+        <p>
+          You met the full standard in {credited} of {rated}{" "}
+          {rated === 1 ? "assessed task" : "assessed tasks"}.
+        </p>
+      ) : (
+        <p>None of your tasks were assessed, so no standard was measured.</p>
+      )}
+      {unassessed > 0 ? (
+        <p className="muted">
+          {unassessed === 1 ? "One task was" : `${unassessed} tasks were`} not assessed and {unassessed === 1 ? "is" : "are"}{" "}
+          not counted above.
+        </p>
+      ) : null}
       {results.map((item) => (
         <SpeakingResultCard key={item.attemptId} result={item} />
       ))}

@@ -1,9 +1,13 @@
 import { SkillHub, type Destination } from "@/components/skill/SkillHub";
 import { featureAccess } from "@/lib/entitlements";
-import { loadEntitlements, loadProgress } from "@/lib/server/home";
+import { loadEntitlements, loadProgress, loadProgressFailed } from "@/lib/server/home";
 
 export default async function ListeningHome() {
-  const [entitlements, progress] = await Promise.all([loadEntitlements(), loadProgress()]);
+  const [entitlements, progress, progressFailed] = await Promise.all([
+    loadEntitlements(),
+    loadProgress(),
+    loadProgressFailed(),
+  ]);
   const practice = featureAccess(entitlements, "listening_practice");
   const exam = featureAccess(entitlements, "listening_exam_simulation");
   const planNote = "Not available on your current plan. Pro removes the weekly cap on Listening practice.";
@@ -64,6 +68,7 @@ export default async function ListeningHome() {
           : { href: "/listening/academy", label: "Open Academy" }
       }
       progress={progress}
+      progressFailed={progressFailed}
       practiceHref="/listening/practice"
       destinations={destinations}
     />

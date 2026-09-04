@@ -165,7 +165,7 @@ export function SubscriptionView({
         {display.known ? (
           <p className="p-lead">
             {isPro
-              ? "Everything in SLP Command is open on this account. Your subscription is managed where you bought it."
+              ? "Everything in SLP Command is open on this account."
               : "Free covers the whole method with weekly and monthly allowances. Professional removes the allowances."}
           </p>
         ) : (
@@ -186,6 +186,33 @@ export function SubscriptionView({
           </p>
         ) : null}
       </header>
+
+      {/* MANAGEMENT — the promise the pricing page makes, made true.
+          /pricing states "billed monthly until you cancel, which you can do
+          from your account at any time", and there was no cancellation route
+          anywhere in the product: this screen said the subscription was
+          "managed where you bought it" and linked to nothing, while Settings
+          hid its own plan link from exactly the people who are paying.
+
+          There is no RevenueCat customer-portal URL in this codebase, so one
+          is NOT invented here. What is stated instead is the channel that
+          genuinely exists and is already published by the Legal Notice and
+          /contact — and it is stated as a concrete action a subscriber can
+          take today, rather than a sentence pointing nowhere. If a portal URL
+          is added later, this block is where it belongs. */}
+      {isPro && display.known ? (
+        <section className="plan-manage" aria-labelledby="plan-manage-h">
+          <h2 id="plan-manage-h">Managing your subscription</h2>
+          <p className="muted">
+            To change or cancel your subscription, email{" "}
+            <a href="mailto:support@slpcommand.com?subject=Subscription%20change%20request">
+              support@slpcommand.com
+            </a>{" "}
+            from the address on this account. Cancelling keeps your access until the end of the
+            period you have already paid for.
+          </p>
+        </section>
+      ) : null}
 
       <section className="p-section" data-reveal aria-label="What your plan allows">
         <div className="p-section-head">
@@ -208,7 +235,24 @@ export function SubscriptionView({
                       failure, and colouring it like an error reads as
                       something being broken. */}
                   <span className={`plan-allowance-val${access.reason === "spent" ? " is-out" : ""}`}>
-                    {isPro && line == null ? "Unlimited" : (line ?? (access.usable ? "Included" : "Not on this plan"))}
+                    {/* ENTITLEMENT-TRUTH — "Unlimited" is a claim, and it used
+                        to be made from the ABSENCE of data.
+
+                        This read `isPro && line == null ? "Unlimited" : …`,
+                        testing the plan before testing whether the account
+                        actually holds the feature. `allowanceLine` returns null
+                        whenever there is no limit object, and featureAccess
+                        returns `{usable:false, limit:null, reason:"notOnPlan"}`
+                        for any feature MISSING from the snapshot. So a Pro
+                        payload that omitted a key — a partial migration, a
+                        rename, a backend slip — made this page assert
+                        "Unlimited" for a feature the very same call had just
+                        said the account does not have. Entitlement first,
+                        plan second: a row the snapshot does not describe can
+                        never read as granted. */}
+                    {access.usable
+                      ? (line ?? (isPro ? "Unlimited" : "Included"))
+                      : (line ?? (access.reason === "unknown" ? "Couldn’t check" : "Not on this plan"))}
                   </span>
                 </li>
               );

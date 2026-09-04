@@ -68,12 +68,62 @@ const COMMERCIAL_REASONS = new Set([
   "quota_exceeded",
 ]);
 
+/**
+ * What can HONESTLY be said about the learner's allowance after a failure.
+ *
+ * The client cannot observe billing, so for most of this product's life these
+ * screens simply asserted "You were not charged." — a claim with nothing behind
+ * it. There IS something behind it now, but only in a specific case, and this
+ * function is the line between them.
+ *
+ * `requireQuota` consumes the unit BEFORE the handler runs and registers a
+ * `res.on("finish")` hook that refunds it on ANY response with status >= 400
+ * (backend entitlements.js). So when the backend answered with a 4xx, the
+ * refund has already fired and the reassurance is a fact.
+ *
+ * It stays silent for 5xx and for transport failures, because those are exactly
+ * the cases where the client cannot tell a backend that answered from one that
+ * never did: web's own proxy synthesises a 504 when `fetch` rejects
+ * (lib/server/backend.ts), and an upstream that died mid-request never fired
+ * the hook. Saying nothing there is the honest option; inventing certainty is
+ * how "You were not charged" became false in the first place.
+ */
+export function quotaReassurance(error: unknown): string {
+  const status =
+    error instanceof FrontendError
+      ? error.status
+      : typeof error === "object" && error && "status" in error
+        ? Number((error as { status: unknown }).status)
+        : 0;
+  if (status >= 400 && status < 500) return "Your allowance was not spent.";
+  return "";
+}
+
 export function userMessageFor(error: FrontendError): string {
   switch (error.code) {
     case "network":
       return "Unable to connect. Check your connection and try again.";
+    /**
+     * A 401 on an AUTHENTICATED call is an expired session, never a typo.
+     *
+     * THE BUG THIS FIXES. `normalizeBackendError` stamps `code: "auth"` on
+     * every 401 from every endpoint, and this line turned all of them into
+     * "Incorrect email or password." — a sentence that is only ever true on a
+     * login form. Roughly nineteen authenticated surfaces render this string
+     * (`err.message`, set by apiRequest), so a learner whose token expired
+     * mid-session was told they had mistyped a password on the Writing
+     * submission screen, the Speaking evaluator, the Coach, the exam finishers.
+     * Several would then retype their password into a field that was not a
+     * password field, or conclude their account had been compromised.
+     *
+     * apiRequest only surfaces a 401 AFTER its refresh attempt has already
+     * failed, so by the time this message is chosen the session really is gone
+     * and this is a statement of fact. The login and signup forms do not come
+     * through here at all — they use `loginErrorMessage`/`signupErrorMessage`,
+     * which still say "Incorrect email or password" where that is the truth.
+     */
     case "auth":
-      return "Incorrect email or password.";
+      return "Your session has expired. Sign in again to continue.";
     case "quota":
       return "You have used the allowance on your current plan.";
     case "entitlement":

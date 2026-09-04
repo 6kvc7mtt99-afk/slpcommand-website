@@ -51,7 +51,25 @@ test.describe("staff navigation link", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/dashboard");
     // The mobile nav lives behind the menu toggle button (see AppShell.tsx).
-    await page.getByRole("button", { name: "Menu" }).click();
+    // Its accessible name states the ACTION and the state — a bare "Menu" said
+    // neither — so it is addressed by that name and the state is asserted.
+    const toggle = page.getByRole("button", { name: "Open navigation" });
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await toggle.click();
     await expect(page.getByRole("link", { name: "SLP Command Teacher" })).toBeVisible();
+
+    // Below 960px the panel is a real modal drawer, not a static rail.
+    const drawer = page.getByRole("dialog", { name: "Workspace navigation" });
+    await expect(drawer).toBeVisible();
+    await expect(page.getByRole("button", { name: "Close navigation" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    // Focus moves into the drawer on open, so a keyboard user is not left
+    // behind it — and Escape closes it and hands focus back to the toggle.
+    await expect(drawer.locator(":focus")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(drawer).toBeHidden();
+    await expect(page.getByRole("button", { name: "Open navigation" })).toBeFocused();
   });
 });

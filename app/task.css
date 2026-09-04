@@ -24,6 +24,10 @@
 
 .task-env {
   --task-accent: var(--p-skill, var(--p-accent));
+  /* Ink for text on the task accent fill. Dark in BOTH modes: the exam accent
+     is #c2710c on paper (white = 3.71:1, fails) and #e0932f on stage
+     (white = 2.50:1, fails badly); dark ink gives 5.25:1 and 7.77:1. */
+  --task-accent-ink: #0b0d10;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -323,7 +327,7 @@
 }
 .app-shell .option-list button[aria-pressed="true"] > span:first-child {
   background: var(--task-accent, var(--p-accent));
-  color: #fff;
+  color: var(--task-accent-ink, var(--p-accent-ink));
 }
 .app-shell .option-list button:disabled { cursor: default; opacity: 0.75; }
 
@@ -355,7 +359,7 @@
 .app-shell .listen-play:active { transform: scale(0.98); }
 .app-shell .listen-play[aria-pressed="true"] {
   background: var(--task-accent, var(--p-accent));
-  color: #fff;
+  color: var(--task-accent-ink, var(--p-accent-ink));
 }
 .app-shell .listen-clock {
   font-size: 34px;
@@ -414,7 +418,18 @@
 @media (max-width: 700px) {
   .task-bar { padding: 0 16px; height: 56px; gap: 10px; }
   .task-skill { display: none; }
-  .task-exit span:not(.task-exit-glyph) { display: none; }
+  /* Clipped, never `display: none` — see ExerciseShell. The bar stays compact
+     and the link keeps an accessible name. */
+  .task-exit .task-exit-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
   .task-exit { padding: 8px; margin-left: -4px; }
   .task-mode { padding-left: 12px; }
   .task-progress-track { width: 54px; }
@@ -832,3 +847,82 @@
   .coach-brief .cta-row .btn,
   .coach-panel .cta-row .btn { width: 100%; }
 }
+
+/* ── The Writing evaluation, as the rubric scores it ──────
+   The scored dimensions and the actionable lists were computed by the
+   evaluator, paid for, persisted — and never rendered, because the decoder
+   rejected the payload. Presented as a hairline ledger rather than cards:
+   these are measured values, and the examiner's prose above them is the
+   commentary. See components/writing/WritingResultCard.tsx.
+   ------------------------------------------------------------ */
+.app-shell .assessment-crit-list { margin: 0; }
+.app-shell .assessment-crit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  padding: 14px 0;
+  border-top: 1px solid var(--p-line);
+}
+.app-shell .assessment-crit:first-child { border-top: 0; padding-top: 6px; }
+.app-shell .assessment-crit dt {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  font-weight: 640;
+  color: var(--p-ink);
+}
+.app-shell .assessment-crit-score {
+  font-family: var(--p-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  color: var(--p-ink2);
+}
+.app-shell .assessment-crit dd {
+  margin: 0;
+  color: var(--p-ink2);
+  max-width: 64ch;
+}
+.app-shell .assessment-list { margin-top: 22px; }
+.app-shell .assessment-list ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  max-width: 64ch;
+  color: var(--p-ink2);
+}
+.app-shell .assessment-list li { margin: 4px 0; }
+
+/* A criterion the engine did not judge is neither a pass nor a failure. */
+.app-shell .criteria-status.unknown {
+  background: var(--p-elevated);
+  border-color: var(--p-line-strong);
+  color: var(--p-ink2);
+}
+
+/* ── The exam result ──────────────────────────────────────
+   Both exam screens used to reduce a full server result to one line — a bare
+   ratio, or the word "Submitted." A learner spends one exam a month on Free;
+   the result is the whole point of it. A hairline ledger of measured values,
+   not a score card. See components/exercise/ExamResultCard.tsx.
+   ------------------------------------------------------------ */
+.app-shell .exam-result { max-width: 60ch; }
+.app-shell .exam-result h2 { margin: 6px 0 18px; }
+.app-shell .exam-result-facts {
+  margin: 0 0 20px;
+  border-top: 1px solid var(--p-line);
+}
+.app-shell .exam-result-facts > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--p-line);
+}
+.app-shell .exam-result-facts dt { color: var(--p-muted); }
+.app-shell .exam-result-facts dd {
+  margin: 0;
+  font-weight: 640;
+  color: var(--p-ink);
+}
+.app-shell .exam-result-note { margin: 0 0 20px; max-width: 52ch; }

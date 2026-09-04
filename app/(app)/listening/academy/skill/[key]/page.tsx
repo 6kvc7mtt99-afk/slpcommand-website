@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { LessonStages } from "@/components/academy/LessonStages";
 import { RecordState } from "@/components/academy/RecordState";
 import { topicForSkillOrSubSkill } from "@/lib/listening/academyCatalog";
+import { StatePage } from "@/components/ui/StatePage";
+import { stateFromResult } from "@/lib/server/stateFromResult";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
@@ -15,9 +16,13 @@ export default async function ListeningSkillPage({ params }: { params: Promise<{
     search: `?targetLevel=${targetLevel}`,
     cache: "no-store",
   });
-  if (result.status >= 400 || !result.data) {
-    return <EmptyAcademy title="Listening skill" body="No such listening competency." />;
+  // "Not in the catalog" was asserted for every failure, including an
+  // unreachable backend. The catalog is not the thing that failed.
+  const state = stateFromResult(result, { subject: "this competency", unreadableWhen: !result.data });
+  if (state) {
+    return <StatePage state={state} title="Listening Academy" backHref="/listening/academy" backLabel="Back to Academy" />;
   }
+  if (!result.data) return null;
   const skill = isRecord(result.data.skill) ? result.data.skill : result.data;
   const skillKey = asString(skill.key, key);
   const topic = topicForSkillOrSubSkill(skillKey);

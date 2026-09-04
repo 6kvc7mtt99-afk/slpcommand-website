@@ -1,3 +1,4 @@
+import { isMeasuredLevel } from "@/lib/api/progress";
 import type { ProgressResponse } from "@/lib/api/types";
 import { evidenceUnit } from "@/lib/evidenceUnit";
 
@@ -15,13 +16,20 @@ export function SkillStatus({
   progress,
   skill,
   practiceHref,
+  progressFailed = false,
 }: {
   progress: ProgressResponse | null;
   skill: "reading" | "listening" | "writing" | "speaking";
   practiceHref: string;
+  /**
+   * The progress read did not come back. Distinct from "came back empty":
+   * without it a 500 or a cold-start timeout rendered as "No level yet",
+   * telling an established learner the product has no record of them.
+   */
+  progressFailed?: boolean;
 }) {
   const row = progress?.skills?.[skill] ?? null;
-  const measured = Boolean(row?.available && row?.level != null);
+  const measured = Boolean(row?.available && isMeasuredLevel(row?.level));
   const target = progress?.targetLevel ? String(progress.targetLevel) : null;
   const evidence = row?.evidence;
 
@@ -41,6 +49,11 @@ export function SkillStatus({
               {row!.stale ? " · out of date" : ""}
             </p>
           ) : null}
+        </>
+      ) : progressFailed ? (
+        <>
+          <p className="p-status-level is-empty">Standing unavailable</p>
+          <p className="p-status-conf">We couldn’t read your standing just now. Nothing about your record has changed.</p>
         </>
       ) : (
         <>
@@ -67,7 +80,7 @@ export function SkillStatus({
       </dl>
 
       <a className="p-status-link" href={practiceHref}>
-        {measured ? "Add evidence" : "Set your baseline"}
+        {measured ? "Add evidence" : progressFailed ? "Go to practice" : "Set your baseline"}
         <span className="p-arrow" aria-hidden="true">→</span>
       </a>
     </aside>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FrontendError } from "@/lib/api/client";
+import { quotaReassurance } from "@/lib/api/errors";
 import { unansweredIndex, type ReadingExamAnswer, type ReadingExamStart } from "@/lib/api/readingExam";
 import {
   clearReadingExamIntent,
@@ -13,6 +14,8 @@ import { CommercialCard, ExerciseShell } from "@/components/exercise/ExerciseShe
 import { ExamDisclaimerGate } from "@/components/exercise/ExamDisclaimerGate";
 import { ExamTimer } from "@/components/exercise/ExamTimer";
 import { OptionList } from "@/components/exercise/OptionList";
+import { ExamResultCard } from "@/components/exercise/ExamResultCard";
+import { decodeExamResult, type ExamResult } from "@/lib/api/examResult";
 
 type Phase = "gate" | "starting" | "live" | "finishing" | "done" | "quota" | "error";
 
@@ -24,7 +27,7 @@ export function ReadingExam() {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [message, setMessage] = useState("");
-  const [result, setResult] = useState<string>("");
+  const [result, setResult] = useState<ExamResult | null>(null);
 
   useEffect(() => {
     void fetch("/api/auth/me", { credentials: "same-origin" })
@@ -45,9 +48,12 @@ export function ReadingExam() {
     try {
       const raw = await finishReadingExam(payload.examSessionId, answersBody);
       if (userId) clearReadingExamIntent(userId);
-      const record = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-      const score = record.score ?? record.percent ?? record.result;
-      setResult(typeof score === "string" || typeof score === "number" ? String(score) : "Submitted.");
+      // The backend returns a full result — correct/total, percentage, its own
+      // criterion verdict, the indicated level (and REDS for Listening). This
+      // used to reduce all of it to `record.score`, which for Reading is a
+      // RATIO (hence the bare "0.65") and for Listening does not exist at all
+      // (hence the literal "Submitted."). See lib/api/examResult.ts.
+      setResult(decodeExamResult(raw));
       setPhase("done");
     } catch (err) {
       if (err instanceof FrontendError && (err.code === "quota" || err.code === "entitlement")) {
@@ -79,7 +85,14 @@ export function ReadingExam() {
         setPhase("quota");
         return;
       }
-      setMessage("Couldn't start the exam. You were not charged.");
+      /**
+       * The reassurance is conditional because the truth is. See
+       * quotaReassurance: it speaks only when the backend answered 4xx, where
+       * requireQuota's finish hook has provably refunded the unit; it stays
+       * silent for a 5xx or a dropped connection, which is exactly where the
+       * old unconditional "You were not charged." could be false.
+       */
+      setMessage(`Couldn’t start the exam. ${quotaReassurance(err)}`.trim());
       setPhase("error");
     }
   }, [userId]);
@@ -181,14 +194,13 @@ export function ReadingExam() {
 
       {phase === "finishing" ? <p className="muted">Submitting…</p> : null}
       {phase === "done" ? (
-        <article className="home-card">
-          <h2>Exam submitted</h2>
-          <p>{result}</p>
-          <p className="muted">This is educational guidance, not an official SLP result.</p>
-          <button className="btn btn-primary" type="button" onClick={() => router.push("/reading")}>
-            Back to Reading
-          </button>
-        </article>
+        <ExamResultCard
+          result={result}
+          skill="Reading"
+          backHref="/reading"
+          backLabel="Back to Reading"
+          practiceHref="/reading/practice"
+        />
       ) : null}
     </ExerciseShell>
   );

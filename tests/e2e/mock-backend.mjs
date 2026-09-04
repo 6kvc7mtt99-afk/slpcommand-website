@@ -145,6 +145,11 @@ const server = http.createServer((req, res) => {
         { key: "speaking_ai_feedback", enabled: true, quota: { period: "monthly", limit: 3, remaining: 2 } },
         { key: "reading_exam_simulation", name: "Reading exam simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
         { key: "listening_exam_simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
+        // All four skills have their own exam credit in the backend's quota
+        // definitions. Writing and Speaking were missing here, which is why the
+        // hubs metering exams against *_ai_feedback went unnoticed.
+        { key: "writing_exam_simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
+        { key: "speaking_exam_simulation", enabled: true, quota: { period: "monthly", limit: 1, remaining: 1 } },
         { key: "academy_access", enabled: true },
         { key: "intelligence_dashboard", enabled: true },
       ],
@@ -152,7 +157,11 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === "/api/progress") {
-    res.end(JSON.stringify({ overall: { level: 2.2, available: true, confidence: "medium" }, skills: { reading: { level: 2.4, available: true, confidence_label: "Good" }, listening: { available: true, level: 2.1 }, writing: { available: false }, speaking: { available: false } }, proficiencyEngine: { effectiveLevel: 2.2 } }));
+    // `targetLevel` is part of the real /api/progress response (it is what
+    // lib/server/targetLevel.ts reads and what the readiness instrument draws
+    // its target marker from) and was missing here, so no test or capture ever
+    // exercised the target-bearing path.
+    res.end(JSON.stringify({ overall: { level: 2.2, available: true, confidence: "medium" }, targetLevel: "3", proficiencyOverall: { available: true, level: 2.2, band: "2", confidence: "medium", coverage: 0.5, skillsAvailable: ["reading", "listening"] }, skills: { reading: { level: 2.4, available: true, confidence_label: "Good" }, listening: { available: true, level: 2.1 }, writing: { available: false }, speaking: { available: false } }, proficiencyEngine: { effectiveLevel: 2.2 } }));
     return;
   }
   if (url.pathname === "/api/session/today") {
@@ -235,18 +244,46 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (url.pathname === "/api/writing/submit" && req.method === "POST") {
-    // No fixture existed for this endpoint at all, so the correction/result
-    // screen was never exercised in E2E. Paragraph breaks are real newlines,
-    // matching the shape confirmed against the deployed preview, to catch a
-    // regression of the white-space collapse bug this fixture accompanies.
+    // The REAL envelope: `correction` is an OBJECT built by
+    // validateWritingCorrection (server.js:8391), not a string. The previous
+    // fixture here was flat — a string `correction` plus a top-level
+    // `taskFulfilment` that the backend does not send at all — so it exercised
+    // a shape production never produces, and the E2E "covered" this screen
+    // while every live submission was rendering the undecodable-evaluation
+    // fallback. Kept faithful to the real field names and nesting.
     res.end(JSON.stringify({
+      ok: true,
       writingAttemptId: "wa-1",
-      taskFulfilment: "You covered all three required points. The recommendation is specific and actionable.",
-      correction:
-        "The email is clear and appropriately formal for the audience. Structure follows the standard problem-cause-recommendation pattern expected at this level.\n\n" +
-        "One recurring issue: several sentences run past 25 words, which makes the causal relationship between the hazard and the recommendation harder to follow on a single reading. Splitting the second paragraph would raise this closer to a Level 3 register.\n\n" +
-        "Vocabulary and tense use are accurate throughout. No corrections needed there.",
+      attempt: { id: "wa-1" },
       mode: "practice",
+      correction: {
+        estimatedLevel: "2",
+        ceilingLevel: "3",
+        levelReport: "Level 2 with emerging Level 3",
+        overallBand: 62,
+        taskCoverage: { value: 0.8, present: true, applied: false },
+        taskAchievement: {
+          score: 68,
+          feedback:
+            "You covered all three required points. The recommendation is specific and actionable.",
+        },
+        contentAndOrganization: {
+          score: 60,
+          feedback:
+            "Structure follows the standard problem-cause-recommendation pattern expected at this level. Several sentences run past 25 words, which makes the causal link harder to follow on a single reading.",
+        },
+        languagePrecision: {
+          score: 64,
+          feedback: "Vocabulary and tense use are accurate throughout. No corrections needed there.",
+        },
+        strengths: ["Appropriately formal register for the audience"],
+        weaknesses: ["Long sentences obscure the causal relationship"],
+        criticalErrors: [],
+        recurrentErrors: ["sentence length"],
+        checklistMissing: [],
+        studyRecommendations: ["Split the second paragraph and re-read for a single-pass reader"],
+        improvedVersion: "A rewritten version the web must not surface (claims registry C24).",
+      },
     }));
     return;
   }

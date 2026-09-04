@@ -79,4 +79,36 @@ export function loginErrorMessage(status: number, network: boolean, rawMessage?:
   return "Incorrect email or password.";
 }
 
+/**
+ * Signup failures, which are NOT login failures.
+ *
+ * THE BUG THIS FIXES. app/signup/page.tsx called `loginErrorMessage`, so every
+ * rejected registration — an address already in use, a password under the
+ * minimum length, a malformed email — was reported as "Incorrect email or
+ * password." on a form where the learner was CHOOSING a password. There is no
+ * incorrect password to speak of during signup, and the one message they got
+ * named neither the field at fault nor anything they could act on.
+ *
+ * The backend returns Supabase's own wording (server.js /api/auth/register
+ * responds 400 with `error.message`). That string is a library's, not a
+ * product's, so it is matched and replaced here rather than shown; nothing new
+ * is disclosed, because that response body already reaches the browser.
+ */
+export function signupErrorMessage(status: number, network: boolean, rawMessage?: string): string {
+  if (network || status >= 500) return "Unable to connect. Check your connection and try again.";
+  if (status === 429) return "Too many attempts. Wait a moment and try again.";
+  const raw = rawMessage ?? "";
+  if (/already\s*registered|already\s*exists|user\s*already/i.test(raw)) {
+    return "That email already has an account. Sign in instead, or use a different address.";
+  }
+  if (/password/i.test(raw) && /at least|too short|characters|weak|strength/i.test(raw)) {
+    return "Choose a longer password — at least 6 characters.";
+  }
+  if (/validate email|invalid format|invalid email|email address/i.test(raw)) {
+    return "That email address doesn’t look valid. Check it and try again.";
+  }
+  if (/rate limit|too many/i.test(raw)) return "Too many attempts. Wait a moment and try again.";
+  return "We couldn’t create the account. Check your details and try again.";
+}
+
 export { FrontendError };

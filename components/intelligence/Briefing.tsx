@@ -39,6 +39,7 @@ export function IntelligenceBriefing({
   academyHref,
   practiceHref,
   readinessFailed,
+  masteryHref,
 }: {
   skill: string;
   card: ReadinessCard;
@@ -50,6 +51,17 @@ export function IntelligenceBriefing({
   academyHref: string;
   practiceHref: string;
   readinessFailed?: boolean;
+  /**
+   * Optional third exit, for a skill that has a mastery-trend surface.
+   *
+   * Only Listening has one (/listening/mastery), and nothing in the product
+   * linked to it: a repo-wide grep found the route reachable only by typing the
+   * URL. It is a real, backed page — it reads /api/listening/intelligence/mastery
+   * and handles its own 403 with a plan boundary — so the fix is a link, not a
+   * new feature. Omitted for every skill that has no such page, rather than
+   * rendering a door to a 404.
+   */
+  masteryHref?: string;
 }) {
   const key = skill.trim().toLowerCase();
   const ranked = [...weaknesses].sort(
@@ -98,7 +110,11 @@ export function IntelligenceBriefing({
             ) : null}
           </dl>
         </div>
-        {readinessFailed ? null : (
+        {/* A gauge is a measurement. Draw it only when there is one: a failed
+            read (readinessFailed) and a 200 with no readiness field (null)
+            both mean "not measured", and a face reading 0 would be a
+            confident, false claim in both cases. */}
+        {readinessFailed || card.readiness == null ? null : (
           <div className="intel-gauge-bay">
             <ReadinessGauge value={card.readiness} label="Readiness" caption={card.status ? card.status.replace(/_/g, " ") : ""} />
             <p className="intel-gauge-note">This is a readiness score, not Estimated SLP.</p>
@@ -228,6 +244,16 @@ export function IntelligenceBriefing({
               Start practice <span className="p-arrow" aria-hidden="true">→</span>
             </span>
           </Link>
+          {masteryHref ? (
+            <Link href={masteryHref} className="intel-exit p-elevate">
+              <span className="p-eyebrow">Review</span>
+              <strong>Mastery trends</strong>
+              <p>How each sub-skill has moved over time, not just where it stands.</p>
+              <span className="intel-exit-go">
+                View trends <span className="p-arrow" aria-hidden="true">→</span>
+              </span>
+            </Link>
+          ) : null}
         </div>
       </section>
 

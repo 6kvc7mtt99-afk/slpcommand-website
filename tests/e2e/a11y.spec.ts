@@ -143,3 +143,30 @@ test("every authority page offers the free signup", async ({ page }) => {
     await expect(page.locator('a[href="/signup"]').first(), path).toBeVisible();
   }
 });
+
+/**
+ * Keyboard and landmark properties that regressed once and would regress
+ * silently: they are invisible in a screenshot and axe cannot see either.
+ */
+test("a focused button keeps its own keys on reading practice", async ({ context, page }) => {
+  await context.addCookies([
+    { name: "slp_at", value: "test-access", url: E2E_BASE_URL },
+    { name: "slp_rt", value: "test-refresh", url: E2E_BASE_URL },
+    { name: "slp_uid", value: "user-1", url: E2E_BASE_URL },
+    { name: "slp_em", value: "learner@example.com", url: E2E_BASE_URL },
+  ]);
+  await context.addInitScript(() => localStorage.setItem("onboarding_completed:user-1", "1"));
+  await page.goto("/reading/practice");
+  await expect(page.locator("body")).toContainText("Where should they report?", { timeout: 20_000 });
+
+  // The authenticated product must expose a real <main> for the skip link and
+  // for landmark navigation; it had none.
+  await expect(page.locator("main#main")).toHaveCount(1);
+
+  // Focus an option button and press Space: it must select that option, not be
+  // swallowed by the screen's global single-key shortcuts.
+  const option = page.getByRole("button", { name: /Briefing room/i });
+  await option.focus();
+  await page.keyboard.press("Space");
+  await expect(page.getByRole("button", { name: "Check answer" })).toBeEnabled();
+});

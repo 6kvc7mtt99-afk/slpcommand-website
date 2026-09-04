@@ -2,14 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "../style.css";
 import "./design-system.css";
-import "./experience.css";
-import "./product.css";
-import "./task.css";
-import "./intel.css";
-import "./lesson.css";
-import "./settings.css";
-import "./records.css";
-import "./instrument.css";
 // The public site's design system. Imported last so it wins every tie with
 // the product stylesheets; everything in it is scoped to `.site`, `.sh`, `.sf`.
 import "./site.css";

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { AcademyLesson } from "@/lib/api/academy";
 import { LessonStages } from "./LessonStages";
 import { AcademyCompletionBeacon } from "./AcademyCompletionBeacon";
+import { ProductState } from "@/components/ui/ProductState";
 
 /**
  * The lesson experience shared by Reading and Writing (Listening's topic
@@ -197,13 +198,51 @@ export function CoverageBar({ segments }: { segments: Array<{ label: string; val
   );
 }
 
-export function EmptyAcademy({ title, body }: { title: string; body: string }) {
+/**
+ * An Academy route with nothing to render.
+ *
+ * THE PROBLEM THIS HAD. One component served two different facts. Nine call
+ * sites used it for "the Academy is unavailable right now" — an OUTAGE — and
+ * five for "no such lesson" / "that topic is not in the catalog" — a bad URL.
+ * A learner could not tell a broken backend from a stale bookmark, and neither
+ * case offered a way out: no retry, no link back, just a heading and a grey
+ * line.
+ *
+ * `kind` now separates them, and every instance gets a route back. It renders
+ * through ProductState's page scope, so an Academy failure and an Intelligence
+ * failure finally look like the same product.
+ */
+export function EmptyAcademy({
+  title,
+  body,
+  kind = "empty",
+  backHref,
+  backLabel,
+}: {
+  title: string;
+  body: string;
+  kind?: "empty" | "error" | "locked";
+  backHref?: string;
+  backLabel?: string;
+}) {
   return (
     <section className="exercise">
-      <h1>{title}</h1>
-      <div className="state-empty">
-        <p className="muted">{body}</p>
-      </div>
+      <ProductState
+        kind={kind}
+        scope="page"
+        title={title}
+        body={body}
+        detail={
+          kind === "error"
+            ? "Nothing about your record has changed. Try again in a moment."
+            : kind === "locked"
+              ? "Open your plan to see what changes."
+              : undefined
+        }
+        actions={
+          backHref ? [{ kind: "link", label: backLabel ?? "Back", href: backHref }] : undefined
+        }
+      />
     </section>
   );
 }

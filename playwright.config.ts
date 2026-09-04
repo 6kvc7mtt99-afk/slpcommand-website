@@ -42,6 +42,17 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     trace: "on-first-retry",
+    /**
+     * One Next server is shared by every worker, and visual-qa.spec.ts walks
+     * 33 routes in a single test to regenerate docs/visual-qa. While that
+     * sweep runs, an ordinary page.goto in another worker can sit queued for
+     * well over the 30s default and fail as a timeout even though the route is
+     * healthy — 34 such phantom failures, all of which pass in isolation.
+     *
+     * This raises the navigation budget only; assertions keep the 10s
+     * expect timeout above, so a genuinely slow or broken page still fails.
+     */
+    navigationTimeout: 60_000,
   },
   ...(skipWebServer
     ? {}

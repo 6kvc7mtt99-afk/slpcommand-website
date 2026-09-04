@@ -22,7 +22,18 @@ export type Destination = {
    * number existed on every request and was never shown. Omitted when
    * the plan reports no limit for the feature.
    */
-  quota?: { remaining: number | null; limit: number | null; period: string | null };
+  quota?: {
+    remaining: number | null;
+    limit: number | null;
+    period: string | null;
+    /**
+     * WHY the destination is unusable, straight from `featureAccess`.
+     *
+     * Without it a spent allowance, a feature the plan never included and a
+     * failed entitlements read are indistinguishable here — see lockReason.
+     */
+    reason?: "ok" | "spent" | "notOnPlan" | "unknown";
+  };
 };
 
 function periodPhrase(period: string | null | undefined): string {
@@ -47,6 +58,22 @@ function quotaLine(quota: Destination["quota"]): string | null {
  */
 function lockReason(dest: Destination): string {
   const quota = dest.quota;
+  /**
+   * An entitlements read that FAILED is not an answer about the plan.
+   *
+   * `featureAccess` returns `reason: "unknown"` when the snapshot never
+   * loaded — a 5xx, a proxy timeout, a cold Render dyno — and its own doc
+   * comment says "the screen may block but must not claim a reason". This
+   * function never read that field: it checked `remaining === 0`, then fell
+   * through to the caller's `disabledReason`, which every hub hard-codes to
+   * plan copy. So a Pro subscriber hitting a backend blip was told, on both
+   * Practice and Exam, that what they pay for is "not available on your
+   * current plan" — the exact failure lib/entitlements.ts was written to
+   * prevent for the plan label, reappearing one layer up.
+   */
+  if (quota?.reason === "unknown") {
+    return "We couldn't check your plan just now. Reload in a moment — nothing about your account has changed.";
+  }
   if (quota && quota.remaining === 0 && quota.limit != null) {
     const resets =
       quota.period === "weekly" ? "next week" : quota.period === "monthly" ? "next month" : "with your plan";
@@ -82,6 +109,7 @@ export function SkillHub({
   destinations,
   progress,
   practiceHref,
+  progressFailed = false,
 }: {
   skill: string;
   title: string;
@@ -90,6 +118,8 @@ export function SkillHub({
   destinations: Destination[];
   progress: ProgressResponse | null;
   practiceHref: string;
+  /** The /api/progress read failed — see SkillStatus. */
+  progressFailed?: boolean;
 }) {
   const key = skill.trim().toLowerCase() as "reading" | "listening" | "writing" | "speaking";
 
@@ -112,7 +142,7 @@ export function SkillHub({
             <p className="muted" style={{ marginTop: 14, maxWidth: "44ch" }}>{primary.disabledReason}</p>
           ) : null}
         </div>
-        <SkillStatus progress={progress} skill={key} practiceHref={practiceHref} />
+        <SkillStatus progress={progress} skill={key} practiceHref={practiceHref} progressFailed={progressFailed} />
       </section>
 
       <section className="p-section" aria-label={`${skill} training modes`}>
@@ -136,7 +166,14 @@ export function SkillHub({
                   {dest.disabled ? (
                     <p className="p-dest-locked">
                       <span className="p-lock-chip">
-                        {dest.quota?.remaining === 0 && dest.quota.limit != null ? "Used up" : "Locked"}
+                        {/* "Locked" is a claim about the plan. When the plan
+                            could not be read, the honest chip says the check
+                            failed — not that the learner lacks the feature. */}
+                        {dest.quota?.reason === "unknown"
+                          ? "Check failed"
+                          : dest.quota?.remaining === 0 && dest.quota.limit != null
+                            ? "Used up"
+                            : "Locked"}
                       </span>
                       <span>{lockReason(dest)}</span>
                     </p>

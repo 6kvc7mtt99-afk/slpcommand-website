@@ -13,7 +13,7 @@ export default async function ListeningIntelligencePage() {
     backendJson<unknown>({ path: "/api/listening/intelligence/weakness-profile", cache: "no-store" }),
     backendJson<unknown>({ path: "/api/listening/intelligence/missions", cache: "no-store" }),
   ]);
-  if (readiness.status >= 500) return <IntelligenceError message="Intelligence is unavailable right now." />;
+  if (readiness.status >= 500) return <IntelligenceError message="Listening Intelligence could not be loaded just now." backHref="/listening" backLabel="Back to Listening" />;
   const locked = missions.status === 403;
 
   return (
@@ -40,6 +40,7 @@ export default async function ListeningIntelligencePage() {
           ? `/listening/practice?focusSkill=${encodeURIComponent(mission.targetSkill)}`
           : "/listening/practice"
       }
+      masteryHref="/listening/mastery"
       academyHref="/listening/academy"
       practiceHref="/listening/practice"
     />

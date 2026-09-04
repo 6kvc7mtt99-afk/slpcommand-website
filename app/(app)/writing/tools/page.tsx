@@ -1,6 +1,7 @@
 import { WritingToolsHome } from "@/components/writing/WritingTools";
 import { decodeOrchestrator } from "@/lib/api/writingTools";
 import { backendJson } from "@/lib/server/backend";
+import { stateFromResult } from "@/lib/server/stateFromResult";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
 export default async function WritingToolsPage() {
@@ -12,10 +13,15 @@ export default async function WritingToolsPage() {
     contentType: "application/json",
     cache: "no-store",
   });
+  const orchestrator = result.status < 400 ? decodeOrchestrator(result.data) : null;
+  // The tools themselves work regardless, so this stays a panel on a live page
+  // rather than replacing it — but it must not attribute the gap to a decision
+  // the orchestrator never got to make.
   return (
     <WritingToolsHome
       targetLevel={targetLevel}
-      orchestrator={result.status < 400 ? decodeOrchestrator(result.data) : null}
+      orchestrator={orchestrator}
+      orchestratorState={stateFromResult(result, { subject: "your next step" })}
     />
   );
 }

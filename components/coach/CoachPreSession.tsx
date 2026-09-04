@@ -23,6 +23,7 @@ import { planArc } from "@/lib/coach/plan";
 import { canAuthorizeCoachSession, queryMicrophonePermission, requestMicrophonePreview } from "@/lib/coach/preflight";
 import type { CoachSessionStart } from "@/lib/coach/session";
 import { CoachSession } from "./CoachSession";
+import { FREE_PLAN_QUOTAS } from "@/lib/conversion";
 
 /**
  * The Coach entry point.
@@ -329,15 +330,33 @@ function Gate({
   // account with no allowance and no credits — that is, a Free learner — so
   // getting it wrong meant telling exactly the person who could buy it that it
   // was not for sale.
+  /**
+   * MONETIZATION-TRUTH — "unlimited" was a fabricated capability claim.
+   *
+   * Every branch below used to end "Recorded Speaking Practice … stays
+   * unlimited on your allowance", and three of the four are reached only by a
+   * Free account (the comment above says so). Speaking is two separate
+   * things in the plan table: RECORDING is unlimited on both plans, but
+   * EVALUATION — "record, submit, get a full assessment", which is what the
+   * sentence enumerated — is 3 a month on Free and unlimited only on Pro
+   * (content/site/pricing.ts:27,35; FREE_PLAN_QUOTAS.speakingPerMonth).
+   *
+   * So the product told the one person who could not have it, at the highest-
+   * intent moment it has, that the metered thing was unlimited. Each branch
+   * now states the allowance that actually applies to the account that
+   * reaches it.
+   */
   const deadEndBody = needsPro
-    ? "Pro includes 30 minutes of live Coach conversation each month. Recorded Speaking Practice — record, submit, get a full assessment — stays unlimited on your allowance."
+    ? `Pro includes 30 minutes of live Coach conversation each month, and makes Speaking evaluation unlimited. On your plan you have ${FREE_PLAN_QUOTAS.speakingPerMonth} recorded Speaking evaluations a month, rated by the same engine.`
     : !outOfMinutes
       ? "Speaking Practice is ready whenever you are, and it is rated by the same engine."
       : hasPlanAllowance
-        ? "Your included minutes renew with your plan. Recorded Speaking Practice stays unlimited on your allowance."
+        // Reached only with a plan allowance for Coach minutes — a Pro
+        // account, where Speaking evaluation genuinely is unlimited.
+        ? "Your included minutes renew with your plan. Recorded Speaking Practice stays unlimited on your plan."
         : mission.purchasedMinutes > 0
-          ? "Your purchased credits are used up, and they do not expire — anything you add stays. Recorded Speaking Practice stays unlimited on your allowance."
-          : "The AI Coach is part of Pro, which includes 30 minutes each month. Recorded Speaking Practice — record, submit, get a full assessment — stays unlimited on your allowance.";
+          ? "Your purchased credits are used up, and they do not expire — anything you add stays. Recorded Speaking Practice is still open on your plan's monthly allowance."
+          : `The AI Coach is part of Pro, which includes 30 minutes each month. Recorded Speaking Practice — record, submit, get a full assessment — runs on your plan's allowance of ${FREE_PLAN_QUOTAS.speakingPerMonth} a month.`;
 
   // True only where a purchase can actually be made: a learner who is not on
   // Pro. `outOfMinutes` on a plan that DOES grant them is a renewal, not a

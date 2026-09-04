@@ -52,7 +52,7 @@
     <tr><th>Name</th><th>Type</th><th>Purpose</th><th>Duration</th><th>Party</th><th>Legal basis</th></tr>
     <tr><td>adminViewMode</td><td>Strictly necessary preference (local storage)</td><td>Remembers Simple vs Advanced on the administrative dashboard</td><td>Until cleared</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
     <tr><td>slp_at</td><td>Strictly necessary authentication cookie (HttpOnly, Secure, SameSite=Lax, Path=/)</td><td>Short-lived access token so the website can call the SLP Command API on your behalf, including the administrative console. Never readable by page JavaScript</td><td>Approximately 1 hour</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
-    <tr><td>slp_rt</td><td>Strictly necessary authentication cookie (HttpOnly, Secure, SameSite=Lax, Path=/api)</td><td>Refresh token used only by our own /api routes to renew slp_at. Never readable by page JavaScript</td><td>Approximately 14 days</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
+    <tr><td>slp_rt</td><td>Strictly necessary authentication cookie (HttpOnly, Secure, SameSite=Lax, Path=/)</td><td>Refresh token used by our own routes to renew slp_at. Never readable by page JavaScript</td><td>Approximately 14 days</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
     <tr><td>slp_uid, slp_em</td><td>Strictly necessary authentication cookies (HttpOnly, Secure, SameSite=Lax)</td><td>Account identifier and email so the website can restore your session after reload without exposing tokens</td><td>Approximately 14 days</td><td>First party</td><td>Art. 22.2 LSSI-CE exemption</td></tr>
   </table>
   </div>

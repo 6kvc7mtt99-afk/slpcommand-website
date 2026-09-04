@@ -10,6 +10,17 @@ import { loadTeacherMemberships } from "@/lib/server/teacher";
 // scoped under .teacher-*. Importing it only where it is actually used
 // removes the shared chunk entirely, which is also simply correct: a
 // marketing page has no reason to ship Teacher's CSS at all.
+/**
+ * CSS-OWNERSHIP-001 — this root is part of the PRODUCT, so it loads the
+ * product's style layer explicitly.
+ *
+ * app/product.css no longer ships from the root layout (it reached every public
+ * URL and matched nothing there). It still owns the token remap that gives this
+ * root its palette — see the `.teacher-shell, .academy-main` block in that file
+ * — so without this import the tokens resolve to the pre-convergence defaults
+ * and the surface silently paints the old colours.
+ */
+import "../product.css";
 import "../teacher.css";
 
 // FASE TEACHER-WEB-001 — SLP Command Teacher is exclusively Web. This layout

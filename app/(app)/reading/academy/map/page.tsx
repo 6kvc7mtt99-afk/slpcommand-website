@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { EmptyAcademy } from "@/components/academy/AcademyLessonView";
 import { RecordState } from "@/components/academy/RecordState";
+import { StatePage } from "@/components/ui/StatePage";
+import { stateFromResult } from "@/lib/server/stateFromResult";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
@@ -14,9 +15,12 @@ export default async function ReadingAcademyMapPage() {
     contentType: "application/json",
     cache: "no-store",
   });
-  if (result.status >= 400 || !result.data) {
-    return <EmptyAcademy title="Reading map" body="The competency map is unavailable right now." />;
-  }
+  // A 403 here is a plan boundary, not an outage — reporting it as "could not
+  // be loaded" told a Free learner the product was broken when it was working
+  // exactly as sold. stateFromResult keeps those two apart.
+  const state = stateFromResult(result, { subject: "the competency map", unreadableWhen: !result.data });
+  if (state) return <StatePage state={state} title="Reading Academy" backHref="/reading/academy" backLabel="Back to Academy" />;
+  if (!result.data) return null;
   const branches = Array.isArray(result.data.branches) ? result.data.branches : [];
   const total = branches
     .filter(isRecord)

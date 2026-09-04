@@ -39,12 +39,32 @@ export function decodeAchievements(raw: unknown): AchievementItem[] {
     .filter((item) => item.title);
 }
 
+/**
+ * Recent activity.
+ *
+ * THE BUG THIS FIXES. `GET /api/activity/recent` returns rows shaped
+ * `{ activityId, activityType, skill, occurredAt, activityDate, displayTitle,
+ * sourceType, isAcademy, isExam }` — the label is `displayTitle` and the id is
+ * `activityId`. This decoder asked for `title|headline|summary|label` and
+ * `id|key`, none of which the endpoint sends, so every row decoded to
+ * `title: ""` and was then removed by the `.filter(item => item.title)` below.
+ * The home's "Recent activity" list has therefore rendered its empty state —
+ * "Completed work from the backend will list here" — for every learner since
+ * it shipped, including one with hundreds of recorded events.
+ *
+ * The unit fixture did not catch it because it was hand-written using `title`,
+ * a shape the endpoint never produces; it now mirrors the real envelope.
+ *
+ * This is the same class of defect as the `decodeSessionToday` choke point: a
+ * field absent from the decoder never reaches the UI, no matter how correct
+ * the component is. The aliases the backend actually sends are listed first.
+ */
 export function decodeRecent(raw: unknown): RecentActivityItem[] {
   return listOf(raw, "recent", "items", "activities", "data")
     .filter(isRecord)
     .map((item, index) => ({
-      id: asString(pickAlias(item, "id", "key"), `recent-${index}`),
-      title: asString(pickAlias(item, "title", "headline", "summary", "label")),
+      id: asString(pickAlias(item, "activityId", "id", "key"), `recent-${index}`),
+      title: asString(pickAlias(item, "displayTitle", "title", "headline", "summary", "label")),
       skill: asString(pickAlias(item, "skill", "type")),
       at: (() => {
         const value = pickAlias(item, "at", "createdAt", "occurredAt", "timestamp");

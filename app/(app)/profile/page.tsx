@@ -424,11 +424,15 @@ export default function ProfilePage() {
               </p>
             ) : null}
 
-            {!isPro ? (
-              <p className="settings-note">
-                <a className="btn btn-primary" href="/subscription">Open plan</a>
-              </p>
-            ) : null}
+            {/* Shown to everyone. It used to render only for non-Pro, so a
+                paying subscriber's single route to the plan page — the one
+                screen that says what they are billed and how to change it —
+                was the small chip in the sidebar. */}
+            <p className="settings-note">
+              <a className={isPro ? "btn btn-outline" : "btn btn-primary"} href="/subscription">
+                {isPro ? "Manage plan" : "Open plan"}
+              </a>
+            </p>
           </section>
 
           <section className="settings-group" id="appearance" data-reveal>

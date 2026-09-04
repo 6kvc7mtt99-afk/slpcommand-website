@@ -22,12 +22,41 @@ export function accessCookieOptions(maxAge = ACCESS_MAX_AGE) {
   };
 }
 
+/**
+ * Path=/ — the refresh token must be visible to PAGE routes, not only to /api.
+ *
+ * THE BUG THIS FIXES. This was `path: "/api"` while `slp_at` is Path=/ with a
+ * one-hour max-age. A browser only sends a cookie whose path is a prefix of the
+ * request path, so on a document request to /dashboard the refresh token was
+ * never transmitted: `readAuthCookies()` saw neither token and
+ * `app/(app)/layout.tsx` redirected to /login — with up to 13 days of refresh
+ * token still valid. Close the tab, come back an hour later, and you were
+ * signed out. Reproduced in tests/e2e/session-continuity.spec.ts before the
+ * change, which is also why that test writes the path explicitly: Playwright's
+ * addCookies({url}) defaults to Path=/ and would otherwise assert nothing.
+ *
+ * The client-side 401→refresh in lib/api/client.ts could never rescue this —
+ * it only runs for fetches under /api once a page is already rendering, and
+ * here the page never renders.
+ *
+ * SECURITY POSTURE IS UNCHANGED, and the narrower path was not buying any.
+ * The cookie stays httpOnly (page JavaScript still cannot read it), Secure in
+ * production, and SameSite=Lax. CSRF on state-changing requests is enforced by
+ * the Origin check in middleware.ts, not by cookie path — and `slp_at`, which
+ * grants the same API access, has always been Path=/. The only new surface is
+ * that the token now rides along on same-origin document GETs, where nothing
+ * reads it and no state changes.
+ *
+ * The published Cookie Policy states this path in three places
+ * (content/legal.ts, content/legal/cookies.html, cookies.html); all three are
+ * updated to match, and tests/unit/legalContentSync.test.ts holds them in sync.
+ */
 export function refreshCookieOptions(maxAge = REFRESH_MAX_AGE) {
   return {
     httpOnly: true as const,
     secure: secureFlag(),
     sameSite: "lax" as const,
-    path: "/api",
+    path: "/",
     maxAge,
   };
 }

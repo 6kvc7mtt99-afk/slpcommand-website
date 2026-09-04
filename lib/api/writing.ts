@@ -17,11 +17,28 @@ export type WritingPrompt = {
   checklist: string[];
 };
 
+/** One rubric dimension as the evaluator scored it. */
+export type WritingCriterion = {
+  /** 0-100, clamped server-side. null when the evaluator returned none. */
+  score: number | null;
+  feedback: string;
+};
+
 export type WritingCorrection = {
   writingAttemptId: string;
+  /** The examiner's write-up. */
   correction: string;
+  /** Short verdict on the task itself, from taskAchievement.feedback. */
   taskFulfilment: string;
   formative: boolean;
+  /** The three EMID dimensions the backend actually scores. */
+  taskAchievement: WritingCriterion;
+  contentAndOrganization: WritingCriterion;
+  languagePrecision: WritingCriterion;
+  strengths: string[];
+  weaknesses: string[];
+  criticalErrors: string[];
+  studyRecommendations: string[];
 };
 
 export type WritingAttempt = {
@@ -78,15 +95,76 @@ export function decodeWritingPrompt(raw: unknown): WritingPrompt | null {
   };
 }
 
+function criterionOf(value: unknown): WritingCriterion {
+  const rec = isRecord(value) ? value : {};
+  return {
+    score: typeof rec.score === "number" && Number.isFinite(rec.score) ? rec.score : null,
+    feedback: asString(rec.feedback),
+  };
+}
+
+function stringsOf(value: unknown): string[] {
+  return Array.isArray(value) ? value.map((v) => asString(v)).filter(Boolean) : [];
+}
+
+/**
+ * The Writing evaluation, decoded from the shape the backend actually sends.
+ *
+ * THE BUG THIS FIXES, and it is the most expensive one in the product.
+ * `POST /api/writing/submit` responds `{ ok, attempt, correction, writingAttemptId }`
+ * where `correction` is an OBJECT (server.js:7682, built by
+ * validateWritingCorrection at server.js:8391). This function read it with
+ * `asString(...)`, which returns "" for anything that is not a string or finite
+ * number (lib/api/decode.ts:5-9) — so the `if (!correction) return null` guard
+ * fired on EVERY real submission and the decoder returned null 100% of the time.
+ *
+ * The learner wrote up to 300 words, waited through a 180s AI timeout, spent a
+ * metered `writing_ai_feedback` credit, and was shown "The evaluation came back
+ * in a form we couldn't display." The level report, the three scored rubric
+ * dimensions, the strengths, weaknesses, critical errors and study
+ * recommendations were all computed, paid for in OpenAI spend and persisted to
+ * writing_attempts — and never once reached a learner, on Practice or Exam.
+ *
+ * It survived five phases because there was no test over this function at all,
+ * and because WritingResultCard's own docblock asserted the payload "has
+ * exactly two content fields" — a misreading that made the broken shape look
+ * intentional. `taskFulfilment` was part of that misreading: the string appears
+ * NOWHERE in the backend. The verdict actually lives in taskAchievement.feedback.
+ *
+ * NOT DECODED, deliberately: `improvedVersion`. Claims registry C24 records
+ * that the product must not offer "an improved version beside yours", and
+ * tests/unit/marketingPages.test.ts:44 asserts that phrase never appears.
+ * Surfacing it is a product decision, not a decoder fix.
+ */
 export function decodeWritingCorrection(raw: unknown): WritingCorrection | null {
   if (!isRecord(raw)) return null;
-  const correction = asString(pickAlias(raw, "correction", "feedback", "evaluation"));
-  if (!correction) return null;
+  const block = pickAlias(raw, "correction", "feedback", "evaluation");
+  if (!isRecord(block)) return null;
+
+  const taskAchievement = criterionOf(block.taskAchievement);
+  const write = asString(pickAlias(block, "levelReport", "summary"));
+  const paragraphs = [
+    write,
+    taskAchievement.feedback,
+    criterionOf(block.contentAndOrganization).feedback,
+    criterionOf(block.languagePrecision).feedback,
+  ].filter(Boolean);
+  // Nothing usable in the payload at all — still a real failure, and the caller
+  // keeps its honest "couldn't display" path for it.
+  if (paragraphs.length === 0) return null;
+
   return {
     writingAttemptId: asString(pickAlias(raw, "writingAttemptId", "id", "attemptId")),
-    correction,
-    taskFulfilment: asString(pickAlias(raw, "taskFulfilment", "task_fulfilment", "taskFulfillment")),
+    correction: write,
+    taskFulfilment: taskAchievement.feedback,
     formative: asString(pickAlias(raw, "mode")) === "formative_exam",
+    taskAchievement,
+    contentAndOrganization: criterionOf(block.contentAndOrganization),
+    languagePrecision: criterionOf(block.languagePrecision),
+    strengths: stringsOf(block.strengths),
+    weaknesses: stringsOf(block.weaknesses),
+    criticalErrors: stringsOf(block.criticalErrors),
+    studyRecommendations: stringsOf(block.studyRecommendations),
   };
 }
 

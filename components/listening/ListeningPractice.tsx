@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { FrontendError } from "@/lib/api/client";
+import { quotaReassurance } from "@/lib/api/errors";
 import { decodeListeningAnswer, type ListeningItem } from "@/lib/api/listening";
 import {
   loadListeningNext,
@@ -13,7 +14,7 @@ import { CommercialCard, ExerciseShell, FeedbackBanner } from "@/components/exer
 import { ErrorState, LoadingState } from "@/components/ui/ProductState";
 import { OptionList } from "@/components/exercise/OptionList";
 
-type Phase = "loading" | "ready" | "answered" | "quota" | "error";
+type Phase = "loading" | "ready" | "submitting" | "answered" | "quota" | "error";
 
 export function ListeningPractice({
   focusSkill,
@@ -28,6 +29,8 @@ export function ListeningPractice({
   const [message, setMessage] = useState("");
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
   const [explanation, setExplanation] = useState("");
+  /** The server's verdict. null means "not graded", never "wrong". */
+  const [verdict, setVerdict] = useState<boolean | null>(null);
 
   const load = useCallback(async (rotate: boolean) => {
     setPhase("loading");
@@ -35,6 +38,7 @@ export function ListeningPractice({
     setMessage("");
     setCorrectIndex(null);
     setExplanation("");
+    setVerdict(null);
     if (rotate) rotateListeningPracticeKey();
     try {
       const next = await loadListeningNext({ focusSkill, focusSubSkill });
@@ -45,7 +49,18 @@ export function ListeningPractice({
         setPhase("quota");
         return;
       }
-      setMessage(err instanceof FrontendError ? err.message : "Couldn't load a clip. You were not charged.");
+      /**
+       * The reassurance is conditional because the truth is. See
+       * quotaReassurance: it speaks only when the backend answered 4xx, where
+       * requireQuota's finish hook has provably refunded the unit; it stays
+       * silent for a 5xx or a dropped connection, which is exactly where the
+       * old unconditional "You were not charged." could be false.
+       */
+      setMessage(
+        err instanceof FrontendError
+          ? err.message
+          : `Couldn’t load a clip. ${quotaReassurance(err)}`.trim(),
+      );
       setPhase("error");
     }
   }, [focusSkill, focusSubSkill]);
@@ -56,7 +71,13 @@ export function ListeningPractice({
 
   async function confirm() {
     if (!item || selected == null || phase !== "ready") return;
-    setPhase("answered");
+    // Lock against a double-submit, but claim nothing about the answer until
+    // the server has actually graded it. This used to be setPhase("answered")
+    // BEFORE the await, so the banner rendered a verdict that did not exist —
+    // and survived a failed submit, sitting above "your progress was not
+    // changed".
+    setPhase("submitting");
+    setMessage("");
     try {
       const raw = await submitListeningAnswer({
         listeningId: item.listeningId,
@@ -64,14 +85,18 @@ export function ListeningPractice({
         selectedIndex: selected,
       });
       const result = decodeListeningAnswer(raw);
+      setVerdict(result.isCorrect);
       setCorrectIndex(result.correctIndex ?? item.correctIndex);
       setExplanation(result.explanation);
+      setPhase("answered");
     } catch (err) {
       if (err instanceof FrontendError && (err.code === "quota" || err.code === "entitlement")) {
         setPhase("quota");
         return;
       }
-      setMessage(err instanceof FrontendError ? err.message : "Something went wrong. Your progress was not changed.");
+      setVerdict(null);
+      setMessage(err instanceof FrontendError ? err.message : "Something went wrong. Your answer was not recorded.");
+      setPhase("ready");
     }
   }
 
@@ -83,7 +108,7 @@ export function ListeningPractice({
       mode="Practice"
       title="One clip, one question"
       layout="stage"
-      showTitle={phase !== "ready" && phase !== "answered"}
+      showTitle={phase !== "ready" && phase !== "answered" && phase !== "submitting"}
     >
       <p className="muted">No transcript — just like the real exam.</p>
       {phase === "quota" ? <CommercialCard /> : null}
@@ -97,7 +122,7 @@ export function ListeningPractice({
             <OptionList
               options={item.options}
               selected={selected}
-              locked={phase === "answered"}
+              locked={phase === "answered" || phase === "submitting"}
               correctIndex={phase === "answered" ? marked : null}
               onSelect={setSelected}
             />
@@ -106,13 +131,25 @@ export function ListeningPractice({
                 Check answer
               </button>
             ) : null}
-            {phase === "answered" && selected != null ? (
-              <FeedbackBanner
-                correct={marked != null && selected === marked}
-                explanation={explanation}
-              />
+            {phase === "submitting" ? (
+              <p className="muted" role="status" aria-busy="true">
+                Checking your answer…
+              </p>
             ) : null}
-            {message && phase === "answered" ? <p className="muted">{message}</p> : null}
+            {/* The verdict is the SERVER's. `marked` positions the highlight;
+                it is not evidence of correctness — a live /slp/next payload
+                carries correctIndex: null, which is why deriving the verdict
+                from it reported "Not quite" for every answer. */}
+            {phase === "answered" && verdict != null ? (
+              <FeedbackBanner correct={verdict} explanation={explanation} />
+            ) : null}
+            {phase === "answered" && verdict == null ? (
+              <div className="feedback-banner" role="status">
+                <strong>Answer recorded</strong>
+                <p>Your attempt was saved, but this item came back without a verdict.</p>
+              </div>
+            ) : null}
+            {message ? <p className="err" role="alert">{message}</p> : null}
             {phase === "answered" ? (
               <button className="btn btn-outline" type="button" onClick={() => void load(true)}>
                 Next clip

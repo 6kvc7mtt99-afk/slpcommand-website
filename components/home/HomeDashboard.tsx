@@ -15,7 +15,7 @@ import {
   writeSessionMinutes,
   writeWeeklyGoal,
 } from "@/lib/home/prefs";
-import { displayOverallLevel, shouldShowProgressRing } from "@/lib/api/progress";
+import { displayOverallLevel, isMeasuredLevel, overallSkillsMeasured, shouldShowProgressRing } from "@/lib/api/progress";
 import { TransitionBanner } from "./EstimatedSlpHero";
 import { EmptyState, LoadingState } from "@/components/ui/ProductState";
 import { TrainingPreview } from "@/components/skill/TrainingPreview";
@@ -116,6 +116,13 @@ export function HomeDashboard({
   const block = today?.session.blocks[0];
   const href = block?.skill ? SKILL_HREF[block.skill] : undefined;
   const overall = initial.progress ? displayOverallLevel(initial.progress) : null;
+  /**
+   * How many skills the headline actually rests on. The figure is the backend's
+   * cross-skill projection, but it is built from whatever skills have evidence
+   * — so "all skills" is only true once all four do. Saying "2 of 4 skills"
+   * keeps the claim exactly as strong as the data behind it.
+   */
+  const measured = initial.progress ? overallSkillsMeasured(initial.progress) : [];
   const showRing = shouldShowProgressRing(initial.progress);
   // Was computed here, in its own vocabulary ("SLP Command Professional"),
   // from a snapshot frozen at page load. Two problems, both commercial: the
@@ -134,7 +141,7 @@ export function HomeDashboard({
   // track — never a zero that could be mistaken for a score.
   const instrumentSkills: InstrumentSkill[] = SKILLS.map((skill) => {
     const row = initial.progress?.skills[skill];
-    const value = row?.available && row.level != null ? Number(row.level) : NaN;
+    const value = row?.available && isMeasuredLevel(row.level) ? Number(row.level) : NaN;
     return { key: skill, label: skill, level: Number.isFinite(value) ? value : null };
   });
   const overallNum = overall == null ? null : Number(overall);
@@ -150,9 +157,22 @@ export function HomeDashboard({
     <div className="home">
       <section className="p-hero" data-enter>
         <div>
+          {/* WHAT AM I PREPARING FOR — stated, not implied.
+              The instrument drew a target marker on its scale, but the page
+              never said what the target WAS, so the first question a learner
+              opens this screen with had no answer in text anywhere. It is real
+              backend data (`progress.targetLevel`, the same value the marker
+              uses) and is simply omitted when the backend has not set one —
+              never defaulted, because an assumed target is a false one. */}
           <p className="p-eyebrow">
             {hello}
             {name ? `, ${name}` : ""}
+            {targetNum != null ? (
+              <>
+                <span className="p-eyebrow-sep" aria-hidden="true">·</span>
+                <span className="p-eyebrow-target">Preparing for SLP {targetRaw}</span>
+              </>
+            ) : null}
           </p>
           {today ? (
             <>
@@ -227,10 +247,27 @@ export function HomeDashboard({
                     <span className="p-arrow" aria-hidden="true">→</span>
                   </Link>
                 ) : null}
+                {/* A reading against the target, rather than a second copy of
+                    the number the instrument already shows two hundred pixels
+                    to the right. The gap is the thing the learner is actually
+                    trying to close, and it is arithmetic on two values the
+                    backend supplied — not a new metric. When there is no
+                    target, this falls back to the plain estimate rather than
+                    inventing one to compare against. */}
                 {initial.progress && showRing && overall != null ? (
                   <p className="p-hero-stat">
                     <b aria-label={`Estimated SLP ${overall}`}>SLP {overall}</b>
-                    <span>estimated · all skills</span>
+                    <span>
+                      {[
+                        "estimated",
+                        measured.length > 0 && measured.length < SKILLS.length
+                          ? `${measured.length} of ${SKILLS.length} skills`
+                          : "all skills",
+                        targetNum != null ? `target ${targetRaw}` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
                   </p>
                 ) : null}
               </div>
@@ -255,11 +292,15 @@ export function HomeDashboard({
         </div>
 
         <aside className="p-instrument-bay" aria-label="Readiness">
+          {/* 430 made the instrument bay roughly 590px tall against a hero
+              text column of ~330px, which is where the dead band under the
+              CTA came from. The dial is still the largest object on the
+              screen at 360 — it just no longer dictates the hero's height. */}
           <ReadinessInstrument
             skills={instrumentSkills}
             overall={overallNum}
             target={targetNum}
-            size={430}
+            size={360}
           />
           <dl className="p-status-rows p-instrument-rows">
             {initial.streak && initial.streak.current != null ? (
@@ -381,7 +422,7 @@ export function HomeDashboard({
         <div className="p-rail">
           {SKILLS.map((skill, index) => {
             const row = initial.progress?.skills[skill];
-            const measured = row?.available && row.level != null;
+            const measured = row?.available && isMeasuredLevel(row.level);
             return (
               <Link
                 key={skill}

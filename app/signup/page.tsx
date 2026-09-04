@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/marketing/SiteChrome";
 import { AuthContext } from "@/components/marketing/AuthContext";
-import { loginErrorMessage } from "@/lib/api/client";
+import { signupErrorMessage } from "@/lib/api/client";
 
 /**
  * Signup, as two screens instead of five.
@@ -112,9 +112,11 @@ export default function SignupPage() {
       const data = (await res.json().catch(() => ({}))) as {
         userId?: string;
         needsEmailConfirmation?: boolean;
+        error?: string;
       };
       if (!res.ok) {
-        setError(loginErrorMessage(res.status, res.status >= 500));
+        // The reason was already in the response and was being discarded.
+        setError(signupErrorMessage(res.status, res.status >= 500 || data.error === "network", data.error));
         return;
       }
       if (data.needsEmailConfirmation) {
@@ -123,7 +125,7 @@ export default function SignupPage() {
       }
       router.replace("/onboarding");
     } catch {
-      setError(loginErrorMessage(0, true));
+      setError(signupErrorMessage(0, true));
     } finally {
       setBusy(false);
     }

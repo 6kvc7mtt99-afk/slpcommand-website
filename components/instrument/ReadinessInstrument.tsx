@@ -52,6 +52,21 @@ export function ReadinessInstrument({
   target: number | null;
   size?: number;
 }) {
+  /**
+   * `SLP 0` is not a level. It is the backend's "not measured yet".
+   *
+   * THE BUG THIS FIXES. The per-skill rings already refuse a non-positive
+   * value (`raw <= 0` is skipped when drawing, line ~216), but the centre dial
+   * rendered any non-null number — so an account with no cross-skill evidence
+   * read "Estimated 0 SLP", in the largest type on the screen, inside a ring
+   * that had drawn nothing. Both callers (Home and /progress) passed
+   * `Number(level)` straight through, so neither screened it either.
+   *
+   * Screening here rather than at the two call sites means the dial and the
+   * rings now apply one rule, and a third caller cannot reintroduce the zero.
+   */
+  const measuredOverall =
+    overall != null && Number.isFinite(overall) && overall > 0 ? overall : null;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const raf = useRef(0);
@@ -274,10 +289,10 @@ export function ReadinessInstrument({
     <div className="inst" ref={wrapRef} style={{ maxWidth: size }}>
       <canvas ref={canvasRef} aria-hidden="true" />
       <div className="inst-core">
-        {overall != null ? (
+        {measuredOverall != null ? (
           <>
             <span className="inst-core-label">Estimated</span>
-            <b className="inst-core-value">{overall}</b>
+            <b className="inst-core-value">{measuredOverall}</b>
             <span className="inst-core-scale">SLP{target != null ? ` · target ${target}` : ""}</span>
           </>
         ) : (

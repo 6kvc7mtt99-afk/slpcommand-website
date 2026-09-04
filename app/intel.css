@@ -314,7 +314,7 @@ a.path-lesson-body:hover {
   font-size: 9.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
   padding: 4px 9px; border-radius: 4px; flex: none;
 }
-.path-tag.is-now { background: var(--p-skill, var(--p-accent)); color: #fff; }
+.path-tag.is-now { background: var(--p-skill, var(--p-accent)); color: var(--p-skill-ink, var(--p-accent-ink)); }
 .path-tag.is-locked { background: color-mix(in srgb, var(--p-ink) 8%, transparent); color: var(--p-muted); }
 .path-lesson.is-locked .path-lesson-body { cursor: default; opacity: 0.62; }
 .path-go { margin-left: auto; color: var(--p-muted); transition: transform var(--p-t) var(--p-ease); }

@@ -28,7 +28,7 @@ export default async function ListeningMasteryPage() {
     );
   }
   if (result.status >= 400 || !result.data) {
-    return <IntelligenceError message="Mastery data is unavailable right now." />;
+    return <IntelligenceError message="Mastery trends could not be loaded just now." backHref="/listening/intelligence" backLabel="Back to Intelligence" />;
   }
   const summary = isRecord(result.data.summary) ? result.data.summary : {};
   const skills = Array.isArray(result.data.skills) ? result.data.skills : [];

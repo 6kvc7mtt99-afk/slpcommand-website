@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ConfidenceScaleCard, TransitionBanner } from "@/components/home/EstimatedSlpHero";
 import { ReadinessInstrument, type InstrumentSkill } from "@/components/instrument/ReadinessInstrument";
-import { displayOverallLevel } from "@/lib/api/progress";
+import { displayOverallLevel, isMeasuredLevel } from "@/lib/api/progress";
 import { loadProgress } from "@/lib/server/home";
 import { evidenceUnit } from "@/lib/evidenceUnit";
 
@@ -11,10 +11,24 @@ export default async function ProgressPage() {
   const progress = await loadProgress();
   const overallRaw = progress ? displayOverallLevel(progress) : null;
   const overall = overallRaw == null ? null : Number(overallRaw);
-  const hasDial = overall != null && Number.isFinite(overall);
+  /**
+   * `SLP 0` is not a level a learner can hold; it is the backend's way of
+   * saying "not measured". Home already screens for that with isMeasuredLevel
+   * and this page imported the same helper — but used it only in the per-skill
+   * table below, so the HEADLINE could still announce "You are at SLP 0." to
+   * someone with no evidence at all, directly under a page whose own lead
+   * paragraph promises nothing is estimated to fill a gap.
+   */
+  const hasDial = overall != null && Number.isFinite(overall) && isMeasuredLevel(overall);
+  /**
+   * The confidence shown beside the ALL-SKILLS figure must be the all-skills
+   * confidence. This read Reading's label first and Listening's second, so the
+   * headline number came from `proficiencyOverall` while the qualifier beside
+   * it described one skill — the same mismatch that made the Reading-only
+   * engine masquerade as "all skills" before Phase 6.
+   */
   const confidence =
-    progress?.skills.reading.confidence_label ||
-    progress?.skills.listening.confidence_label ||
+    (progress?.proficiencyOverall.available ? progress.proficiencyOverall.confidence : "") ||
     progress?.overall.confidence ||
     "";
 
@@ -24,7 +38,9 @@ export default async function ProgressPage() {
   // object rather than a second, flatter chart re-deriving it.
   const instrumentSkills: InstrumentSkill[] = SKILLS.map((skill) => {
     const row = progress?.skills[skill];
-    const value = row?.available && row.level != null ? Number(row.level) : NaN;
+    // Same screen Home applies (HomeDashboard.tsx), so the two surfaces cannot
+    // disagree about whether a skill has been measured at all.
+    const value = row?.available && isMeasuredLevel(row.level) ? Number(row.level) : NaN;
     return { key: skill, label: skill, level: Number.isFinite(value) ? value : null };
   });
   const targetRaw = (progress?.targetLevel ?? "").toString().trim();
@@ -85,7 +101,7 @@ export default async function ProgressPage() {
           <div className="p-skill-table">
             {SKILLS.map((skill, index) => {
               const row = progress.skills[skill];
-              const level = row.available && row.level != null ? Number(row.level) : null;
+              const level = row.available && isMeasuredLevel(row.level) ? Number(row.level) : null;
               const pct = level != null && Number.isFinite(level) ? Math.max(3, Math.min(100, (level / 4) * 100)) : 0;
               // Joined rather than concatenated with leading separators, so a
               // row with only a confidence label never renders a stray "· ".

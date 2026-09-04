@@ -18,79 +18,230 @@
    edge-highlight so panels catch light at their top edge the way
    physical instrument bezels do.
    ------------------------------------------------------------ */
+/* ONE BRAND, TWO REGISTERS.
+   ------------------------------------------------------------------
+   Every value below is taken from the public design system in
+   app/site.css, which is the shipped source of truth for the brand.
+   The product had drifted into a near-miss of it on every axis —
+   paper #f4f2ed vs #f5f3ee, accent #2d5be3 vs #1f49c9, four different
+   skill hues, an extra radius step, different durations — which is
+   precisely the "same product?" doubt this pass exists to remove.
+
+   The mapping is deliberate and complete:
+     LIGHT  = the brand's paper   (--s-paper / --s-ink / --s-accent …)
+     DARK   = the brand's stage   (--s-stage / --s-stage-ink / --s-accent-stage …)
+
+   The stage register is not invented for the product: it is the same
+   near-black instrument surface the public site uses for its own
+   instrument sections, so a learner in dark mode is still looking at
+   SLP Command, not at a second theme.
+
+   Because 831 declarations across the product stylesheets read through
+   --p-*, redefining the tokens converges the whole product at once
+   without touching a single rule.
+
+   ACCESSIBILITY, measured, not assumed. The old --p-muted #6c7078 on
+   --p-bg #f4f2ed was 4.44:1 — below the 4.5:1 AA floor for body text.
+   The brand's --s-muted #5e646e on --s-paper is 5.37:1. This
+   convergence FIXES an existing failure rather than risking one.
+   ------------------------------------------------------------------ */
 .app-shell {
-  --p-bg: #f4f2ed;
-  --p-bg-deep: #ebe8e1;
-  --p-surface: #fbfaf7;
-  --p-elevated: #ffffff;
-  --p-raised: #ffffff;
-  --p-line: #ddd9d0;
-  --p-line-strong: #c3bdb1;
-  --p-ink: #14161a;
-  --p-ink2: #3c4149;
-  --p-muted: #6c7078;
-  --p-accent: #2d5be3;
-  --p-accent-hi: #1e46bd;
-  --p-accent-wash: rgba(45, 91, 227, 0.09);
+  --p-bg: #f5f3ee;          /* --s-paper */
+  --p-bg-deep: #ece9e1;     /* --s-paper-2 */
+  /* One step off the ground, exactly as the brand builds a panel: a tint plus
+     a hairline, never a lighter-than-paper card. Setting --p-surface to the
+     ground itself flattened every panel that uses it — including disabled
+     controls and the feedback banner — into invisibility, so the ladder is
+     paper → paper-2 → paper-3 and nothing is ever whiter than the page. */
+  --p-surface: #ece9e1;     /* --s-paper-2 */
+  --p-elevated: #ece9e1;    /* --s-paper-2 */
+  --p-raised: #e2ded4;      /* --s-paper-3 */
+  --p-line: #d9d4c9;        /* --s-line */
+  --p-line-strong: #bcb6a9; /* --s-line-strong */
+  --p-ink: #121417;         /* --s-ink */
+  --p-ink2: #383c44;        /* --s-ink-2 */
+  --p-muted: #5e646e;       /* --s-muted — 5.37:1 on paper */
+  --p-accent: #1f49c9;      /* --s-accent — 7.36:1 against white label text */
+  --p-accent-hi: #163a9c;   /* --s-accent-ink */
+  --p-accent-wash: #e3e9fb; /* --s-accent-soft */
   --p-accent-ink: #ffffff;
-  --p-ok: #1b6b45;
-  --p-warn: #8a6a12;
-  --p-bad: #b42318;
+  /* The signal gold the product simply did not have. In the brand it marks
+     a target or a gate — never body text: #c8952b is 2.43:1 on paper, so
+     --p-signal-ink is the readable variant for any text use. */
+  /* Ink for text sitting ON a skill fill. White reads well on the paper-mode
+     hues (4.65-5.85:1) but catastrophically on the stage-mode ones, which are
+     LIGHT: white on #8fd2a2 is 1.76:1. Dark ink there gives 9.2-11:1. */
+  --p-skill-ink: #ffffff;
+  --p-signal: #c8952b;      /* --s-signal */
+  --p-signal-ink: #765610;  /* --s-signal-ink — 6.09:1 on paper */
+  --p-signal-soft: #f5ecd6; /* --s-signal-soft */
+  --p-ok: #1f7a4d;          /* --s-ok */
+  --p-warn: #765610;
+  --p-bad: #b42318;         /* --s-bad */
   --p-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  --p-shadow-1: 0 1px 2px rgba(20, 22, 26, 0.05), 0 2px 8px rgba(20, 22, 26, 0.04);
-  --p-shadow-2: 0 2px 4px rgba(20, 22, 26, 0.06), 0 12px 32px rgba(20, 22, 26, 0.08);
-  --p-glow: rgba(45, 91, 227, 0.10);
+  --p-shadow-1: 0 1px 2px rgba(18, 20, 23, 0.06);
+  --p-shadow-2: 0 1px 2px rgba(18, 20, 23, 0.06), 0 12px 36px rgba(18, 20, 23, 0.08); /* --s-shadow */
+  --p-glow: rgba(31, 73, 201, 0.10);
 
-  --p-r-sm: 8px;
-  --p-r: 12px;
-  --p-r-lg: 18px;
+  /* Two radii, as the brand has. The 18px step is gone: it was the widest
+     corner anywhere in either surface and the main reason product panels
+     read as app widgets rather than as printed instrument panels. */
+  --p-r-sm: 6px;            /* --s-radius */
+  --p-r: 6px;
+  --p-r-lg: 12px;           /* --s-radius-lg */
 
-  --p-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --p-ease: cubic-bezier(0.16, 1, 0.3, 1); /* already matched --s-ease */
   --p-ease-io: cubic-bezier(0.65, 0, 0.35, 1);
-  --p-t-fast: 160ms;
-  --p-t: 280ms;
-  --p-t-slow: 520ms;
+  --p-t-fast: 160ms;        /* --s-dur-1 */
+  --p-t: 320ms;             /* --s-dur-2 */
+  --p-t-slow: 640ms;        /* --s-dur-3 */
 }
 
 @media (prefers-color-scheme: dark) {
   .app-shell {
-    --p-bg: #0a0b0e;
-    --p-bg-deep: #060709;
-    --p-surface: #14171d;
-    --p-elevated: #1a1e26;
-    --p-raised: #222732;
-    --p-line: #252a33;
-    --p-line-strong: #39404d;
-    --p-ink: #eef1f6;
-    --p-ink2: #b8bfcc;
-    --p-muted: #848c9a;
-    --p-accent: #5182ff;
-    --p-accent-hi: #7ba1ff;
-    --p-accent-wash: rgba(81, 130, 255, 0.15);
-    --p-accent-ink: #ffffff;
-    --p-ok: #43c98b;
-    --p-warn: #e3b451;
-    --p-bad: #ff7b72;
-    --p-edge: inset 0 1px 0 rgba(255, 255, 255, 0.055);
-    --p-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.28);
-    --p-shadow-2: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 44px rgba(0, 0, 0, 0.42);
-    --p-glow: rgba(81, 130, 255, 0.16);
+    --p-bg: #0b0d10;          /* --s-stage */
+    --p-bg-deep: #08090c;
+    --p-surface: #13161b;     /* --s-stage-2 */
+    --p-elevated: #1a1e25;    /* --s-stage-3 */
+    --p-raised: #1a1e25;
+    --p-line: #262b33;        /* --s-stage-line */
+    --p-line-strong: #363c46; /* --s-stage-line-strong */
+    --p-ink: #f2efe8;         /* --s-stage-ink */
+    --p-ink2: #b9bec8;        /* --s-stage-ink-2 */
+    --p-muted: #858c98;       /* --s-stage-muted — 5.75:1 on stage */
+    --p-accent: #7ea0ff;      /* --s-accent-stage — 7.75:1 as text on stage */
+    --p-accent-hi: #a8c0ff;
+    --p-accent-wash: rgba(126, 160, 255, 0.14);
+    /* White on #7ea0ff is only 3.51:1 — below AA for a button label. The
+       accent is light in this register, so its ink must be dark. */
+    --p-accent-ink: #0b0d10;
+    --p-skill-ink: #0b0d10;
+    --p-signal: #e0ac5c;
+    --p-signal-ink: #e0ac5c;
+    --p-signal-soft: rgba(224, 172, 92, 0.14);
+    --p-ok: #8fd2a2;
+    --p-warn: #e0ac5c;
+    --p-bad: #ff8a80;
+    --p-edge: inset 0 1px 0 rgba(255, 255, 255, 0.06); /* --s-edge */
+    --p-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --p-shadow-2: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 24px 60px rgba(0, 0, 0, 0.45); /* --s-shadow-stage */
+    --p-glow: rgba(126, 160, 255, 0.16);
   }
 }
 
 /* Skill signatures. Each hub carries its own atmosphere so moving
    between Reading and Listening feels like changing instrument, not
-   changing URL. */
+   changing URL — now in the brand's own four hues rather than a
+   parallel set. Paper values first; the stage variants are the ones the
+   public site uses on its dark sections.
+
+   On paper, reading (4.19:1) and writing (4.43:1) sit just under the AA
+   floor, so these are for large text, rules and marks — never small body
+   copy. On stage all four clear 9:1. */
 .app-shell { --p-skill: var(--p-accent); --p-skill-glow: var(--p-glow); }
-.skill-reading  { --p-skill: #c08a4a; --p-skill-glow: rgba(192, 138, 74, 0.16); }
-.skill-listening{ --p-skill: #4a9ec0; --p-skill-glow: rgba(74, 158, 192, 0.16); }
-.skill-writing  { --p-skill: #6aa87e; --p-skill-glow: rgba(106, 168, 126, 0.16); }
-.skill-speaking { --p-skill: #9b8ad4; --p-skill-glow: rgba(155, 138, 212, 0.16); }
-@media (prefers-color-scheme: light) {
-  .skill-reading  { --p-skill: #8a6a3a; --p-skill-glow: rgba(138, 106, 58, 0.10); }
-  .skill-listening{ --p-skill: #2a5a6e; --p-skill-glow: rgba(42, 90, 110, 0.10); }
-  .skill-writing  { --p-skill: #3d4a3a; --p-skill-glow: rgba(61, 74, 58, 0.10); }
-  .skill-speaking { --p-skill: #4a3f6b; --p-skill-glow: rgba(74, 63, 107, 0.10); }
+.skill-reading  { --p-skill: #9a6b2f; --p-skill-glow: rgba(154, 107, 47, 0.12); }
+.skill-listening{ --p-skill: #2c6d86; --p-skill-glow: rgba(44, 109, 134, 0.12); }
+.skill-writing  { --p-skill: #3f7d55; --p-skill-glow: rgba(63, 125, 85, 0.12); }
+.skill-speaking { --p-skill: #6b57ad; --p-skill-glow: rgba(107, 87, 173, 0.12); }
+@media (prefers-color-scheme: dark) {
+  .skill-reading  { --p-skill: #e0ac5c; --p-skill-glow: rgba(224, 172, 92, 0.16); }
+  .skill-listening{ --p-skill: #6cc2e2; --p-skill-glow: rgba(108, 194, 226, 0.16); }
+  .skill-writing  { --p-skill: #8fd2a2; --p-skill-glow: rgba(143, 210, 162, 0.16); }
+  .skill-speaking { --p-skill: #bba8f0; --p-skill-glow: rgba(187, 168, 240, 0.16); }
+}
+
+/* The legacy token layer, converged — scoped, deliberately.
+   ------------------------------------------------------------------
+   design-system.css and globals.css define :root tokens (--ink, --bg,
+   --accent, --line, --muted, --surface, --gold, --radius…) that still
+   back roughly 190 declarations in the product stylesheets. Left alone
+   they would keep painting the old palette underneath the converged
+   --p-* layer, which is how a surface ends up half-migrated.
+
+   These are redefined HERE, under .app-shell, and NOT at :root. The
+   public site's own stylesheet is scoped to .site/.sh/.sf, but
+   style.css and the product sheets both define bare .btn/.card/.wrap/
+   .hero, and the shared-component risk audit for this pass did not
+   complete. Overriding :root could therefore repaint marketing pages
+   that were shipped and signed off last week. Scoping to the
+   authenticated root converges the product and cannot reach them.
+   ------------------------------------------------------------------ */
+.app-shell {
+  --ink: var(--p-ink);
+  --ink2: var(--p-ink2);
+  --muted: var(--p-muted);
+  --accent: var(--p-accent);
+  --accent-dark: var(--p-accent-hi);
+  --accent-light: var(--p-accent-wash);
+  --gold: var(--p-signal-ink);
+  --line: var(--p-line);
+  --bg: var(--p-bg);
+  --bg2: var(--p-bg-deep);
+  --surface: var(--p-surface);
+  --elevated: var(--p-elevated);
+  --ok: var(--p-ok);
+  --bad: var(--p-bad);
+  --warn: var(--p-warn);
+  --skill-reading: #9a6b2f;
+  --skill-listening: #2c6d86;
+  --skill-writing: #3f7d55;
+  --skill-speaking: #6b57ad;
+  --radius: var(--p-r);
+  --radius-sm: var(--p-r-sm);
+  --radius-lg: var(--p-r-lg);
+  --ease: var(--p-ease);
+  --dur-1: var(--p-t-fast);
+  --dur-2: var(--p-t);
+  --dur-3: var(--p-t-slow);
+}
+@media (prefers-color-scheme: dark) {
+  .app-shell {
+    --skill-reading: #e0ac5c;
+    --skill-listening: #6cc2e2;
+    --skill-writing: #8fd2a2;
+    --skill-speaking: #bba8f0;
+  }
+}
+
+/* The same remap, for the two authenticated roots outside .app-shell.
+   ------------------------------------------------------------------
+   Teacher (.teacher-shell) and academy creation (.academy-main) render
+   their own layouts, so the .app-shell remap above never reached them —
+   and between them they read the legacy tokens 234 times (teacher.css
+   200, academy.css 34). Left alone they would keep painting the
+   pre-convergence palette inside the same product, which is exactly the
+   half-migrated look this phase exists to remove.
+
+   Repeating ~30 declarations is deliberate and is the cheap option: the
+   alternative is rewriting 234 individual var() reads across two
+   stylesheets. It also keeps the override scoped — still never at :root,
+   because the public site and the /login seam sit outside all three of
+   these roots and must keep the values they ship with today.
+   ------------------------------------------------------------------ */
+.teacher-shell,
+.academy-main {
+  --ink: var(--p-ink);
+  --ink2: var(--p-ink2);
+  --muted: var(--p-muted);
+  --accent: var(--p-accent);
+  --accent-dark: var(--p-accent-hi);
+  --accent-light: var(--p-accent-wash);
+  --gold: var(--p-signal-ink);
+  --line: var(--p-line);
+  --bg: var(--p-bg);
+  --bg2: var(--p-bg-deep);
+  --surface: var(--p-surface);
+  --elevated: var(--p-elevated);
+  --ok: var(--p-ok);
+  --bad: var(--p-bad);
+  --warn: var(--p-warn);
+  --radius: var(--p-r);
+  --radius-sm: var(--p-r-sm);
+  --radius-lg: var(--p-r-lg);
+  --ease: var(--p-ease);
+  --dur-1: var(--p-t-fast);
+  --dur-2: var(--p-t);
+  --dur-3: var(--p-t-slow);
 }
 
 /* ── 1b. Typeface ──────────────────────────────────────────
@@ -210,7 +361,9 @@
 }
 .app-shell .logo-mark {
   background: var(--p-accent);
-  color: #fff;
+  /* --p-accent-ink already inverts per mode; #fff was 3.51:1 on the dark
+     register's light accent. */
+  color: var(--p-accent-ink);
   box-shadow: 0 2px 10px var(--p-glow);
 }
 
@@ -237,12 +390,30 @@
 
 /* Scroll reveal. Elements start hidden only once JS has confirmed it
    will observe them (`.reveal-armed` is set by the observer), so a
-   no-JS or failed-hydration render shows everything. */
-.reveal-armed[data-reveal] {
+   no-JS or failed-hydration render shows everything.
+
+   DEFECT FIXED — these three selectors were written `.reveal-armed[data-reveal]`,
+   with no combinator. That is a COMPOUND selector: it matches a single element
+   carrying both the class and the attribute. But `Reveal.tsx` puts
+   `reveal-armed` on <html> (documentElement) and `data-reveal` on the sections
+   themselves, so no element ever carried both and none of these rules ever
+   matched anything.
+
+   The authenticated product was therefore revealed by style.css:150 — the
+   MARKETING stylesheet's unscoped `.reveal-armed [data-reveal]` — inheriting
+   its 20px offset, its --dur-3/--ease and its 80ms stagger instead of the
+   product's own --p-t-slow/--p-ease and 70ms. Exactly the cross-surface leak
+   the app is otherwise careful to prevent, and it also meant the
+   reduced-motion escape hatch below was dead.
+
+   Now a descendant combinator scoped to `.app-shell`: correct match, and
+   higher specificity than the bare marketing rule, so the product owns its
+   own motion again without touching the public site. */
+.reveal-armed .app-shell [data-reveal] {
   opacity: 0;
   transform: translate3d(0, 18px, 0);
 }
-.reveal-armed[data-reveal].is-in {
+.reveal-armed .app-shell [data-reveal].is-in {
   opacity: 1;
   transform: none;
   transition:
@@ -259,7 +430,7 @@
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
   }
-  .reveal-armed[data-reveal] { opacity: 1; transform: none; }
+  .reveal-armed .app-shell [data-reveal] { opacity: 1; transform: none; }
 }
 
 /* ── 4. Typography ───────────────────────────────────────── */
@@ -341,22 +512,17 @@
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
   gap: 48px 64px;
-  align-items: center;
+  /* `center` vertically centred a short text column inside a row as tall as
+     the 430px instrument, opening a dead band above and below the copy.
+     Both columns start at the same line, as they do on the public site. */
+  align-items: start;
   padding: 24px 0 44px;
   isolation: isolate;
 }
-.p-hero::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  left: -18%;
-  top: -60%;
-  width: 78%;
-  height: 220%;
-  background: radial-gradient(closest-side, var(--p-skill-glow), transparent 72%);
-  pointer-events: none;
-  animation: p-fade 1.2s var(--p-ease) both;
-}
+/* The hero's radial glow is gone. It was a decorative gradient behind the
+   most important text on the screen — the one thing the brief rules out by
+   name — and on paper it read as a smudge rather than as light. The hero's
+   authority now comes from type and space, as it does on the public site. */
 .p-hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -371,18 +537,18 @@
   font-size: 16px;
   font-weight: 640;
   letter-spacing: -0.015em;
-  border-radius: 10px;
+  /* 10px was an off-scale radius and the coloured glow was decoration; the
+     brand's primary action is a flat, confident rectangle. */
+  border-radius: var(--p-r);
   background: var(--p-accent);
   border-color: var(--p-accent);
   color: var(--p-accent-ink);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 8px 26px var(--p-glow);
+  box-shadow: var(--p-shadow-1);
   transition: transform var(--p-t-fast) var(--p-ease), box-shadow var(--p-t-fast) var(--p-ease), background var(--p-t-fast) var(--p-ease);
 }
 .app-shell .btn-hero:hover {
   background: var(--p-accent-hi);
   border-color: var(--p-accent-hi);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), 0 14px 38px var(--p-glow);
 }
 .app-shell .btn-hero:active { transform: translateY(0) scale(0.99); }
 .app-shell .btn-hero .p-arrow { transition: transform var(--p-t) var(--p-ease); }
@@ -727,10 +893,20 @@ a.p-dest:hover .p-dest-go .p-arrow { transform: translateX(4px); }
 .p-block b { font-weight: 620; text-transform: capitalize; color: var(--p-ink); }
 .p-block span { color: var(--p-muted); font-variant-numeric: tabular-nums; font-size: 12px; }
 .p-block-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
-.p-block[data-skill="reading"] .p-block-dot { background: #c08a4a; }
-.p-block[data-skill="listening"] .p-block-dot { background: #4a9ec0; }
-.p-block[data-skill="writing"] .p-block-dot { background: #6aa87e; }
-.p-block[data-skill="speaking"] .p-block-dot { background: #9b8ad4; }
+/* Read the skill token rather than repeating the palette. These literals
+   were a second copy of the four hues, so the palette could not be changed
+   in one place — and they had already drifted from --p-skill. */
+.p-block[data-skill="reading"] { --p-skill: #9a6b2f; }
+.p-block[data-skill="listening"] { --p-skill: #2c6d86; }
+.p-block[data-skill="writing"] { --p-skill: #3f7d55; }
+.p-block[data-skill="speaking"] { --p-skill: #6b57ad; }
+@media (prefers-color-scheme: dark) {
+  .p-block[data-skill="reading"] { --p-skill: #e0ac5c; }
+  .p-block[data-skill="listening"] { --p-skill: #6cc2e2; }
+  .p-block[data-skill="writing"] { --p-skill: #8fd2a2; }
+  .p-block[data-skill="speaking"] { --p-skill: #bba8f0; }
+}
+.p-block .p-block-dot { background: var(--p-skill, var(--p-accent)); }
 
 /* Instrument column */
 .p-instruments { display: flex; flex-direction: column; gap: 0; }
@@ -757,10 +933,17 @@ a.p-dest:hover .p-dest-go .p-arrow { transform: translateX(4px); }
 .p-rung-name { font-size: 12px; text-transform: capitalize; color: var(--p-ink2); }
 .p-rung-bar { display: block; width: 100%; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--p-ink) 10%, transparent); overflow: hidden; }
 .p-rung-bar i { display: block; height: 100%; border-radius: 3px; background: var(--p-fill, var(--p-accent)); transform-origin: left; animation: p-sweep var(--p-t-slow) var(--p-ease) both; }
-.p-rung[data-skill="reading"] { --p-fill: #c08a4a; }
-.p-rung[data-skill="listening"] { --p-fill: #4a9ec0; }
-.p-rung[data-skill="writing"] { --p-fill: #6aa87e; }
-.p-rung[data-skill="speaking"] { --p-fill: #9b8ad4; }
+/* Same again: the ladder had its own third copy of the palette. */
+.p-rung[data-skill="reading"] { --p-fill: #9a6b2f; }
+.p-rung[data-skill="listening"] { --p-fill: #2c6d86; }
+.p-rung[data-skill="writing"] { --p-fill: #3f7d55; }
+.p-rung[data-skill="speaking"] { --p-fill: #6b57ad; }
+@media (prefers-color-scheme: dark) {
+  .p-rung[data-skill="reading"] { --p-fill: #e0ac5c; }
+  .p-rung[data-skill="listening"] { --p-fill: #6cc2e2; }
+  .p-rung[data-skill="writing"] { --p-fill: #8fd2a2; }
+  .p-rung[data-skill="speaking"] { --p-fill: #bba8f0; }
+}
 .p-rung-val { font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--p-ink); font-weight: 600; min-width: 52px; text-align: right; }
 .p-rung-val.none { color: var(--p-muted); font-weight: 500; }
 a.p-rung-val.none { color: var(--p-accent); text-decoration: none; font-weight: 600; }
@@ -877,20 +1060,26 @@ a.p-rung-val.none:hover { text-decoration: underline; }
    the authenticated product rendered solid accent blue with a hover lift, i.e.
    indistinguishable from an enabled one. A control that cannot be used must
    never look like the page's primary action. */
+/* --p-surface is the paper ground itself after the token convergence, so a
+   disabled control filled with it had no body at all — it read as a broken
+   or half-loaded element rather than as a deliberate "not yet". The tint
+   (--p-elevated, the brand's paper-2) gives it a visible surface, and
+   --p-ink2 keeps the label legible: an unavailable control must still be
+   readable, because its text is what tells you why. */
 .app-shell .btn:disabled,
 .app-shell .btn-primary:disabled {
-  background: var(--p-surface);
-  border-color: var(--p-line);
-  color: var(--p-muted);
+  background: var(--p-elevated);
+  border-color: var(--p-line-strong);
+  color: var(--p-ink2);
   box-shadow: none;
   cursor: default;
   transform: none;
 }
 .app-shell .btn:disabled:hover,
 .app-shell .btn-primary:disabled:hover {
-  background: var(--p-surface);
-  border-color: var(--p-line);
-  color: var(--p-muted);
+  background: var(--p-elevated);
+  border-color: var(--p-line-strong);
+  color: var(--p-ink2);
   transform: none;
 }
 .app-shell .btn-outline { border-color: var(--p-line-strong); color: var(--p-ink2); }
@@ -1179,13 +1368,23 @@ a.p-dest.is-live-tilt .p-dest-stage::after {
   letter-spacing: 0.08em;
   color: var(--p-muted);
 }
+/* The legend is absolutely positioned and centred on the instrument, so it had
+   no relationship to its container's width: four non-wrapping entries measured
+   375px and simply ran off the page — 132px of horizontal document overflow at
+   1440, escaping the bay because an absolutely positioned box does not stretch
+   its parent. Latent while the dial was 430px wide, exposed the moment the bay
+   narrowed, and it would have hit every narrow viewport regardless. Capped to
+   the containing block and allowed to wrap. */
 .inst-legend {
   position: absolute;
   left: 50%;
   bottom: 4px;
   transform: translateX(-50%);
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+  gap: 8px 16px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1245,6 +1444,13 @@ a.p-dest.is-live-tilt .p-dest-stage::after {
    containment glow keyed to the shared accent rather than any one
    skill's colour) turns that same space into the instrument's own lit
    enclosure — an object with a boundary, not a gap in the layout. */
+/* An instrument panel, not a floating widget.
+   This was the only element of its kind in the product: a white card with a
+   36px lift-shadow and a blue radial wash, hovering over the paper. It read
+   as a dashboard component pasted onto the page, and it was the single
+   loudest reason the authenticated product did not look like the public
+   site — which builds its panels from the paper itself, a hairline, and a
+   tint. Same construction here. */
 .p-instrument-bay {
   position: relative;
   display: flex;
@@ -1252,28 +1458,17 @@ a.p-dest.is-live-tilt .p-dest-stage::after {
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 36px 28px 28px;
+  padding: 26px 24px 22px;
   border-radius: var(--p-r-lg);
   background: var(--p-elevated);
   border: 1px solid var(--p-line);
-  box-shadow: var(--p-edge), var(--p-shadow-2);
   isolation: isolate;
-}
-.p-instrument-bay::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(120% 90% at 50% 8%, var(--p-glow), transparent 68%);
-  opacity: 0.9;
-  pointer-events: none;
 }
 .p-instrument-rows { width: 100%; max-width: 380px; margin-top: 4px; }
 @media (max-width: 1080px) { .p-instrument-bay { margin-top: 8px; padding: 30px 24px 24px; } }
 @media (max-width: 640px) { .p-instrument-bay { padding: 26px 18px 20px; } }
 
-.home .p-hero { padding-bottom: 8px; align-items: center; }
+.home .p-hero { padding-bottom: 8px; align-items: start; }
 .home .p-hero > div:first-child { padding: 8px 0; }
 .home .p-section:first-of-type { margin-top: 36px; }
 
@@ -1434,11 +1629,18 @@ a.p-dest.mode-assess:hover { border-color: color-mix(in srgb, var(--p-skill) 62%
   gap: 8px;
   align-items: baseline;
 }
+/* `--p-accent-ink` is the ink for text sitting ON the accent fill — never on
+   the page. This tag sits on the plain hero ground, so it computed to #ffffff
+   on #f5f3ee (1.11:1) in light and #0b0d10 on #0b0d10 (1.00:1) in dark: the
+   word "Focus" was invisible in both themes. It labels `mission.coachLine`,
+   the instructor's remark the backend nulls for Free plans — so the one line
+   only a paying subscriber ever sees was the one line nobody could read.
+   The accent as TEXT is 6.63:1 light / 7.75:1 dark. */
 .p-coachline-tag {
   font-size: 11px;
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: var(--p-accent-ink);
+  color: var(--p-accent);
   font-weight: 700;
 }
 
@@ -1497,3 +1699,151 @@ a.p-dest.mode-assess:hover { border-color: color-mix(in srgb, var(--p-skill) 62%
   line-height: 1.6;
   color: var(--p-muted);
 }
+
+/* ── 19. The mobile navigation drawer ─────────────────────
+   Below 960px the sidebar becomes a modal panel over the page. It carried
+   none of what that implies: Tab walked straight out of it, the page kept
+   scrolling behind it, and a tall nav had no way to reach its own last item.
+   The dialog semantics and focus trap live in AppShell (applied only while
+   open, because above 960px the same element is a static rail); these are the
+   two halves that belong in CSS.
+   ------------------------------------------------------------ */
+@media (max-width: 960px) {
+  /* Set by AppShell for exactly as long as the drawer is open. Locking the
+     root rather than <body> avoids the iOS scroll-restore jump that
+     position:fixed on body causes. */
+  html.nav-open,
+  html.nav-open body {
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+  /* A drawer taller than the viewport was unreachable past the fold: the
+     panel is height:100% with no scroll of its own. */
+  .app-shell .app-sidebar.open {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── 20. Product states: page scope ───────────────────────
+   The state system had two scopes without naming them: an inline one-liner
+   (.err, muted text) and a block inside a stage (.state-error). It had no
+   PAGE scope — the shape a whole route needs when it has nothing else to
+   render — so every such surface hand-rolled one, which is a large part of
+   why "this failed" has several identities across the product.
+
+   This is that third scope, and it is what app/(app)/error.tsx renders. The
+   consolidated ProductState will emit the same class.
+   ------------------------------------------------------------ */
+.app-shell .state-page {
+  max-width: 52ch;
+  padding: 64px 0 0;
+}
+.app-shell .state-page h1 {
+  margin: 0 0 10px;
+}
+.app-shell .state-page > .muted {
+  font-size: var(--fs-body, 16px);
+  max-width: 46ch;
+}
+@media (max-width: 640px) {
+  .app-shell .state-page { padding-top: 32px; }
+}
+
+/* ── 21. Focus, where a later import had erased it ────────
+   design-system.css set `outline: none` on the writing textarea and relied on
+   a `:focus-within` ring on the wrapper — which this file then overrode at
+   equal specificity, being imported later. The result was a primary control on
+   a timed assessment with no focus indication at all. Stated explicitly here so
+   the ordering cannot break it again. The accent is 6.63:1 on paper and 7.75:1
+   on stage; the offset keeps it clear of the field's own border.
+   ------------------------------------------------------------ */
+.app-shell .writing-editor textarea:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
+/* ── 22. The consolidated state system ────────────────────
+   One language for loading / empty / error / locked, across three scopes.
+   Replaces four competing idioms: a hairline .state-error block, an
+   article.home-card with a kicker, a red .err one-liner, and a plan-lock
+   card — which differed by which file the author was editing rather than by
+   what had happened. See components/ui/ProductState.tsx.
+   ------------------------------------------------------------ */
+.app-shell .state {
+  max-width: 60ch;
+}
+
+/* inline — under the control that produced it. No surface, no heading. */
+.app-shell .state.is-inline {
+  margin: 10px 0 0;
+  font-size: var(--fs-support, 14px);
+  color: var(--p-ink2);
+}
+.app-shell .state-error.is-inline {
+  color: var(--p-bad);
+}
+
+/* panel — a block inside a stage. A hairline and a left mark, never a card:
+   a failure is not a more important object than the content it replaces. */
+.app-shell .state.is-panel {
+  display: block;
+  padding: 14px 0 14px 16px;
+  border-left: 3px solid var(--p-line-strong);
+  margin: 16px 0;
+}
+.app-shell .state-error.is-panel { border-left-color: var(--p-bad); }
+.app-shell .state-locked.is-panel { border-left-color: var(--p-signal); }
+.app-shell .state-empty.is-panel { border-left-color: var(--p-line-strong); }
+.app-shell .state.is-panel > p { margin: 0; }
+.app-shell .state.is-panel > p + p { margin-top: 6px; }
+.app-shell .state-title {
+  display: block;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+  color: var(--p-ink);
+}
+
+/* The lock chip reuses the vocabulary the skill hubs already established, so
+   "Used up" / "Locked" / "Check failed" mean the same thing everywhere. */
+.app-shell .state-chip {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 2px 8px;
+  border: 1px solid var(--p-line-strong);
+  border-radius: 999px;
+  background: var(--p-elevated);
+  font-family: var(--p-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--p-ink2);
+}
+.app-shell .state-actions { margin-top: 14px; }
+
+/* loading — the skeleton keeps its Phase-2 shape; only the wrapper changed. */
+.app-shell .state-loading.is-panel {
+  border-left-color: transparent;
+  padding-left: 0;
+}
+
+/* The target, stated in the hero eyebrow. Mono, because it is a measured
+   value the backend set — not a greeting. */
+.app-shell .p-eyebrow-sep { margin: 0 8px; opacity: 0.5; }
+.app-shell .p-eyebrow-target { color: var(--p-ink2); }
+@media (max-width: 560px) {
+  /* On a phone the greeting and the target are two facts, not one line. */
+  .app-shell .p-eyebrow-sep { display: none; }
+  .app-shell .p-eyebrow-target { display: block; margin-top: 4px; }
+}
+
+/* Subscription management. A hairline section, not a card: it is a fact about
+   the account, at the same level as the allowance ledger above it. */
+.app-shell .plan-manage {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--p-line);
+  max-width: 60ch;
+}
+.app-shell .plan-manage h2 { margin: 0 0 8px; }

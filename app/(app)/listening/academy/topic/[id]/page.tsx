@@ -14,7 +14,7 @@ export default async function ListeningTopicPage({
 }) {
   const [{ id }, { why }] = await Promise.all([params, searchParams]);
   const topic = topicById(id);
-  if (!topic) return <EmptyAcademy title="Topic" body="That Academy topic is not in the catalog." />;
+  if (!topic) return <EmptyAcademy title="Topic" body="That Academy topic is not in the catalog." backHref="/listening/academy" backLabel="Back to Academy" />;
   const entitlements = await loadEntitlements();
   const isPro = entitlements.status === "ready" && entitlements.isPro;
   const categoryLabel = LISTENING_ACADEMY_CATEGORIES.find((c) => c.key === topic.category)?.label || "Listening Academy";

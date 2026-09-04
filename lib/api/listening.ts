@@ -68,10 +68,20 @@ export function decodeListeningItem(raw: unknown): ListeningItem | null {
 export function decodeListeningAnswer(raw: unknown): ListeningAnswerResult {
   if (!isRecord(raw)) return { isCorrect: null, correctIndex: null, explanation: "" };
   const correctRaw = pickAlias(raw, "correctIndex", "correct_index");
+  /**
+   * `ok` is NOT a verdict.
+   *
+   * It used to be third in this alias list, and it is a transport-level "the
+   * request succeeded" that plenty of envelopes carry — including the e2e mock
+   * backend's bare `{ok:true}`. Reading it as correctness turns any successful
+   * response into "Correct". The presence check also disagreed with the value
+   * read: it tested `isCorrect|correct|ok` for null but then coerced only
+   * `isCorrect|correct`, so a payload carrying `ok` alone produced
+   * `Boolean(undefined)` — a confident, fabricated "incorrect".
+   */
+  const verdict = pickAlias(raw, "wasCorrect", "isCorrect", "correct", "was_correct", "is_correct");
   return {
-    isCorrect: pickAlias(raw, "isCorrect", "correct", "ok") == null
-      ? null
-      : Boolean(pickAlias(raw, "isCorrect", "correct")),
+    isCorrect: verdict == null ? null : Boolean(verdict),
     correctIndex: correctRaw == null ? null : asNumber(correctRaw, -1),
     explanation: asString(pickAlias(raw, "explanation", "reason", "feedback")),
   };

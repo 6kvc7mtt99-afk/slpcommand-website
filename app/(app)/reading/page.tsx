@@ -1,9 +1,13 @@
 import { SkillHub, type Destination } from "@/components/skill/SkillHub";
 import { featureAccess } from "@/lib/entitlements";
-import { loadEntitlements, loadProgress } from "@/lib/server/home";
+import { loadEntitlements, loadProgress, loadProgressFailed } from "@/lib/server/home";
 
 export default async function ReadingHome() {
-  const [entitlements, progress] = await Promise.all([loadEntitlements(), loadProgress()]);
+  const [entitlements, progress, progressFailed] = await Promise.all([
+    loadEntitlements(),
+    loadProgress(),
+    loadProgressFailed(),
+  ]);
   const practice = featureAccess(entitlements, "reading_practice");
   const exam = featureAccess(entitlements, "reading_exam_simulation");
   const planNote = "Not available on your current plan. Pro removes the weekly cap on Reading practice.";
@@ -64,6 +68,7 @@ export default async function ReadingHome() {
           : { href: "/reading/academy", label: "Open Academy", disabled: false }
       }
       progress={progress}
+      progressFailed={progressFailed}
       practiceHref="/reading/practice"
       destinations={destinations}
     />

@@ -774,7 +774,14 @@ input:focus, select:focus, textarea:focus {
   line-height: 1.65;
   resize: vertical;
 }
-.writing-editor textarea:focus { box-shadow: none; outline: none; }
+/* `outline: none` removed. The replacement ring this relied on
+   (.writing-editor:focus-within, above) is cascade-dead: product.css declares
+   .app-shell .writing-editor at equal specificity and is imported later, so it
+   takes both border-color and box-shadow. The net effect was that focusing the
+   textarea produced no visual change whatsoever — on a timed assessment
+   surface. box-shadow:none is kept so the field does not draw two rings; the
+   global :focus-visible now applies, reinforced in product.css. */
+.writing-editor textarea:focus { box-shadow: none; }
 .writing-meter {
   display: flex;
   justify-content: space-between;

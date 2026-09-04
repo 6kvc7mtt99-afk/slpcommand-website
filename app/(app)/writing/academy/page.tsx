@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { CoverageBar } from "@/components/academy/AcademyLessonView";
 import { PriorityAction } from "@/components/training/PriorityAction";
+import { StatePage } from "@/components/ui/StatePage";
+import { stateFromResult } from "@/lib/server/stateFromResult";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
@@ -14,9 +16,12 @@ export default async function WritingAcademyPage() {
     contentType: "application/json",
     cache: "no-store",
   });
-  if (result.status >= 400 || !result.data) {
-    return <EmptyAcademy title="Writing Academy" body="The Academy is unavailable right now." />;
-  }
+  // A 403 here is a plan boundary, not an outage — reporting it as "could not
+  // be loaded" told a Free learner the product was broken when it was working
+  // exactly as sold. stateFromResult keeps those two apart.
+  const state = stateFromResult(result, { subject: "the Academy", unreadableWhen: !result.data });
+  if (state) return <StatePage state={state} title="Writing Academy" backHref="/writing" backLabel="Back to Writing" />;
+  if (!result.data) return null;
   const data = result.data;
   const coach = isRecord(data.coach) ? data.coach : {};
   const focus = isRecord(data.todaysFocus) ? data.todaysFocus : {};

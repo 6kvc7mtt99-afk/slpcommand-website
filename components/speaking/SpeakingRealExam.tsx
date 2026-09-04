@@ -19,6 +19,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FrontendError } from "@/lib/api/client";
+import { quotaReassurance } from "@/lib/api/errors";
 import type {
   SpeakingExamFinish,
   SpeakingExamState,
@@ -177,7 +178,18 @@ export function SpeakingRealExam({ userId }: { userId: string }) {
         setPhase("quota");
         return;
       }
-      setMessage(err instanceof FrontendError ? err.message : "Couldn't start the exam. You were not charged.");
+      /**
+       * The reassurance is conditional because the truth is. See
+       * quotaReassurance: it speaks only when the backend answered 4xx, where
+       * requireQuota's finish hook has provably refunded the unit; it stays
+       * silent for a 5xx or a dropped connection, which is exactly where the
+       * old unconditional "You were not charged." could be false.
+       */
+      setMessage(
+        err instanceof FrontendError
+          ? err.message
+          : `Couldn’t start the exam. ${quotaReassurance(err)}`.trim(),
+      );
       setPhase("error");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

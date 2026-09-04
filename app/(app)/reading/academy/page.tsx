@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { asString, isRecord } from "@/lib/api/decode";
-import { CoverageBar, EmptyAcademy } from "@/components/academy/AcademyLessonView";
+import { CoverageBar } from "@/components/academy/AcademyLessonView";
 import { AcademyPath, type PathUnit } from "@/components/academy/AcademyPath";
 import { PriorityAction } from "@/components/training/PriorityAction";
+import { StatePage } from "@/components/ui/StatePage";
+import { stateFromResult } from "@/lib/server/stateFromResult";
 import { backendJson } from "@/lib/server/backend";
 import { loadAcademyTargetLevel } from "@/lib/server/targetLevel";
 
@@ -15,9 +17,12 @@ export default async function ReadingAcademyPage() {
     contentType: "application/json",
     cache: "no-store",
   });
-  if (result.status >= 400 || !result.data) {
-    return <EmptyAcademy title="Reading Academy" body="The Academy is unavailable right now. Nothing was invented locally." />;
-  }
+  // A 403 here is a plan boundary, not an outage — reporting it as "could not
+  // be loaded" told a Free learner the product was broken when it was working
+  // exactly as sold. stateFromResult keeps those two apart.
+  const failure = stateFromResult(result, { subject: "the Academy", unreadableWhen: !result.data });
+  if (failure) return <StatePage state={failure} title="Reading Academy" backHref="/reading" backLabel="Back to Reading" />;
+  if (!result.data) return null;
   const data = result.data;
   const focus = isRecord(data.focus) ? data.focus : {};
   const reason = isRecord(focus.reason) ? focus.reason : {};

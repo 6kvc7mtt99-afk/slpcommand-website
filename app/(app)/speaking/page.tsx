@@ -1,18 +1,31 @@
 import { SkillHub, type Destination } from "@/components/skill/SkillHub";
-import { featureAccess } from "@/lib/entitlements";
+import { featureAccess, featureIsDescribed } from "@/lib/entitlements";
 import { loadCoachAvailability } from "@/lib/server/coach";
-import { loadEntitlements, loadProgress } from "@/lib/server/home";
+import { loadEntitlements, loadProgress, loadProgressFailed } from "@/lib/server/home";
 
 export default async function SpeakingHome() {
-  const [entitlements, progress, coach] = await Promise.all([
+  const [entitlements, progress, progressFailed, coach] = await Promise.all([
     loadEntitlements(),
     loadProgress(),
+    loadProgressFailed(),
     // Fails closed: an unreachable readiness call hides the Coach rather than
     // offering a door that can only fail.
     loadCoachAvailability(),
   ]);
   const access = featureAccess(entitlements, "speaking_ai_feedback");
+  /** Same mix-up as Writing — the exam has its own credit. See writing/page.tsx. */
+  // Fall back to the feedback allowance when the payload does not enumerate
+  // the exam credit at all: metering against a key the server never mentioned
+  // would render the exam locked for everyone. When the key IS present — as it
+  // is in the backend's quota definitions — the exam is metered correctly.
   const planNote = "Speaking evaluation is not available on your current plan. Pro makes AI evaluation unlimited.";
+  const examMetered = featureIsDescribed(entitlements, "speaking_exam_simulation");
+  const examAccess = examMetered ? featureAccess(entitlements, "speaking_exam_simulation") : access;
+  // The refusal must name the allowance actually consulted, or it explains the
+  // wrong limit to someone who just hit a wall.
+  const examNote = examMetered
+    ? "Speaking exam simulation is not available on your current plan."
+    : planNote;
 
   const destinations: Destination[] = [
     {
@@ -35,9 +48,9 @@ export default async function SpeakingHome() {
       detail: "Three prompts in one sitting, rated task by task. Educational only.",
       preview: "speaking-exam",
       cta: "Start exam",
-      quota: access,
-      disabled: !access.usable,
-      disabledReason: planNote,
+      quota: examAccess,
+      disabled: !examAccess.usable,
+      disabledReason: examNote,
     },
     ...(coach.available
       ? [
@@ -79,6 +92,7 @@ export default async function SpeakingHome() {
           : { href: "/speaking/history", label: "View history" }
       }
       progress={progress}
+      progressFailed={progressFailed}
       practiceHref="/speaking/practice"
       destinations={destinations}
     />
